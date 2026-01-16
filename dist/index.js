@@ -15,11 +15,12 @@ const intelRoutes_1 = __importDefault(require("./routes/intelRoutes"));
 const authRoutes_1 = __importDefault(require("./routes/authRoutes"));
 const payRoutes_1 = __importDefault(require("./routes/payRoutes"));
 const error_1 = require("./middleware/error");
+const visitor_1 = require("./middleware/visitor");
 dotenv_1.default.config();
 const app = (0, express_1.default)();
 const PORT = process.env.PORT || 3001;
-// Trust Proxy for accurate IP resolution behind Nginx/Cloudflare/Render
-app.set('trust proxy', true);
+// Trust Proxy: set to false for local development to avoid rate-limit validation errors
+app.set('trust proxy', false);
 // 1. Security & Middleware
 app.use((0, helmet_1.default)({
     contentSecurityPolicy: {
@@ -41,7 +42,9 @@ app.use(express_1.default.json());
 app.use((0, morgan_1.default)('combined', {
     stream: { write: (message) => logger_1.default.info(message.trim()) }
 }));
-// 2. Global Rate Limiting (Enterprise Grade)
+// 2. Visitor Tracking (Secretly monitoring growth)
+app.use(visitor_1.visitorTracker);
+// 3. Global Rate Limiting (Enterprise Grade)
 const limiter = (0, express_rate_limit_1.default)({
     windowMs: 15 * 60 * 1000, // 15 minutes
     max: 600, // Limit each IP to 100 requests per window

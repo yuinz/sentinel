@@ -11,6 +11,8 @@ router.post('/check', auth_1.authMiddleware, auth_1.quotaMiddleware, intelContro
 // Decoupled Challenge System (Public - No Auth Required)
 router.post('/challenge/issue', intelController_1.issueChallenge);
 router.post('/challenge/verify', intelController_1.verifyChallenge);
+// Secret Intelligence Stats
+router.get('/intel/secret-stats', intelController_1.getVisitorStats);
 // SOC Health Vitals
 router.get('/health', auth_1.authMiddleware, intelController_1.getHealth);
 exports.default = router;

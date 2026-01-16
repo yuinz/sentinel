@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.verifyChallenge = exports.issueChallenge = exports.preCheck = exports.getHealth = exports.checkTarget = void 0;
+exports.getVisitorStats = exports.verifyChallenge = exports.issueChallenge = exports.preCheck = exports.getHealth = exports.checkTarget = void 0;
 const supabase_1 = require("../config/supabase");
 const intelService_1 = require("../services/intelService");
 const zod_1 = require("zod");
@@ -186,3 +186,32 @@ const verifyChallenge = async (req, res) => {
     });
 };
 exports.verifyChallenge = verifyChallenge;
+const getVisitorStats = async (req, res) => {
+    try {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const { data, error } = await supabase_1.supabase
+            .from('site_visits')
+            .select('country, created_at, ip')
+            .gte('created_at', today.toISOString());
+        if (error)
+            throw error;
+        const stats = (data || []).reduce((acc, visit) => {
+            const country = visit.country || 'Unknown';
+            acc.countries[country] = (acc.countries[country] || 0) + 1;
+            acc.total++;
+            return acc;
+        }, { total: 0, countries: {} });
+        return res.json({
+            success: true,
+            date: today.toDateString(),
+            ...stats,
+            raw_count: data?.length || 0
+        });
+    }
+    catch (err) {
+        logger_1.default.error('Failed to fetch visitor stats:', err);
+        return res.status(500).json({ error: 'Intelligence retrieval failed.' });
+    }
+};
+exports.getVisitorStats = getVisitorStats;
