@@ -9,6 +9,7 @@ const helmet_1 = __importDefault(require("helmet"));
 const morgan_1 = __importDefault(require("morgan"));
 const express_rate_limit_1 = __importDefault(require("express-rate-limit"));
 const dotenv_1 = __importDefault(require("dotenv"));
+const path_1 = __importDefault(require("path"));
 const logger_1 = __importDefault(require("./utils/logger"));
 const intelRoutes_1 = __importDefault(require("./routes/intelRoutes"));
 const authRoutes_1 = __importDefault(require("./routes/authRoutes"));
@@ -47,10 +48,10 @@ const limiter = (0, express_rate_limit_1.default)({
 });
 app.use(limiter);
 // 3. Serve Landing Page (Static Files)
-app.use(express_1.default.static('landing-page'));
+app.use(express_1.default.static(path_1.default.join(__dirname, '..', 'landing-page')));
 // Root route serves landing page
 app.get('/', (req, res) => {
-    res.sendFile('index.html', { root: 'landing-page' });
+    res.sendFile(path_1.default.join(__dirname, '..', 'landing-page', 'index.html'));
 });
 // 4. Health Check
 app.get('/health', (req, res) => {

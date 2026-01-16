@@ -4,6 +4,7 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 import rateLimit from 'express-rate-limit';
 import dotenv from 'dotenv';
+import path from 'path';
 import logger from './utils/logger';
 import intelRoutes from './routes/intelRoutes';
 import authRoutes from './routes/authRoutes';
@@ -47,11 +48,11 @@ const limiter = rateLimit({
 app.use(limiter);
 
 // 3. Serve Landing Page (Static Files)
-app.use(express.static('landing-page'));
+app.use(express.static(path.join(__dirname, '..', 'landing-page')));
 
 // Root route serves landing page
 app.get('/', (req, res) => {
-    res.sendFile('index.html', { root: 'landing-page' });
+    res.sendFile(path.join(__dirname, '..', 'landing-page', 'index.html'));
 });
 
 // 4. Health Check
