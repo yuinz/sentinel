@@ -662,7 +662,15 @@
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${session.access_token}` }
             });
-            if (res.ok) loadApiKeys();
+
+            if (res.ok) {
+                loadApiKeys();
+            } else if (res.status === 403) {
+                const error = await res.json();
+                alert(`⚠️ ${error.message}\n\nCurrent: ${error.current}/${error.limit} keys\n\nUpgrade to Premium for unlimited API vectors.`);
+            } else {
+                alert('Failed to generate API key. Please try again.');
+            }
         });
 
         function copyKey(k) {
@@ -685,35 +693,44 @@
 
                 // 2. Bar Chart (Daily Decisions)
                 const max = Math.max(...stats.values, 10); // Minimum scale of 10
-                document.getElementById('decisions-chart').innerHTML = stats.labels.map((d, i) => `
-                    <div class="chart-bar-container">
-                        <div class="chart-bar" style="height: ${(stats.values[i] / max) * 100}%" title="${stats.values[i]} queries"></div>
-                        <div class="chart-label">${d}</div>
-                    </div>
-                `).join('');
+                const decisionsChart = document.getElementById('decisions-chart');
+                if (decisionsChart) {
+                    decisionsChart.innerHTML = stats.labels.map((d, i) => `
+                        <div class="chart-bar-container">
+                            <div class="chart-bar" style="height: ${(stats.values[i] / max) * 100}%" title="${stats.values[i]} queries"></div>
+                            <div class="chart-label">${d}</div>
+                        </div>
+                    `).join('');
+                }
 
                 // 3. Risk Distribution Percentages
                 const total = stats.risk_distribution.stable + stats.risk_distribution.unstable + stats.risk_distribution.untrusted;
 
                 const getPerc = (val) => total === 0 ? '0%' : Math.round((val / total) * 100) + '%';
 
-                document.getElementById('risk-stable').innerText = getPerc(stats.risk_distribution.stable);
-                document.getElementById('risk-unstable').innerText = getPerc(stats.risk_distribution.unstable);
-                document.getElementById('risk-untrusted').innerText = getPerc(stats.risk_distribution.untrusted);
+                const riskStable = document.getElementById('risk-stable');
+                const riskUnstable = document.getElementById('risk-unstable');
+                const riskUntrusted = document.getElementById('risk-untrusted');
+
+                if (riskStable) riskStable.innerText = getPerc(stats.risk_distribution.stable);
+                if (riskUnstable) riskUnstable.innerText = getPerc(stats.risk_distribution.unstable);
+                if (riskUntrusted) riskUntrusted.innerText = getPerc(stats.risk_distribution.untrusted);
 
                 // 4. Recent Logs Table
                 const logTable = document.getElementById('recent-logs');
-                if (stats.recent_logs && stats.recent_logs.length > 0) {
-                    logTable.innerHTML = stats.recent_logs.map(log => `
-                        <tr>
-                            <td style="color:#fff;font-family:monospace;">${log.target}</td>
-                            <td><span class="risk-tag tag-${log.verdict.toLowerCase()}">${log.verdict}</span></td>
-                            <td style="color:#555;">${log.latency}ms</td>
-                            <td style="text-align:right;color:#333;font-size:10px;">${new Date(log.time).toLocaleTimeString()}</td>
-                        </tr>
-                    `).join('');
-                } else {
-                    logTable.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#444;padding:2rem;">No telemetry data available.</td></tr>';
+                if (logTable) {
+                    if (stats.recent_logs && stats.recent_logs.length > 0) {
+                        logTable.innerHTML = stats.recent_logs.map(log => `
+                            <tr>
+                                <td style="color:#fff;font-family:monospace;">${log.target}</td>
+                                <td><span class="risk-tag tag-${log.verdict.toLowerCase()}">${log.verdict}</span></td>
+                                <td style="color:#555;">${log.latency}ms</td>
+                                <td style="text-align:right;color:#333;font-size:10px;">${new Date(log.time).toLocaleTimeString()}</td>
+                            </tr>
+                        `).join('');
+                    } else {
+                        logTable.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#444;padding:2rem;">No telemetry data available.</td></tr>';
+                    }
                 }
 
             } catch (e) {

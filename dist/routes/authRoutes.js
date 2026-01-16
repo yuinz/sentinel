@@ -35,6 +35,24 @@ router.get('/keys', ensureSupabaseAuth, async (req, res) => {
 });
 router.post('/keys/generate', ensureSupabaseAuth, async (req, res) => {
     const user = req.user;
+    // Check existing key count for free tier limit
+    const { data: existingKeys, error: countError } = await supabase_1.supabase
+        .from('api_access')
+        .select('id')
+        .eq('user_id', user.id);
+    if (countError) {
+        console.error('Key count error:', countError);
+        return res.status(500).json({ error: 'Failed to check existing keys' });
+    }
+    // Free tier: max 5 API keys
+    if (existingKeys && existingKeys.length >= 5) {
+        return res.status(403).json({
+            error: 'Free tier limit reached',
+            message: 'You have reached the maximum of 5 API keys for free accounts. Upgrade to Premium for unlimited vectors.',
+            limit: 5,
+            current: existingKeys.length
+        });
+    }
     const newKey = `sl_${crypto_1.default.randomBytes(24).toString('hex')}`;
     const { data, error } = await supabase_1.supabase
         .from('api_access')
