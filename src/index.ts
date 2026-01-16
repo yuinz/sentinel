@@ -8,6 +8,7 @@ import path from 'path';
 import logger from './utils/logger';
 import intelRoutes from './routes/intelRoutes';
 import authRoutes from './routes/authRoutes';
+import payRoutes from './routes/payRoutes';
 import { errorHandler } from './middleware/error';
 
 dotenv.config();
@@ -26,8 +27,8 @@ app.use(helmet({
             styleSrcElem: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
             fontSrc: ["'self'", "https://fonts.gstatic.com"],
             imgSrc: ["'self'", "data:", "https://*"],
-            connectSrc: ["'self'", "https://ahwkraeuotptvwvutbng.supabase.co", "https://*.supabase.co", "https://*.supabase.net", "https://cdn.jsdelivr.net"],
-            frameSrc: ["'self'", "https://*.supabase.co"],
+            connectSrc: ["'self'", "https://ahwkraeuotptvwvutbng.supabase.co", "https://*.supabase.co", "https://*.supabase.net", "https://cdn.jsdelivr.net", "https://nowpayments.io"],
+            frameSrc: ["'self'", "https://*.supabase.co", "https://nowpayments.io"],
         },
     },
 }));
@@ -63,9 +64,10 @@ app.get('/health', (req, res) => {
 // 5. API Routes
 app.use('/v1', intelRoutes);
 
-// 6. Auth Routes
+// 6. Auth & Payment Routes
 app.use('/auth', authRoutes);
 app.use('/api', authRoutes);
+app.use('/v1/pay', payRoutes);
 
 // 7. 404 & Error Handling
 app.use((req, res, next) => {

@@ -4,6 +4,8 @@ const express_1 = require("express");
 const intelController_1 = require("../controllers/intelController");
 const auth_1 = require("../middleware/auth");
 const router = (0, express_1.Router)();
+// Public Pre-check (Used for Conditional Captcha)
+router.get('/precheck', intelController_1.preCheck);
 // v1 Check Endpoint (Increments Quota)
 router.post('/check', auth_1.authMiddleware, auth_1.quotaMiddleware, intelController_1.checkTarget);
 // Decoupled Challenge System (Free Auth)

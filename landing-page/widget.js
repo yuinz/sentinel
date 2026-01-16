@@ -176,7 +176,7 @@
             this.updateUI('Verifying...', 'Computing Proof of Work', '#0af');
 
             // 2. Solve PoW Nonce
-            const nonce = this.solvePoW(this.challenge.nonce_prefix, this.challenge.difficulty);
+            const nonce = await this.solvePoW(this.challenge.nonce_prefix, this.challenge.difficulty);
 
             try {
                 const response = await fetch(`${API_BASE}/v1/challenge/verify`, {
@@ -214,13 +214,23 @@
             }
         }
 
-        solvePoW(prefix, difficulty) {
-            // Simple PoW Solver (in real version this would be in a Worker)
-            let nonce = 0;
+        async solvePoW(prefix, difficulty) {
             const target = '0'.repeat(difficulty);
-            // This is a placeholder for a real SHA-256 loop
-            // In a production widget, we use crypto.subtle or a small WASM blob
-            return `${prefix}${Math.floor(Math.random() * 1000000)}`;
+            let nonce = 0;
+            const encoder = new TextEncoder();
+
+            while (true) {
+                const data = encoder.encode(prefix + nonce);
+                const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+                const hashArray = Array.from(new Uint8Array(hashBuffer));
+                const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+
+                if (hashHex.startsWith(target)) {
+                    return prefix + nonce;
+                }
+                nonce++;
+                if (nonce > 1000000) return nonce; // Safety break
+            }
         }
 
         updateUI(label, sub, color) {

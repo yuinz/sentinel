@@ -1,8 +1,11 @@
 import { Router } from 'express';
-import { checkTarget, getHealth, issueChallenge, verifyChallenge } from '../controllers/intelController';
+import { checkTarget, getHealth, issueChallenge, verifyChallenge, preCheck } from '../controllers/intelController';
 import { authMiddleware, quotaMiddleware } from '../middleware/auth';
 
 const router = Router();
+
+// Public Pre-check (Used for Conditional Captcha)
+router.get('/precheck', preCheck);
 
 // v1 Check Endpoint (Increments Quota)
 router.post('/check', authMiddleware as any, quotaMiddleware as any, checkTarget);

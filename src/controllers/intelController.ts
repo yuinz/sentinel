@@ -1,4 +1,5 @@
-import { Response } from 'express';
+import { Request, Response, RequestHandler } from 'express';
+import { supabase } from '../config/supabase';
 import { AuthRequest } from '../middleware/auth';
 import { IntelService } from '../services/intelService';
 import { z as zod } from 'zod';
@@ -41,7 +42,7 @@ export const checkTarget = async (req: AuthRequest, res: Response) => {
             cacheStats.misses++;
         }
 
-        const result = cachedResult ? cachedResult : await IntelService.analyze(target, privacy_mode, profile, trustToken);
+        const result = cachedResult ? cachedResult : await IntelService.analyze(target, privacy_mode, profile, trustToken, req.user?.tier);
 
         // 2. Persist to Cache if new
         if (!cachedResult) {
@@ -50,7 +51,25 @@ export const checkTarget = async (req: AuthRequest, res: Response) => {
 
         const isBwtValid = bwtNonce ? IntelService.verifyBehavioralWork(target, bwtNonce) : false;
 
-        // 3. Mode Selection (Standard vs Trust Decision)
+        // 3. Telemetry Logic: Record the event for Analytics
+        try {
+            // We fire and forget this to keep response times <50ms
+            supabase.from('telemetry').insert({
+                api_access_id: (req as any).apiRecordId,
+                target: target,
+                verdict: result.verdict,
+                profile: profile,
+                latency_ms: result.latency_ms,
+                bwt_verified: isBwtValid || !!trustToken,
+                created_at: new Date().toISOString()
+            }).then(({ error }) => {
+                if (error) logger.error('Telemetry Log Error:', error);
+            });
+        } catch (e) {
+            logger.error('Telemetry recording failed');
+        }
+
+        // 4. Mode Selection (Standard vs Trust Decision)
         if (mode === 'decision') {
             const hasPassedChallenge = isBwtValid || !!trustToken;
             const allow = result.verdict !== 'UNTRUSTED' || hasPassedChallenge;
@@ -119,6 +138,37 @@ export const getHealth = async (req: AuthRequest, res: Response) => {
             total_scans_serviced: totalRequests
         },
         timestamp: new Date().toISOString()
+    });
+};
+
+export const preCheck: RequestHandler = async (req: Request, res: Response) => {
+    // 1. Disable Caching (Ensure fresh high-authority assessment)
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+
+    // 2. Resolve IP (With Mocking support ONLY in non-prod lab testing)
+    const isProd = process.env.NODE_ENV === 'production';
+    const mockIp = !isProd ? (req.headers['x-sentinel-mock-ip'] as string) : null;
+
+    let target = mockIp ||
+        req.ip ||
+        (req.headers['x-forwarded-for'] as string) ||
+        '127.0.0.1';
+
+    if (target.startsWith('::1')) target = '127.0.0.1';
+    if (target.startsWith('::ffff:')) target = target.substring(7);
+
+    logger.info(`Pre-check request from: ${target} ${req.headers['x-sentinel-mock-ip'] ? '[MOCKED]' : ''}`);
+
+    // Run high-authority analysis with forced enrichment
+    const result = await IntelService.analyze(target, 'full', 'api', undefined, 'PRO', true);
+
+    return res.json({
+        required: result.verdict !== 'TRUSTED',
+        verdict: result.verdict,
+        score: result.trust_score,
+        target: target
     });
 };
 

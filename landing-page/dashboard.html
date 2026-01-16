@@ -347,18 +347,91 @@
             border-radius: 10px;
         }
 
-        @media (max-width: 900px) {
-            .dash-grid {
-                grid-template-columns: 1fr;
-            }
+        /* Upgrade Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.85);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            backdrop-filter: blur(4px);
+        }
 
-            .sidebar {
-                display: none;
-            }
+        .modal-card {
+            background: #0a0a0a;
+            border: 1px solid #1a1a1a;
+            width: 450px;
+            max-width: 95vw;
+            border-radius: 8px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
 
-            .main-content {
-                margin-left: 0;
-            }
+        .modal-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid #1a1a1a;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h2 {
+            font-size: 1.1rem;
+            margin: 0;
+            color: var(--accent);
+        }
+
+        .close-modal {
+            background: transparent;
+            border: none;
+            color: #444;
+            cursor: pointer;
+            font-size: 1.5rem;
+        }
+
+        .modal-body {
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            background: #000;
+        }
+
+        .nav-upgrade-btn {
+            background: linear-gradient(90deg, var(--accent) 0%, #0af 100%);
+            color: #000;
+            font-weight: 700;
+            text-align: center;
+            padding: 0.75rem;
+            border-radius: 4px;
+            margin: 1rem 0.5rem;
+            cursor: pointer;
+            text-decoration: none;
+            display: block;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .tier-badge {
+            font-size: 9px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            background: #222;
+            color: #aaa;
+            margin-left: 8px;
+            text-transform: uppercase;
+        }
+
+        .tier-badge.pro {
+            background: var(--accent);
+            color: #000;
+            font-weight: bold;
         }
     </style>
 </head>
@@ -385,33 +458,32 @@
                 </a>
                 <div style="height: 24px;"></div>
                 <div class="nav-title"
-                    style="margin-left: 0.75rem; margin-bottom: 0.5rem; font-family: var(--font-mono); font-size: 10px; color: #444; text-transform: uppercase;">
-                    Engine</div>
-                <a href="./docs.html" class="nav-item">
-                    <span class="icon">/</span> Docs
-                </a>
-                <a href="./index.html" class="nav-item">
-                    <span class="icon">_</span> Portal
-                </a>
-            </nav>
-
-            <div class="sidebar-footer">
-                <div
-                    style="padding: 0 0.75rem; margin-bottom: 1rem; font-family: var(--font-mono); font-size: 10px; color: #333;">
-                    <a href="./privacy.html" style="color: inherit; text-decoration: none;">PRIVACY</a> //
-                    <a href="./terms.html" style="color: inherit; text-decoration: none;">TERMS</a>
+                    style="margin-left: 0.75rem; margin-top: 1.5rem; font-family: var(--font-mono); font-size: 10px; color: #444; text-transform: uppercase;">
+                    Account Plan</div>
+                <div id="tier-status-container">
+                    <a href="#" class="nav-upgrade-btn" id="open-upgrade-btn">Upgrade to Pro</a>
                 </div>
-                <a href="#" id="logout-btn" class="nav-item"
-                    style="color: var(--accent); border: 1px solid rgba(255,0,0,0.1); margin-top: auto; font-family: var(--font-mono); font-size: 11px;">
-                    <span class="icon">!</span> TERMINATE_SESSION
-                </a>
-            </div>
+
+                <div class="sidebar-footer">
+                    <div
+                        style="padding: 0 0.75rem; margin-bottom: 1rem; font-family: var(--font-mono); font-size: 10px; color: #333;">
+                        <a href="./privacy.html" style="color: inherit; text-decoration: none;">PRIVACY</a> //
+                        <a href="./terms.html" style="color: inherit; text-decoration: none;">TERMS</a>
+                    </div>
+                    <a href="#" id="logout-btn" class="nav-item"
+                        style="color: var(--accent); border: 1px solid rgba(255,0,0,0.1); margin-top: auto; font-family: var(--font-mono); font-size: 11px;">
+                        <span class="icon">!</span> TERMINATE_SESSION
+                    </a>
+                </div>
         </aside>
 
         <main class="main-content">
             <header class="page-header">
                 <div>
-                    <h1>System Dashboard</h1>
+                    <h1 style="display: flex; align-items: center;">
+                        System Dashboard
+                        <span id="tier-badge" class="tier-badge">FREE</span>
+                    </h1>
                     <p>Manage your Sentinel API keys and monitor usage</p>
                 </div>
                 <div class="user-pill">
@@ -493,6 +565,22 @@
         </main>
     </div>
 
+    <!-- Upgrade Modal HTML (Moved above script to prevent null ref) -->
+    <div id="upgrade-modal" class="modal-overlay">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h2>Authority Upgrade: PRO_TIER</h2>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <iframe src="https://nowpayments.io/embeds/payment-widget?iid=5627912599" width="410" height="696"
+                    frameborder="0" scrolling="no" style="overflow-y: hidden;">
+                    Can't load widget
+                </iframe>
+            </div>
+        </div>
+    </div>
+
     <script>
         const supabaseUrl = 'https://ahwkraeuotptvwvutbng.supabase.co';
         const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFod2tyYWV1b3RwdHZ3dnV0Ym5nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcwNzYxNjIsImV4cCI6MjA4MjY1MjE2Mn0.bsB4kxE-kOx355IMXmeNGGp2rKHl1l1CcMGG_clZUos';
@@ -551,7 +639,7 @@
                             <td style="color:#666;font-family:monospace;">${k.usage_count} / ${k.max_usage}</td>
                             <td><span class="key-mono">${k.api_key.substring(0, 12)}••••••••</span></td>
                             <td style="text-align:right;">
-                                <button class="btn-action" onclick="copyKey('${k.api_key}')">Copy</button>
+                                <button class="btn-action copy-key-btn" data-key="${k.api_key}">Copy</button>
                             </td>
                         </tr>
                     `).join('');
@@ -559,6 +647,14 @@
                 console.error(e);
             }
         }
+
+        // Delegated listener for Copy Buttons (Satisfies CSP)
+        document.getElementById('api-keys-list').addEventListener('click', (e) => {
+            if (e.target.classList.contains('copy-key-btn')) {
+                const key = e.target.getAttribute('data-key');
+                copyKey(key);
+            }
+        });
 
         document.getElementById('generate-key-btn').addEventListener('click', async () => {
             if (!session) return;
@@ -573,27 +669,117 @@
             navigator.clipboard.writeText(k).then(() => alert('CREDENTIAL COPIED'));
         }
 
-        function renderCharts() {
-            const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-            const data = [120, 280, 190, 440, 310, 150, 90];
-            const max = Math.max(...data);
+        async function renderCharts() {
+            if (!session) return;
 
-            document.getElementById('decisions-chart').innerHTML = days.map((d, i) => `
-                <div class="chart-bar-container">
-                    <div class="chart-bar" style="height: ${(data[i] / max) * 100}%" title="${data[i]} queries"></div>
-                    <div class="chart-label">${d}</div>
-                </div>
-            `).join('');
+            try {
+                const res = await fetch('/api/analytics', {
+                    headers: { 'Authorization': `Bearer ${session.access_token}` }
+                });
+                if (!res.ok) return;
+                const stats = await res.json();
 
-            // Risk Update
-            document.getElementById('risk-stable').innerText = '82%';
-            document.getElementById('risk-unstable').innerText = '14%';
-            document.getElementById('risk-untrusted').innerText = '4%';
+                // 1. Total Signals Counter
+                document.getElementById('total-signals').innerText = stats.total_signals || 0;
+
+                // 2. Bar Chart (Daily Decisions)
+                const max = Math.max(...stats.values, 10); // Minimum scale of 10
+                document.getElementById('decisions-chart').innerHTML = stats.labels.map((d, i) => `
+                    <div class="chart-bar-container">
+                        <div class="chart-bar" style="height: ${(stats.values[i] / max) * 100}%" title="${stats.values[i]} queries"></div>
+                        <div class="chart-label">${d}</div>
+                    </div>
+                `).join('');
+
+                // 3. Risk Distribution Percentages
+                const total = stats.risk_distribution.stable + stats.risk_distribution.unstable + stats.risk_distribution.untrusted;
+
+                const getPerc = (val) => total === 0 ? '0%' : Math.round((val / total) * 100) + '%';
+
+                document.getElementById('risk-stable').innerText = getPerc(stats.risk_distribution.stable);
+                document.getElementById('risk-unstable').innerText = getPerc(stats.risk_distribution.unstable);
+                document.getElementById('risk-untrusted').innerText = getPerc(stats.risk_distribution.untrusted);
+
+                // 4. Recent Logs Table
+                const logTable = document.getElementById('recent-logs');
+                if (stats.recent_logs && stats.recent_logs.length > 0) {
+                    logTable.innerHTML = stats.recent_logs.map(log => `
+                        <tr>
+                            <td style="color:#fff;font-family:monospace;">${log.target}</td>
+                            <td><span class="risk-tag tag-${log.verdict.toLowerCase()}">${log.verdict}</span></td>
+                            <td style="color:#555;">${log.latency}ms</td>
+                            <td style="text-align:right;color:#333;font-size:10px;">${new Date(log.time).toLocaleTimeString()}</td>
+                        </tr>
+                    `).join('');
+                } else {
+                    logTable.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#444;padding:2rem;">No telemetry data available.</td></tr>';
+                }
+
+            } catch (e) {
+                console.error('Charts error:', e);
+            }
         }
 
         document.getElementById('logout-btn').addEventListener('click', () => {
             sp.auth.signOut().then(() => window.location.href = './index.html');
         });
+
+        /* Upgrade Modal Logic */
+        const modal = document.getElementById('upgrade-modal');
+        const openBtn = document.getElementById('open-upgrade-btn');
+        const closeBtn = document.querySelector('.close-modal');
+
+        if (openBtn) {
+            openBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                modal.style.display = 'flex';
+            });
+        }
+
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => {
+                modal.style.display = 'none';
+            });
+        }
+
+        window.onclick = (event) => {
+            if (event.target == modal) {
+                modal.style.display = 'none';
+            }
+        };
+
+        // Logic to check tier and update UI
+        async function checkSubscription() {
+            if (!session) return;
+            const res = await fetch('/api/keys', {
+                headers: { 'Authorization': `Bearer ${session.access_token}` }
+            });
+            if (res.ok) {
+                const keys = await res.json();
+                if (keys.length > 0) {
+                    const tier = keys[0].tier || 'FREE';
+                    const badge = document.getElementById('tier-badge');
+                    badge.innerText = tier;
+                    badge.className = `tier-badge ${tier.toLowerCase()}`;
+
+                    if (tier === 'PRO') {
+                        document.getElementById('tier-status-container').innerHTML = `
+                            <div style="background: rgba(0,255,136,0.1); color: var(--accent); padding: 0.75rem; border-radius: 4px; margin: 1rem 0.5rem; font-size: 10px; text-align: center; border: 1px solid rgba(0,255,136,0.2);">
+                                <b>PRO_SYSTEM_ACTIVE</b><br>
+                                UNLIMITED COLD ENRICHMENT
+                            </div>
+                        `;
+                    }
+                }
+            }
+        }
+
+        // Call checkSubscription after keys are loaded
+        const originalLoadKeys = loadApiKeys;
+        loadApiKeys = async (curr) => {
+            await originalLoadKeys(curr);
+            checkSubscription();
+        };
     </script>
 </body>
 

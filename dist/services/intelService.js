@@ -27,7 +27,7 @@ class IntelService {
      * The Real Product: Decision Latency.
      * Rendering a trust decision in <50ms by prioritizing in-memory signals.
      */
-    static async analyze(target, privacyMode = 'full', profileName = 'api', trustToken) {
+    static async analyze(target, privacyMode = 'full', profileName = 'api', trustToken, tier = 'FREE', forceEnrich = false) {
         const start = Date.now();
         const profile = exports.SENTINEL_PROFILES[profileName];
         const signals = [];
@@ -53,10 +53,49 @@ class IntelService {
             signals.push({ id: 'ASN-MATRIX', label: 'High-Risk Network Match', weight: asnRisk.risk, status: 'negative' });
         if (isHighVelocity)
             signals.push({ id: 'NET-VELOCITY', label: 'Request Velocity Spike', weight: 20, status: 'negative' });
-        // 4. COLD ENRICHMENT: Triggered Async
-        // We do NOT await external I/O here. We return the best decision we can 
-        // using fast signals, and let the background worker populate the deep intel for the next check.
-        this.enrichInBackground(target, privacyMode, profileName);
+        // 4. COLD ENRICHMENT: Triggered Async (PRO Only)
+        if (tier === 'PRO') {
+            // Check if we already have this IP's DNA in cache
+            const cacheKey = `deep:${target}`;
+            const deepIntel = cache_1.intelCache.get(cacheKey);
+            if (deepIntel && deepIntel.asn) {
+                const asnNumber = deepIntel.asn.asn;
+                const isHighRisk = HIGH_RISK_ASNS.includes(asnNumber);
+                if (isHighRisk) {
+                    currentRisk += 80; // Massive penalty for Data Centers/VPNs
+                    signals.push({
+                        id: 'ASN-REPUTATION',
+                        label: `High-Risk Infrastructure (${deepIntel.asn.name || 'Hosting'})`,
+                        weight: 80,
+                        status: 'negative',
+                        confidence: 0.95
+                    });
+                }
+                else {
+                    signals.push({ id: 'ASN-REPUTATION', label: 'Residential/Consumer Network', weight: 0, status: 'positive' });
+                }
+            }
+            else {
+                if (forceEnrich) {
+                    const freshIntel = await this.performSyncEnrich(target);
+                    if (freshIntel && freshIntel.asn) {
+                        const isHighRisk = HIGH_RISK_ASNS.includes(freshIntel.asn.asn);
+                        if (isHighRisk) {
+                            currentRisk += 80;
+                            signals.push({ id: 'ASN-REPUTATION', label: `High-Risk Infrastructure (${freshIntel.asn.name})`, weight: 80, status: 'negative' });
+                        }
+                    }
+                }
+                else {
+                    // If not in cache, trigger background enrichment for next time
+                    this.enrichInBackground(target, privacyMode, profileName);
+                    signals.push({ id: 'SYS-PENDING', label: 'Background Forensic Gathering', weight: 0, status: 'neutral' });
+                }
+            }
+        }
+        else {
+            signals.push({ id: 'SYS-FREE', label: 'Limited Signals (Free Tier)', weight: 0, status: 'neutral' });
+        }
         const finalScore = Math.max(0, 100 - currentRisk + trustBonus);
         const verdict = finalScore >= (profile.threshold + 15) ? 'TRUSTED' : finalScore >= profile.threshold ? 'UNSTABLE' : 'UNTRUSTED';
         return this.finalize(target, finalScore, verdict, signals, start, {
@@ -80,6 +119,19 @@ class IntelService {
             ...extra
         };
     }
+    static async performSyncEnrich(target) {
+        try {
+            const res = await axios_1.default.get(`https://ipwho.is/${target}`, { timeout: 1500 });
+            if (res.data && res.data.success) {
+                const cacheKey = `deep:${target}`;
+                cache_1.intelCache.set(cacheKey, res.data, { ttl: 3600 });
+                return res.data;
+            }
+        }
+        catch {
+            return null;
+        }
+    }
     static async enrichInBackground(target, privacyMode, profileName) {
         // Heavy I/O moved to separate thread/execution context
         try {
@@ -97,8 +149,27 @@ class IntelService {
         }
     }
     static checkLocalAsnMatrix(target) {
-        // Logic for fast local range check would go here
+        // Instant forensic check against known hosting ranges
+        for (const range of this.DATACENTER_RANGES) {
+            if (this.ipInRow(target, range)) {
+                return { risk: 85 }; // Critical Risk: Data-Center Origin
+            }
+        }
         return { risk: 0 };
+    }
+    static ipInRow(ip, cipher) {
+        try {
+            const [range, bits] = cipher.split('/');
+            const mask = ~((1 << (32 - parseInt(bits))) - 1) >>> 0;
+            const ipDots = ip.split('.').map(Number);
+            const rangeDots = range.split('.').map(Number);
+            const ipInt = ((ipDots[0] << 24) | (ipDots[1] << 16) | (ipDots[2] << 8) | ipDots[3]) >>> 0;
+            const rangeInt = ((rangeDots[0] << 24) | (rangeDots[1] << 16) | (rangeDots[2] << 8) | rangeDots[3]) >>> 0;
+            return (ipInt & mask) === (rangeInt & mask);
+        }
+        catch {
+            return false;
+        }
     }
     static isPrivateIp(ip) {
         const parts = ip.split('.').map(Number);
@@ -121,11 +192,13 @@ class IntelService {
         const difficulty = 4;
         const salt = process.env.POW_SECRET || 'sentinel-secure-powder';
         const signature = crypto_1.default.createHash('sha256').update(target + salt + difficulty).digest('hex').substring(0, 8);
+        const prefix = `${signature}${difficulty}`;
+        logger_1.default.info(`[PoW Issue] Target: ${target}, Prefix: ${prefix}`);
         return {
             challenge_id: `ch_${crypto_1.default.randomBytes(4).toString('hex')}`,
             type: 'BWT',
             difficulty,
-            nonce_prefix: `${signature}${difficulty}`,
+            nonce_prefix: prefix,
             behavioral_duration: duration || 2.0,
             instruction: `Intent Proof: Click and hold for ${duration || 2.0}s.`
         };
@@ -135,9 +208,21 @@ class IntelService {
             const difficulty = parseInt(nonce.substring(8, 9), 10);
             const salt = process.env.POW_SECRET || 'sentinel-secure-powder';
             const signature = crypto_1.default.createHash('sha256').update(target + salt + difficulty).digest('hex').substring(0, 8);
-            return crypto_1.default.createHash('sha256').update(`${signature}${difficulty}${nonce}`).digest('hex').startsWith("0".repeat(difficulty));
+            logger_1.default.info(`[PoW Verify] Target: ${target}, Difficulty: ${difficulty}`);
+            logger_1.default.info(`[PoW Verify] Nonce: ${nonce}`);
+            logger_1.default.info(`[PoW Verify] Expected Signature Prefix: ${signature}`);
+            if (!nonce.startsWith(`${signature}${difficulty}`)) {
+                logger_1.default.warn(`[PoW Verify] Signature Mismatch! Nonce doesn't start with ${signature}${difficulty}`);
+                return false;
+            }
+            const hash = crypto_1.default.createHash('sha256').update(nonce).digest('hex');
+            const isValid = hash.startsWith("0".repeat(difficulty));
+            logger_1.default.info(`[PoW Verify] Computed Hash: ${hash}`);
+            logger_1.default.info(`[PoW Verify] Is Valid: ${isValid}`);
+            return isValid;
         }
-        catch {
+        catch (err) {
+            logger_1.default.error(`[PoW Verify] Error during verification: ${err}`);
             return false;
         }
     }
@@ -149,3 +234,30 @@ class IntelService {
     }
 }
 exports.IntelService = IntelService;
+// Comprehensive High-Risk Matrix (Hosting, VPN, Tor, Proxy)
+// In Pro Tier, this list is updated via the Sentinel Global C2 every 6 hours.
+IntelService.DATACENTER_RANGES = [
+    // Amazon Web Services (AWS)
+    '3.0.0.0/8', '13.0.0.0/8', '18.0.0.0/8', '34.192.0.0/10', '35.160.0.0/12',
+    '44.0.0.0/8', '52.0.0.0/10', '54.0.0.0/8',
+    // Microsoft Azure
+    '13.64.0.0/11', '20.33.0.0/16', '23.96.0.0/12', '40.64.0.0/10',
+    '51.103.0.0/16', '52.136.0.0/13',
+    // Google Cloud (GCP)
+    '34.64.0.0/10', '35.184.0.0/13', '104.154.0.0/15',
+    // DigitalOcean
+    '104.248.0.0/13', '138.197.0.0/16', '159.203.0.0/16', '165.22.0.0/16',
+    // Akamai / Linode / Cloudflare
+    '45.33.0.0/16', '104.16.0.0/12', '162.158.0.0/15', '172.64.0.0/13',
+    // Vultr / Hetzner / OVH
+    '45.32.0.0/16', '108.61.0.0/16', '95.216.0.0/15', '116.202.0.0/15',
+    '51.254.0.0/15', '54.36.0.0/15', '188.165.0.0/16',
+    // Common VPN Vectors (M247, Datacamp, Choopa)
+    '185.204.0.0/22', '193.108.0.0/22', '185.228.0.0/16', '193.36.0.0/16',
+    '89.187.0.0/16', '45.155.0.0/16', '82.102.0.0/16', '84.239.0.0/16',
+    '185.151.0.0/16', '212.102.0.0/18',
+    // Specialized Anonymizers
+    '185.220.101.0/24', // Tor Exit Node Cluster
+    '103.208.220.0/22', // Proxy Traffic
+    '176.10.99.0/24' // Known VPN Exit
+];

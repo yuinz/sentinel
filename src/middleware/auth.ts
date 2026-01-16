@@ -9,6 +9,7 @@ declare global {
             email?: string;
             usage_count?: number;
             max_usage?: number;
+            tier?: 'FREE' | 'PRO';
             github_id?: string;
             github_login?: string;
             github_name?: string;
@@ -52,6 +53,7 @@ export const authMiddleware = async (req: AuthRequest, res: Response, next: Next
             email: authData.email,
             usage_count: authData.usage_count,
             max_usage: authData.max_usage,
+            tier: authData.tier || 'FREE'
         };
 
         // Cache the raw record ID for the quota middleware

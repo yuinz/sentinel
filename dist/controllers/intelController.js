@@ -3,7 +3,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.verifyChallenge = exports.issueChallenge = exports.getHealth = exports.checkTarget = void 0;
+exports.verifyChallenge = exports.issueChallenge = exports.preCheck = exports.getHealth = exports.checkTarget = void 0;
+const supabase_1 = require("../config/supabase");
 const intelService_1 = require("../services/intelService");
 const zod_1 = require("zod");
 const axios_1 = __importDefault(require("axios"));
@@ -40,13 +41,32 @@ const checkTarget = async (req, res) => {
         else {
             cache_1.cacheStats.misses++;
         }
-        const result = cachedResult ? cachedResult : await intelService_1.IntelService.analyze(target, privacy_mode, profile, trustToken);
+        const result = cachedResult ? cachedResult : await intelService_1.IntelService.analyze(target, privacy_mode, profile, trustToken, req.user?.tier);
         // 2. Persist to Cache if new
         if (!cachedResult) {
             cache_1.intelCache.set(cacheKey, result);
         }
         const isBwtValid = bwtNonce ? intelService_1.IntelService.verifyBehavioralWork(target, bwtNonce) : false;
-        // 3. Mode Selection (Standard vs Trust Decision)
+        // 3. Telemetry Logic: Record the event for Analytics
+        try {
+            // We fire and forget this to keep response times <50ms
+            supabase_1.supabase.from('telemetry').insert({
+                api_access_id: req.apiRecordId,
+                target: target,
+                verdict: result.verdict,
+                profile: profile,
+                latency_ms: result.latency_ms,
+                bwt_verified: isBwtValid || !!trustToken,
+                created_at: new Date().toISOString()
+            }).then(({ error }) => {
+                if (error)
+                    logger_1.default.error('Telemetry Log Error:', error);
+            });
+        }
+        catch (e) {
+            logger_1.default.error('Telemetry recording failed');
+        }
+        // 4. Mode Selection (Standard vs Trust Decision)
         if (mode === 'decision') {
             const hasPassedChallenge = isBwtValid || !!trustToken;
             const allow = result.verdict !== 'UNTRUSTED' || hasPassedChallenge;
@@ -114,6 +134,31 @@ const getHealth = async (req, res) => {
     });
 };
 exports.getHealth = getHealth;
+const preCheck = async (req, res) => {
+    // 1. Disable Caching (Ensure fresh high-authority assessment)
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+    // 2. Resolve IP (With Mocking support for Dev/Lab testing)
+    let target = req.headers['x-sentinel-mock-ip'] ||
+        req.ip ||
+        req.headers['x-forwarded-for'] ||
+        '127.0.0.1';
+    if (target.startsWith('::1'))
+        target = '127.0.0.1';
+    if (target.startsWith('::ffff:'))
+        target = target.substring(7);
+    logger_1.default.info(`Pre-check request from: ${target} ${req.headers['x-sentinel-mock-ip'] ? '[MOCKED]' : ''}`);
+    // Run high-authority analysis with forced enrichment
+    const result = await intelService_1.IntelService.analyze(target, 'full', 'api', undefined, 'PRO', true);
+    return res.json({
+        required: result.verdict !== 'TRUSTED',
+        verdict: result.verdict,
+        score: result.trust_score,
+        target: target
+    });
+};
+exports.preCheck = preCheck;
 const issueChallenge = async (req, res) => {
     const { target, context, duration } = req.body;
     if (!target)

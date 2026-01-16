@@ -12,11 +12,11 @@
 
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://app.risksignal.name.ng/docs">
+    <meta property="og:url" content="https://sentinel.risksignal.name.ng/docs">
     <meta property="og:title" content="Documentation | Implementing the Sentinel Trust API">
     <meta property="og:description"
         content="Comprehensive guides for integrating Sentinel's bot protection and Zero Trust API vectors.">
-    <meta property="og:image" content="https://app.risksignal.name.ng/og-image.png">
+    <meta property="og:image" content="https://sentinel.risksignal.name.ng/og-image.png">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -208,6 +208,7 @@
             <a href="#check" class="nav-link">POST /v1/check</a>
             <a href="#issue" class="nav-link">POST /v1/challenge/issue</a>
             <a href="#verify" class="nav-link">POST /v1/challenge/verify</a>
+            <a href="#tiers" class="nav-link">Pricing & Tiers</a>
         </div>
 
         <div class="nav-group">
@@ -226,8 +227,45 @@
                 outcome-focused check.</p>
 
             <div class="info-box">
-                <strong>New in v1.6.0:</strong> Sentinel now supports the <strong>Turnstile Widget</strong> and
-                decoupled challenge routing. Challenges are now free of charge for all API keys.
+                <strong>Pricing Philosophy:</strong> Sentinel charges for <strong>Authority</strong>, not friction.
+                Challenges and Widgets are free for all tiers. We charge for deep forensic decisions.
+            </div>
+        </section>
+
+        <section id="tiers">
+            <h2>Pricing & Tiers</h2>
+            <p>Sentinel is designed to scale with your platform. Choose the tier that matches your intelligence
+                requirements.</p>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 2rem;">
+                <div style="background: #070707; border: 1px solid #111; padding: 1.5rem; border-radius: 8px;">
+                    <h3 style="color: #fff; margin-top: 0;">🟢 EDGE (Free)</h3>
+                    <p style="font-size: 13px;">Protect your infrastructure at no cost.</p>
+                    <ul style="color: #666; font-size: 13px; padding-left: 1.2rem; line-height: 1.8;">
+                        <li>1,000 Decisions / Mo</li>
+                        <li>Unlimited Widget Challenges</li>
+                        <li>Basic ASN Mitigation</li>
+                        <li>Stateless Trust Tokens</li>
+                    </ul>
+                </div>
+                <div
+                    style="background: rgba(0, 255, 136, 0.05); border: 1px solid rgba(0, 255, 136, 0.1); padding: 1.5rem; border-radius: 8px;">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                        <h3 style="color: var(--accent); margin-top: 0;">🔵 PRO (Authority)</h3>
+                        <div style="text-align: right; font-family: 'JetBrains Mono'; font-size: 0.8rem;">
+                            <span style="color: #fff;">$8 / mo</span><br>
+                            <span style="color: #444; font-size: 0.7rem;">or $39 / year</span>
+                        </div>
+                    </div>
+                    <p style="font-size: 13px;">Deep forensics for signups & payments.</p>
+                    <ul style="color: #888; font-size: 13px; padding-left: 1.2rem; line-height: 1.8;">
+                        <li>500,000 Decisions / Mo</li>
+                        <li><b>Cold Enrichment</b> (Shodan/WhoIs)</li>
+                        <li>Velocity Tracking Matrix</li>
+                        <li>Mobile Carrier Identification</li>
+                        <li>Full Risk Analytics</li>
+                    </ul>
+                </div>
             </div>
         </section>
 
@@ -239,13 +277,13 @@
             <h3>1. Standard Header</h3>
             <p>Used for internal server-to-server communication.</p>
             <div class="code-block">
-                <pre>x-api-key: sk_live_8b31a5c2f019...</pre>
+                <pre>x-api-key: sl_8b31a5c2f019...</pre>
             </div>
 
             <h3>2. Bearer Token</h3>
             <p>Standardized for web widgets and mobile integrations.</p>
             <div class="code-block">
-                <pre>Authorization: Bearer sk_live_8b31a5c2f019...</pre>
+                <pre>Authorization: Bearer sl_8b31a5c2f019...</pre>
             </div>
         </section>
 
@@ -263,7 +301,13 @@
 &lt;div id="sentinel-widget" data-sitekey="YOUR_API_KEY"&gt;&lt;/div&gt;
 
 &lt;!-- 2. The Native Library --&gt;
-&lt;script src="https://api.risksignal.com/widget.js" async defer&gt;&lt;/script&gt;</pre>
+&lt;script src="https://sentinel.risksignal.name.ng/widget.js" async defer&gt;&lt;/script&gt;</pre>
+            </div>
+
+            <div class="info-box">
+                <strong>Live Example:</strong> View the <a href="./widget-test.html" target="_blank"
+                    style="color: var(--accent);">Interactive Widget Demo</a> to see the PoW and Behavioral flow in
+                action.
             </div>
 
             <h3>Success Handoff</h3>

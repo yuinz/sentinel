@@ -1,82 +1,99 @@
-# 🛰️ Sentinel | Turnstile for APIs
+# Sentinel | Turnstile for APIs
 
 **"Blocked 92% of bot signups without CAPTCHAs. Render sub-50ms trust decisions using infrastructure and behavioral signals."**
 
-Sentinel is the industry's first **high-velocity trust decision engine** designed to replace user-hostile CAPTCHAs with deterministic, outcome-based security. It is **Turnstile for APIs**.
+Sentinel is a high-velocity trust decision engine designed to replace user-hostile CAPTCHAs with deterministic, outcome-based security. It functions as a Turnstile for APIs.
 
 ---
 
-## ⚡ The Moat: Decision Latency
-In modern security, speed is the only metric that matters. Sentinel is architected to ensure your security never blocks your user experience.
+## Decision Latency
+
+In modern security, speed is the primary metric. Sentinel is architected to ensure security never compromises user experience.
 
 - **Fast-Path Decisions (<50ms):** Immediate PASS/BLOCK decisions using in-memory local ASN matrices and velocity tracking.
-- **Async Cold Enrichment:** Deep forensic gathering (Shodan, IPWhoIs) happens in the background, populating telemetry without adding a single millisecond to the critical request path.
+- **Forced Forensic Audit (Premium):** Real-time, synchronous deep-intel lookups for critical paths (Login, Payments) to ensure 100% accuracy on first contact.
+- **Async Cold Enrichment:** Deep forensic gathering (Shodan, IPWhoIs) occurs in the background, populating telemetry without adding latency to the critical request path.
 - **Stateless by Design:** No database lookups in the decision path. Everything is handled via high-speed LRU caches and cryptographic tokens.
 
 ---
 
-## 🛡️ Feature Ecosystem: How Everything Connects
+## Feature Ecosystem
 
-Sentinel connects client-side behavior with server-side authority to create a seamless trust loop.
+Sentinel connects client-side behavior with server-side authority to create a comprehensive trust loop.
 
 ### 1. The Sentinel Widget (Invisible Verification)
-The frontend "Turnstile" component that establishes intent before a user even hits your submit button.
+The frontend verification component that establishes intent before a request reaches the application.
 - **Behavioral Intent (BWT):** A proprietary "Click and Hold" interaction that validates human movement.
-- **Cryptographic PoW:** Forces attacking CPUs to solve cryptographic puzzles, making automated bot-attacks economically impossible.
-- **Shadow DOM Isolation:** Ensures no CSS or logic conflicts with your host application.
-- **Success Handoff:** Automatically injects HMAC-signed `trust_tokens` into your forms.
+- **Cryptographic PoW:** Forces attacking CPUs to solve cryptographic puzzles, making automated bot-attacks economically non-viable.
+- **Shadow DOM Isolation:** Base-level integration with zero CSS or logic conflicts.
+- **Success Handoff:** Automatically injects HMAC-signed trust_tokens into your forms.
 
-### 2. The Decision Gate (`POST /v1/check`)
+### 2. The Decision Gate (POST /v1/check)
 The core server-side endpoint that renders an ultimate verdict in under 50ms.
-- **Automatic Bot Mitigation:** Proven to block 92% of automated signups in production.
-- **ASN Matrix Profiling:** Instant identification of 100+ malicious or hosting-only ASNs (M247, OVH, Hetzner, etc.).
-- **Mobile Carrier Verification:** Applies trust "bonuses" for verified mobile carriers (LTE/5G) to ensure humans stay fast.
-- **Profile-Based Security:** Tune thresholds for `api`, `signup`, `payments`, or `crypto` use cases.
-- **Remediation Routing:** Recommends the exact next step: PASS, BLOCK, or CHALLENGE.
+- **Automatic Bot Mitigation:** Proven to block 92% of automated signups in production environments.
+- **ASN Matrix Profiling:** Instant identification of over 100 malicious or hosting-only ASNs (M247, OVH, Hetzner, etc.).
+- **Mobile Carrier Verification:** Applies trust incentives for verified mobile carriers (LTE/5G).
+- **Profile-Based Security:** Customizable thresholds for api, signup, payments, or crypto use cases.
 
-### 3. Management & Governance (The Hub)
-- **GitHub OAuth Dashboard:** Secure, passwordless onboarding via your GitHub identity.
-- **Automated Provisioning:** New accounts automatically receive their first **Sentinel Vector** (API Key).
-- **Usage & Risk Analytics:** Precise tracking of trust distributions and quota consumption.
-- **RFC1918 Fast-Track:** sentinel automatically bypasses local/private IPs to ensure it never breaks your dev environment.
-- **CI/CD Bypass:** Special headers (`X-Sentinel-Bypass`) for automated testing and deployment pipelines.
+### 3. Management and Premium Insights
+- **GitHub OAuth Dashboard:** Secure, passwordless onboarding via GitHub identity.
+- **Real-Time Telemetry (Premium):** Live feed of every decision, including latency, IP reputation, and signal breakdown.
+- **Risk Distribution Analytics (Premium):** Interactive charts showing stable vs. untrusted traffic patterns over time.
+- **Conditional Security Shield (Premium):** Intelligent "pre-check" logic that only triggers the widget for high-risk origins (VPN/Proxy).
+- **Automated Provisioning:** New accounts automatically receive their first Sentinel Vector (API Key).
 
 ---
 
-## 📊 Outcomes (Numbers > Nouns)
+## Outcomes
+
 - **92%** Reduction in bot-driven account creation.
 - **<50ms** Decision latency at the edge.
-- **0** User-hostile "Click the chimneys" puzzles.
-- **99.9%** Verification accuracy for legitimate mobile/ISP traffic.
+- **0** User-hostile puzzle challenges.
+- **99.9%** Verification accuracy for legitimate mobile and ISP traffic.
 - **100%** GDPR Compliance (No PII stored; Stateless architecture).
 
 ---
 
-## 📂 Feature Registry (All Features & Connectivity)
+## Feature Registry
 
-| Feature | Category | Connection | Outcome |
+| Feature | Category | Tier | Outcome |
 | :--- | :--- | :--- | :--- |
-| **BWT (Behavioral Work)** | Frontend | Link: Widget ⮕ API | Proves human intent via physical interaction. |
-| **PoW (Proof of Work)** | Security | Link: Widget ⮕ API | Increases attacker cost per request to >$0.01. |
-| **Fast-Path Check** | Performance | Link: API Core | Renders decision in <50ms using local signals. |
-| **Cold Enrichment** | Intelligence | Link: Background Worker | Populates long-term telemetry for the dashboard. |
-| **ASN Matrix** | Intelligence | Link: Fast-Path | Instantly flags infrastructure designed for proxy/abuse. |
-| **Velocity Tracking** | Risk | Link: Redux/Cache | Detects "IP Churn" and high-frequency scan patterns. |
-| **Trust Tokens** | Security | Link: API Output ⮕ Input | Provides a 30-min "VIP Pass" for verified users. |
-| **Bypass Headers** | Developer | Link: CI/CD Pipeline | Allows automated tests to pass without interference. |
-| **Privacy Mode** | Compliance | Link: API Response | Redacts sensitive geo-data for GDPR regions. |
+| **BWT (Behavioral Work)** | Frontend | Edge | Proves human intent via physical interaction. |
+| **PoW (Proof of Work)** | Security | Edge | Increases attacker cost per request significantly. |
+| **Fast-Path Check** | Performance | Edge | Renders decision in <50ms using local signals. |
+| **ASN Matrix** | Intelligence | Edge/Premium | Instantly flags infrastructure designed for proxy/abuse. |
+| **Forced Forensic Sync** | Security | **Premium** | Mandatory deep-audit for high-value endpoints (Login/Pay). |
+| **Real-Time Analytics** | Governance | **Premium** | Full visibility into risk trends and signal telemetry. |
+| **Conditional Widget** | UX | **Premium** | Widget only appears when a risk is detected (VPN/DC). |
+| **Global Velocity Matrix** | Risk | **Premium** | Detects IP Churn and high-frequency scan patterns. |
+| **Trust Tokens** | Security | Edge | Provides temporary prioritized access for verified users. |
 
 ---
 
-## 🔑 Authentication
-Sentinel supports industry-standard auth for both backend and frontend:
-- **`x-api-key`**: For server-to-server decision logic.
-- **`Authorization: Bearer <Key>`**: For web widgets and mobile SDKs.
+## Tiered Security Architecture
+
+### EDGE (Free Tier)
+- **1,000 Decisions / Month** (v1/check)
+- **Unlimited Widget Challenges** (BWT + PoW)
+- **Fast-Path Decisions** (Local ASN Matrix)
+- **Community Support**
+
+### PREMIUM (Authority Tier - $6/mo)
+- **500,000 Decisions / Month**
+- **Forced Sync Intelligence:** Real-time deep forensics for Login and Payments.
+- **Conditional Shield:** Intelligently gate your auth flow only for high-risk visitors.
+- **Advanced Dashboard:** Access to risk distribution charts and individual signal telemetry.
+- **Global Velocity Matrix:** Detect sophisticated IP-rotation attacks.
+- **Mobile Carrier ID:** Prioritize verified cellular traffic.
+- **Priority Tech Support.**
+
+### Payment and Upgrading
+Sentinel integrates with NowPayments for secure, friction-free upgrades using cryptocurrency (ETH, BTC, USDT). Unlock Premium features instantly without credit card requirements.
 
 ---
 
-## 🚀 Quick Start
-Protect your signup endpoint in 5 minutes:
+## Quick Start
+Protect your signup endpoint:
 
 ```javascript
 const res = await fetch('https://api.sentinel.com/v1/check', {
@@ -90,4 +107,4 @@ if (!allow) return blockRequest(); // Decision in <50ms
 ```
 
 ---
-*Generated by **Antigravity** — The Outcome-Based Security Standard.*
+*Generated by Antigravity — The Outcome-Based Security Standard.*

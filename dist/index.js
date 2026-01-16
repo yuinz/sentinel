@@ -13,6 +13,7 @@ const path_1 = __importDefault(require("path"));
 const logger_1 = __importDefault(require("./utils/logger"));
 const intelRoutes_1 = __importDefault(require("./routes/intelRoutes"));
 const authRoutes_1 = __importDefault(require("./routes/authRoutes"));
+const payRoutes_1 = __importDefault(require("./routes/payRoutes"));
 const error_1 = require("./middleware/error");
 dotenv_1.default.config();
 const app = (0, express_1.default)();
@@ -28,8 +29,8 @@ app.use((0, helmet_1.default)({
             styleSrcElem: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
             fontSrc: ["'self'", "https://fonts.gstatic.com"],
             imgSrc: ["'self'", "data:", "https://*"],
-            connectSrc: ["'self'", "https://ahwkraeuotptvwvutbng.supabase.co", "https://*.supabase.co", "https://*.supabase.net", "https://cdn.jsdelivr.net"],
-            frameSrc: ["'self'", "https://*.supabase.co"],
+            connectSrc: ["'self'", "https://ahwkraeuotptvwvutbng.supabase.co", "https://*.supabase.co", "https://*.supabase.net", "https://cdn.jsdelivr.net", "https://nowpayments.io"],
+            frameSrc: ["'self'", "https://*.supabase.co", "https://nowpayments.io"],
         },
     },
 }));
@@ -41,7 +42,7 @@ app.use((0, morgan_1.default)('combined', {
 // 2. Global Rate Limiting (Enterprise Grade)
 const limiter = (0, express_rate_limit_1.default)({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100, // Limit each IP to 100 requests per window
+    max: 600, // Limit each IP to 100 requests per window
     standardHeaders: true,
     legacyHeaders: false,
     message: { error: 'Too many requests from this IP, please try again later.' }
@@ -59,9 +60,10 @@ app.get('/health', (req, res) => {
 });
 // 5. API Routes
 app.use('/v1', intelRoutes_1.default);
-// 6. Auth Routes
+// 6. Auth & Payment Routes
 app.use('/auth', authRoutes_1.default);
 app.use('/api', authRoutes_1.default);
+app.use('/v1/pay', payRoutes_1.default);
 // 7. 404 & Error Handling
 app.use((req, res, next) => {
     res.status(404).json({ error: 'Endpoint destination unreachable.' });

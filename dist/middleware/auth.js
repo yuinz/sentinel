@@ -31,6 +31,7 @@ const authMiddleware = async (req, res, next) => {
             email: authData.email,
             usage_count: authData.usage_count,
             max_usage: authData.max_usage,
+            tier: authData.tier || 'FREE'
         };
         // Cache the raw record ID for the quota middleware
         req.apiRecordId = authData.id;

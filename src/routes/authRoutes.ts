@@ -40,7 +40,7 @@ router.get('/keys', ensureSupabaseAuth, async (req: any, res) => {
 
 router.post('/keys/generate', ensureSupabaseAuth, async (req: any, res) => {
     const user = req.user;
-    const newKey = `sk_live_${crypto.randomBytes(24).toString('hex')}`;
+    const newKey = `sl_${crypto.randomBytes(24).toString('hex')}`;
 
     const { data, error } = await supabase
         .from('api_access')
@@ -60,6 +60,82 @@ router.post('/keys/generate', ensureSupabaseAuth, async (req: any, res) => {
     }
 
     res.json({ success: true, key: data });
+});
+
+router.get('/analytics', ensureSupabaseAuth, async (req: any, res) => {
+    const user = req.user;
+
+    try {
+        // 1. Get all API keys for this user to filter telemetry
+        const { data: keys } = await supabase
+            .from('api_access')
+            .select('id')
+            .eq('user_id', user.id);
+
+        if (!keys || keys.length === 0) {
+            return res.json({ labels: [], values: [], risk_distribution: { stable: 0, unstable: 0, untrusted: 0 } });
+        }
+
+        const keyIds = keys.map(k => k.id);
+
+        // 2. Fetch last 7 days of telemetry
+        const sevenDaysAgo = new Date();
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+        const { data: logs, error: logsError } = await supabase
+            .from('telemetry')
+            .select('verdict, created_at, target, latency_ms')
+            .in('api_access_id', keyIds)
+            .order('created_at', { ascending: false })
+            .gte('created_at', sevenDaysAgo.toISOString());
+
+        if (logsError) throw logsError;
+
+        // 3. Process Risk Distribution
+        const dist = { stable: 0, unstable: 0, untrusted: 0 };
+        logs.forEach(l => {
+            const v = l.verdict.toLowerCase();
+            if (v === 'trusted') dist.stable++;
+            else if (v === 'unstable') dist.unstable++;
+            else if (v === 'untrusted') dist.untrusted++;
+        });
+
+        // 4. Process Daily Usage (Last 7 Days)
+        const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        const dailyData: Record<string, number> = {};
+
+        // Initialize last 7 days with 0
+        for (let i = 6; i >= 0; i--) {
+            const d = new Date();
+            d.setDate(d.getDate() - i);
+            dailyData[days[d.getDay()]] = 0;
+        }
+
+        logs.forEach(l => {
+            const date = new Date(l.created_at);
+            const dayLabel = days[date.getDay()];
+            if (dailyData[dayLabel] !== undefined) {
+                dailyData[dayLabel]++;
+            }
+        });
+
+        res.json({
+            labels: Object.keys(dailyData),
+            values: Object.values(dailyData),
+            risk_distribution: dist,
+            total_signals: logs.length,
+            recent_logs: logs.slice(0, 10).map(l => ({
+                target: l.target,
+                verdict: l.verdict,
+                latency: l.latency_ms,
+                time: l.created_at
+            }))
+        });
+
+    } catch (err) {
+        console.error('Analytics Fetch Error:', err);
+        res.status(500).json({ error: 'Failed to generate real-time analytics' });
+    }
 });
 
 export default router;
