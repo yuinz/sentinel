@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://sentinel.risksignal.name.ng/sitemap.xml
