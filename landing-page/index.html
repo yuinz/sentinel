@@ -43,11 +43,18 @@
                 <img src="./logo.png" alt="Sentinel Logo" height="24" style="margin-right: 8px;">
                 SENTINEL
             </div>
-            <nav class="nav-menu">
+            <nav class="nav-menu" id="nav-menu">
                 <a href="#integration">Integration</a>
                 <a href="./docs.html">Docs</a>
                 <a href="./login.html" class="btn btn-secondary btn-sm" id="auth-nav-btn">Sign In</a>
             </nav>
+            <button class="menu-btn" id="menu-toggle" aria-label="Toggle Menu">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="3" y1="12" x2="21" y2="12"></line>
+                    <line x1="3" y1="6" x2="21" y2="6"></line>
+                    <line x1="3" y1="18" x2="21" y2="18"></line>
+                </svg>
+            </button>
         </div>
     </header>
     <section class="hero">
@@ -127,28 +134,38 @@
             <div class="solution-flow">
                 <div class="solution-step">
                     <div class="step-number">1</div>
-                    <h3>Request</h3>
-                    <p>User hits your API</p>
+                    <div class="step-content">
+                        <h3>Request</h3>
+                        <p>User hits your API</p>
+                    </div>
                 </div>
                 <div class="solution-step">
                     <div class="step-number">2</div>
-                    <h3>Fast-Path Check</h3>
-                    <p>In-memory signals (<50ms)< /p>
+                    <div class="step-content">
+                        <h3>Fast-Path Check</h3>
+                        <p>In-memory signals (&lt;50ms)</p>
+                    </div>
                 </div>
                 <div class="solution-step">
                     <div class="step-number">3</div>
-                    <h3>Decision</h3>
-                    <p>Immediate PASS/BLOCK</p>
+                    <div class="step-content">
+                        <h3>Decision</h3>
+                        <p>Immediate PASS/BLOCK</p>
+                    </div>
                 </div>
                 <div class="solution-step optional">
                     <div class="step-number">4</div>
-                    <h3>Enrichment</h3>
-                    <p>Async deep analytics</p>
+                    <div class="step-content">
+                        <h3>Enrichment</h3>
+                        <p>Async deep analytics</p>
+                    </div>
                 </div>
                 <div class="solution-step">
                     <div class="step-number">5</div>
-                    <h3>Trust Token</h3>
-                    <p>+35 bonus for verified sessions</p>
+                    <div class="step-content">
+                        <h3>Trust Token</h3>
+                        <p>+35 bonus for verified sessions</p>
+                    </div>
                 </div>
             </div>
 

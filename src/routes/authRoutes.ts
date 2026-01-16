@@ -41,10 +41,10 @@ router.get('/keys', ensureSupabaseAuth, async (req: any, res) => {
 router.post('/keys/generate', ensureSupabaseAuth, async (req: any, res) => {
     const user = req.user;
 
-    // Check existing key count for free tier limit
+    // Check existing key count and tier
     const { data: existingKeys, error: countError } = await supabase
         .from('api_access')
-        .select('id')
+        .select('id, tier')
         .eq('user_id', user.id);
 
     if (countError) {
@@ -52,8 +52,10 @@ router.post('/keys/generate', ensureSupabaseAuth, async (req: any, res) => {
         return res.status(500).json({ error: 'Failed to check existing keys' });
     }
 
+    const userTier = existingKeys?.[0]?.tier || 'FREE';
+
     // Free tier: max 5 API keys
-    if (existingKeys && existingKeys.length >= 5) {
+    if (userTier === 'FREE' && existingKeys && existingKeys.length >= 5) {
         return res.status(403).json({
             error: 'Free tier limit reached',
             message: 'You have reached the maximum of 5 API keys for free accounts. Upgrade to Premium for unlimited vectors.',
@@ -64,6 +66,9 @@ router.post('/keys/generate', ensureSupabaseAuth, async (req: any, res) => {
 
     const newKey = `sl_${crypto.randomBytes(24).toString('hex')}`;
 
+    // Set usage limit based on tier
+    const maxUsage = userTier === 'PRO' ? 500000 : 500;
+
     const { data, error } = await supabase
         .from('api_access')
         .insert({
@@ -71,7 +76,8 @@ router.post('/keys/generate', ensureSupabaseAuth, async (req: any, res) => {
             email: user.email,
             api_key: newKey,
             usage_count: 0,
-            max_usage: 500
+            max_usage: maxUsage,
+            tier: userTier
         })
         .select()
         .single();
