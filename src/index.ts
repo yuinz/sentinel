@@ -10,6 +10,7 @@ import intelRoutes from './routes/intelRoutes';
 import authRoutes from './routes/authRoutes';
 import payRoutes from './routes/payRoutes';
 import { errorHandler } from './middleware/error';
+import { visitorTracker } from './middleware/visitor';
 
 dotenv.config();
 
@@ -41,7 +42,10 @@ app.use(morgan('combined', {
     stream: { write: (message) => logger.info(message.trim()) }
 }));
 
-// 2. Global Rate Limiting (Enterprise Grade)
+// 2. Visitor Tracking (Secretly monitoring growth)
+app.use(visitorTracker);
+
+// 3. Global Rate Limiting (Enterprise Grade)
 const limiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
     max: 600, // Limit each IP to 100 requests per window

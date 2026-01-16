@@ -197,3 +197,34 @@ export const verifyChallenge = async (req: AuthRequest, res: Response) => {
         expires_in: 1800
     });
 };
+
+export const getVisitorStats = async (req: Request, res: Response) => {
+    try {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        const { data, error } = await supabase
+            .from('site_visits')
+            .select('country, created_at, ip')
+            .gte('created_at', today.toISOString());
+
+        if (error) throw error;
+
+        const stats = (data || []).reduce((acc: any, visit: any) => {
+            const country = visit.country || 'Unknown';
+            acc.countries[country] = (acc.countries[country] || 0) + 1;
+            acc.total++;
+            return acc;
+        }, { total: 0, countries: {} });
+
+        return res.json({
+            success: true,
+            date: today.toDateString(),
+            ...stats,
+            raw_count: data?.length || 0
+        });
+    } catch (err: any) {
+        logger.error('Failed to fetch visitor stats:', err);
+        return res.status(500).json({ error: 'Intelligence retrieval failed.' });
+    }
+};
