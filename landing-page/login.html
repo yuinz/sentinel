@@ -197,7 +197,7 @@
             const { error } = await sp.auth.signInWithOAuth({
                 provider: 'github',
                 options: {
-                    redirectTo: 'http://localhost:3001/dashboard.html'
+                    redirectTo: 'https://sentinel.risksignal.name.ng/dashboard.html'
                 }
             });
             if (error) alert('Error: ' + error.message);
