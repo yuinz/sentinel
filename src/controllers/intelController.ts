@@ -1,0 +1,149 @@
+import { Response } from 'express';
+import { AuthRequest } from '../middleware/auth';
+import { IntelService } from '../services/intelService';
+import { z as zod } from 'zod';
+import axios from 'axios';
+import crypto from 'crypto';
+import logger from '../utils/logger';
+import { intelCache, cacheStats } from '../utils/cache';
+
+const checkSchema = zod.object({
+    target: zod.string().min(3).max(255),
+    privacy_mode: zod.enum(['strict', 'full']).optional().default('full'),
+    profile: zod.enum(['api', 'signup', 'payments', 'crypto']).optional().default('api')
+});
+
+export const checkTarget = async (req: AuthRequest, res: Response) => {
+    try {
+        const validation = checkSchema.safeParse(req.body);
+        if (!validation.success) {
+            return res.status(400).json({ error: 'Invalid target format.', details: validation.error.format() });
+        }
+
+        const { target, privacy_mode, profile } = validation.data;
+        const mode = req.query.mode as string;
+        const bwtNonce = req.headers['x-bwt-nonce'] as string;
+        const trustToken = req.headers['x-sentinel-trust'] as string;
+        const bypassHeader = req.headers['x-sentinel-bypass'] === 'true';
+
+        // 0. Developer Invisibility Layer
+        if (bypassHeader && (target === '127.0.0.1' || target === 'localhost')) {
+            logger.info(`Developer Bypass Triggered for ${target}`);
+            return res.json({ status: 'success', allow: true, risk: 'none', reason: 'development_bypass' });
+        }
+
+        // 1. Cache Layer Check
+        const cacheKey = `${target}:${privacy_mode}:${profile}:${trustToken || 'no-token'}`;
+        const cachedResult = intelCache.get(cacheKey);
+        if (cachedResult) {
+            cacheStats.hits++;
+        } else {
+            cacheStats.misses++;
+        }
+
+        const result = cachedResult ? cachedResult : await IntelService.analyze(target, privacy_mode, profile, trustToken);
+
+        // 2. Persist to Cache if new
+        if (!cachedResult) {
+            intelCache.set(cacheKey, result);
+        }
+
+        const isBwtValid = bwtNonce ? IntelService.verifyBehavioralWork(target, bwtNonce) : false;
+
+        // 3. Mode Selection (Standard vs Trust Decision)
+        if (mode === 'decision') {
+            const hasPassedChallenge = isBwtValid || !!trustToken;
+            const allow = result.verdict !== 'UNTRUSTED' || hasPassedChallenge;
+
+            return res.json({
+                allow: allow,
+                action: allow ? 'allow' : 'block',
+                http_status: allow ? 200 : 403,
+                risk: result.verdict.toLowerCase(),
+                reason: result.verdict_reasons?.[0] || (allow ? 'reputation_verified' : 'untrusted_infrastructure'),
+                confidence: result.confidence / 100,
+                remediation: result.remediation
+            });
+        }
+
+        logger.info(`Synthesis Complete: ${target} [Cache: ${cachedResult ? 'HIT' : 'MISS'}] [Mode: ${privacy_mode}]`);
+
+        return res.json({
+            status: 'success',
+            trust_intel: {
+                ...result,
+                bwt_verified: isBwtValid,
+                meta: {
+                    usage_remaining: (req.user?.max_usage || 0) - (req.user?.usage_count || 0),
+                    request_id: crypto.randomUUID(),
+                    cached: !!cachedResult,
+                    cache_reason: cachedResult ? 'asn_match' : 'fresh_resolution'
+                }
+            }
+        });
+
+    } catch (err: any) {
+        logger.error('Controller error', err);
+        return res.status(500).json({ error: err.message || 'Internal server error.' });
+    }
+};
+
+export const getHealth = async (req: AuthRequest, res: Response) => {
+    const uptimeInSeconds = process.uptime();
+
+    // Check External Intel Tethers (Lightweight)
+    let intelStatus = 'OFFLINE';
+    try {
+        const intelCheck = await axios.get('https://internetdb.shodan.io/8.8.8.8', { timeout: 1500 });
+        if (intelCheck.status === 200) intelStatus = 'ONLINE';
+    } catch (e) {
+        intelStatus = 'RATE_LIMITED_OR_OFFLINE';
+    }
+
+    const totalRequests = cacheStats.hits + cacheStats.misses;
+    const hitRatio = totalRequests > 0 ? (cacheStats.hits / totalRequests) : 0;
+
+    return res.json({
+        status: 'HEALTHY',
+        vitals: {
+            service: 'Sentinel-Engine',
+            version: '1.2.0-ALPHA',
+            uptime: `${Math.floor(uptimeInSeconds / 3600)}h ${Math.floor((uptimeInSeconds % 3600) / 60)}m`,
+            asn_matrix_loaded: true,
+            intel_tether_status: intelStatus
+        },
+        stats: {
+            cache_hits: cacheStats.hits,
+            cache_misses: cacheStats.misses,
+            hit_ratio: `${(hitRatio * 100).toFixed(2)}%`,
+            total_scans_serviced: totalRequests
+        },
+        timestamp: new Date().toISOString()
+    });
+};
+
+export const issueChallenge = async (req: AuthRequest, res: Response) => {
+    const { target, context, duration } = req.body;
+    if (!target) return res.status(400).json({ error: 'Target IP required.' });
+
+    const challenge = await IntelService.issueBehavioralWork(target, context || 'general', duration);
+    return res.json(challenge);
+};
+
+export const verifyChallenge = async (req: AuthRequest, res: Response) => {
+    const { target, nonce } = req.body;
+    if (!target || !nonce) return res.status(400).json({ error: 'Target and Nonce required.' });
+
+    const isValid = IntelService.verifyBehavioralWork(target, nonce);
+    if (!isValid) {
+        return res.status(403).json({ success: false, error: 'Trust verification failed.' });
+    }
+
+    const trustToken = IntelService.generateTrustToken(target);
+    return res.json({
+        success: true,
+        trust_token: trustToken,
+        confidence: 1.0,
+        expires_in: 1800
+    });
+};

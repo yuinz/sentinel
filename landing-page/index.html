@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sentinel | Turnstile for APIs</title>
+    <meta name="description"
+        content="Stop 92% of bot signups without CAPTCHAs. Sentinel is Turnstile for APIs: sub-50ms trust decisions using infrastructure and behavior signals.">
+    <meta name="keywords"
+        content="Turnstile for APIs, bot protection, CAPTCHA alternative, API security, sub-50ms security, bot mitigation, firewall">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://app.risksignal.name.ng/">
+    <meta property="og:title" content="Sentinel | Autonomous Trust API & Advanced Bot Protection">
+    <meta property="og:description"
+        content="The deterministic trust layer for modern APIs. Replace CAPTCHAs with behavioral analytics and the Sentinel Trust API.">
+    <meta property="og:image" content="https://app.risksignal.name.ng/og-image.png">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://app.risksignal.name.ng/">
+    <meta property="twitter:title" content="Sentinel | Autonomous Trust API & Advanced Bot Protection">
+    <meta property="twitter:description"
+        content="Stop malicious bots and secure your APIs with behavioral threat detection. The Zero Trust engine for the modern Trust API economy.">
+    <meta property="twitter:image" content="https://app.risksignal.name.ng/og-image.png">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="./styles.css">
+    <link rel="icon" type="image/png" href="./logo.png">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+
+<body>
+    <header class="main-header">
+        <div class="container header-container">
+            <div class="logo">
+                <img src="./logo.png" alt="Sentinel Logo" height="24" style="margin-right: 8px;">
+                SENTINEL
+            </div>
+            <nav class="nav-menu">
+                <a href="#integration">Integration</a>
+                <a href="./docs.html">Docs</a>
+                <a href="./login.html" class="btn btn-secondary btn-sm" id="auth-nav-btn">Sign In</a>
+            </nav>
+        </div>
+    </header>
+    <section class="hero">
+        <div class="container">
+            <a href="https://app.risksignal.name.ng" class="hero-badge"
+                style="text-decoration: none; cursor: pointer;">Powered by RiskSignal Intelligence</a>
+            <h1 class="hero-title">Bots Pay. <span style="color: var(--accent)">Human Pass.</span></h1>
+            <p class="hero-subtitle">Blocked 92% of bot signups without CAPTCHAs. Render sub-50ms trust decisions using
+                infrastructure and behavioral signals. One endpoint. One decision.</p>
+
+            <div class="hero-cta">
+                <a href="#integration" class="btn btn-primary">Start Integrating – 5 Minutes</a>
+                <a href="#api-reference" class="btn btn-secondary">View API Reference</a>
+            </div>
+
+            <div class="hero-visual">
+                <div class="flow-diagram">
+                    <div class="flow-step">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+                        </svg>
+                        <span class="mono">SIGNAL_IN</span>
+                    </div>
+                    <div class="flow-arrow">/</div>
+                    <div class="flow-step highlight">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                        </svg>
+                        <span class="mono">SENTINEL_GATE</span>
+                    </div>
+                    <div class="flow-arrow">/</div>
+                    <div class="flow-step">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M20 6L9 17l-5-5" />
+                        </svg>
+                        <span class="mono">DECISION_PROCESSED</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <section class="problem">
+        <div class="container">
+            <h2>Why Traditional Security is Broken</h2>
+            <div class="problem-grid">
+                <div class="problem-card">
+                    <div class="problem-indicator" style="background: var(--accent);"></div>
+                    <h3>Legacy Blacklists</h3>
+                    <p>Brittle databases that fail against dynamic threats and automated infrastructure rotation.</p>
+                </div>
+                <div class="problem-card">
+                    <div class="problem-indicator" style="background: var(--text-dim);"></div>
+                    <h3>Naïve Rate Limiting</h3>
+                    <p>A blunt instrument that degrades legitimate user experience while failing to stop sophisticated
+                        bots.</p>
+                </div>
+                <div class="problem-card">
+                    <div class="problem-indicator" style="background: var(--accent-dim);"></div>
+                    <h3>Static CAPTCHAs</h3>
+                    <p>User-hostile challenges that are easily defeated by modern AI and low-cost labor farms.</p>
+                </div>
+            </div>
+            <p class="problem-conclusion">Stop guessing. Get <strong>99.9% verification accuracy</strong> in under 50ms.
+            </p>
+        </div>
+    </section>
+    <section class="solution">
+        <div class="container">
+            <h2>How Sentinel Works</h2>
+            <p class="solution-subtitle">A simple API check that validates requests based on infrastructure and
+                behavioral identity.</p>
+
+            <div class="solution-flow">
+                <div class="solution-step">
+                    <div class="step-number">1</div>
+                    <h3>Request</h3>
+                    <p>User hits your API</p>
+                </div>
+                <div class="solution-step">
+                    <div class="step-number">2</div>
+                    <h3>Fast-Path Check</h3>
+                    <p>In-memory signals (<50ms)< /p>
+                </div>
+                <div class="solution-step">
+                    <div class="step-number">3</div>
+                    <h3>Decision</h3>
+                    <p>Immediate PASS/BLOCK</p>
+                </div>
+                <div class="solution-step optional">
+                    <div class="step-number">4</div>
+                    <h3>Enrichment</h3>
+                    <p>Async deep analytics</p>
+                </div>
+                <div class="solution-step">
+                    <div class="step-number">5</div>
+                    <h3>Trust Token</h3>
+                    <p>+35 bonus for verified sessions</p>
+                </div>
+            </div>
+
+            <div class="solution-tagline">One endpoint. One decision.</div>
+        </div>
+    </section>
+    <section class="features">
+        <div class="container">
+            <h2>Multi-Layer Intelligence Matrix</h2>
+            <p class="features-subtitle">Powered by RiskSignal Intelligence</p>
+
+            <div class="features-grid">
+                <div class="feature-card">
+                    <h3>Infrastructure Analysis</h3>
+                    <p class="feature-label mono">OSI-LAYER-SIGNAL</p>
+                    <ul>
+                        <li>ASN Governance Verification</li>
+                        <li>Datacenter vs. Residential Partitioning</li>
+                        <li>Mobile Carrier Identification Matrix</li>
+                    </ul>
+                    <div class="feature-badge mono">Level 0: HARD</div>
+                </div>
+
+                <div class="feature-card">
+                    <h3>Behavioral Synthesis</h3>
+                    <p class="feature-label mono">TEMPORAL-SIGNAL</p>
+                    <ul>
+                        <li>Velocity Entropy Tracking</li>
+                        <li>Sub-minute Scan Pattern Matching</li>
+                        <li>Global Threat Node Integration</li>
+                    </ul>
+                    <div class="feature-badge mono">Level 1: ENRICHED</div>
+                </div>
+
+                <div class="feature-card">
+                    <h3>Economic Resistance</h3>
+                    <p class="feature-label mono">INTENT-SIGNAL</p>
+                    <ul>
+                        <li>Behavioral Work Tokens (BWT)</li>
+                        <li>Non-interactive Proof of Intent</li>
+                        <li>Deterministic Hold Verifications</li>
+                    </ul>
+                    <div class="feature-badge mono">Level 2: ADAPTIVE</div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <section class="soca">
+        <div class="container">
+            <h2>Optional, Decoupled Verification</h2>
+            <p class="soca-subtitle">Sentinel Optional Challenge Architecture (SOCA)</p>
+
+            <div class="soca-content">
+                <div class="soca-features">
+                    <div class="soca-feature">
+                        <span class="check">✓</span>
+                        <div>
+                            <h4>Recommended, Never Forced</h4>
+                            <p>You control when and how challenges appear</p>
+                        </div>
+                    </div>
+                    <div class="soca-feature">
+                        <span class="check">✓</span>
+                        <div>
+                            <h4>Stateless & Signed</h4>
+                            <p>No database persistence required</p>
+                        </div>
+                    </div>
+                    <div class="soca-feature">
+                        <span class="check">✓</span>
+                        <div>
+                            <h4>+35 Trust Bonus</h4>
+                            <p>Verified sessions get instant trust recovery</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="soca-flow">
+                    <div class="soca-step">Issue</div>
+                    <div class="soca-arrow">→</div>
+                    <div class="soca-step">Complete</div>
+                    <div class="soca-arrow">→</div>
+                    <div class="soca-step">Trust Token</div>
+                    <div class="soca-arrow">→</div>
+                    <div class="soca-step highlight">Decision Boost</div>
+                </div>
+            </div>
+
+            <div class="powered-badge">Powered by RiskSignal Intelligence</div>
+        </div>
+    </section>
+    <section class="demo">
+        <div class="container">
+            <h2>Sentinel Verify – Intent Proof in Action</h2>
+            <p class="demo-subtitle">Works on desktop (click) and mobile (touch)</p>
+
+            <div class="demo-container">
+                <div class="demo-card">
+                    <h3>Verifying this request</h3>
+                    <p class="demo-instruction">Unusual network activity detected.</p>
+
+                    <div class="demo-widget" id="demo-widget">
+                        <div class="demo-progress" id="demo-progress"></div>
+                        <svg class="demo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path d="M12 2L4 5v6.09c0 5.05 3.41 9.76 8 10.91 4.59-1.15 8-5.86 8-10.91V5l-8-3z"
+                                stroke-width="2" />
+                            <circle cx="12" cy="12" r="2" fill="currentColor" stroke="none" />
+                            <path d="M12 8c2.21 0 4 1.79 4 4" stroke-width="1.5" stroke-linecap="round" />
+                        </svg>
+                        <div class="demo-text">
+                            <div class="demo-label" id="demo-label">Verify request</div>
+                            <div class="demo-sub" id="demo-sub">Click and hold to continue</div>
+                        </div>
+                    </div>
+
+                    <p class="demo-helper">This takes a few seconds</p>
+                </div>
+            </div>
+        </div>
+    </section>
+    <section class="live-demo">
+        <div class="container">
+            <h2>Live Trust Synthesis</h2>
+            <p class="demo-subtitle">See how Sentinel renders a trust decision in real-time.</p>
+
+            <div class="risk-demo-container">
+                <div class="risk-input-group">
+                    <input type="text" id="demo-ip-input" placeholder="Enter IP Address (e.g. 8.8.8.8)" value="8.8.8.8">
+                    <button id="run-demo-btn" class="btn btn-primary">Check Trust</button>
+                </div>
+
+                <div class="risk-result" id="risk-result" style="display: none;">
+                    <div class="risk-score-circle">
+                        <svg viewBox="0 0 36 36" class="circular-chart">
+                            <path class="circle-bg"
+                                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                            <path class="circle" id="risk-circle-path" stroke-dasharray="0, 100"
+                                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                            <text x="18" y="20.35" class="percentage" id="risk-percentage">0%</text>
+                        </svg>
+                    </div>
+                    <div class="risk-details">
+                        <div class="risk-header">
+                            <h3 id="risk-verdict">ANALYZING...</h3>
+                            <span class="risk-tag" id="risk-tag">STABLE</span>
+                        </div>
+                        <ul class="risk-signals" id="risk-signals">
+                            <!-- Signals injected here -->
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <section class="api-reference" id="api-reference">
+        <div class="container">
+            <h2>API Reference (v1)</h2>
+
+            <div class="api-grid">
+                <div class="api-card">
+                    <div class="api-method">POST</div>
+                    <h3>/v1/check?mode=decision</h3>
+                    <p>Primary trust decision endpoint</p>
+                    <pre><code>{
+  "target": "8.4.2.1",
+  "profile": "signup"
+}</code></pre>
+                </div>
+
+                <div class="api-card">
+                    <div class="api-method">POST</div>
+                    <h3>/v1/challenge/issue</h3>
+                    <p>Generate behavioral work challenge</p>
+                    <pre><code>{
+  "target": "8.4.2.1",
+  "duration": 3.0
+}</code></pre>
+                </div>
+
+                <div class="api-card">
+                    <div class="api-method">POST</div>
+                    <h3>/v1/challenge/verify</h3>
+                    <p>Verify and issue trust token</p>
+                    <pre><code>{
+  "target": "8.4.2.1",
+  "nonce": "..."
+}</code></pre>
+                </div>
+            </div>
+
+            <a href="./docs.html" class="btn btn-primary">View Full Documentation →</a>
+        </div>
+    </section>
+    <section class="integration" id="integration">
+        <div class="container">
+            <h2>5-Minute Integration</h2>
+
+            <div class="code-example">
+                <div class="code-header">
+                    <span>Node.js / Express</span>
+                    <button class="copy-btn">Copy</button>
+                </div>
+                <pre><code>const res = await sentinel.check(ip, { profile: 'signup' });
+
+if (!res.allow) {
+    if (res.remediation?.recommended) {
+        return res.status(res.http_status).json({
+            action: "challenge",
+            challenge_url: "/verify"
+        });
+    }
+    return res.status(res.http_status).send(res.reason);
+}</code></pre>
+            </div>
+        </div>
+    </section>
+
+    </section>
+    <section class="compliance">
+        <div class="container">
+            <h2>Developer-Friendly & GDPR Ready</h2>
+
+            <div class="compliance-grid">
+                <div class="compliance-item">
+                    <span class="check">✓</span>
+                    <div>
+                        <h4>RFC1918 Auto-Fast-Track</h4>
+                        <p>Local IPs never blocked</p>
+                    </div>
+                </div>
+                <div class="compliance-item">
+                    <span class="check">✓</span>
+                    <div>
+                        <h4>CI/CD Bypass Header</h4>
+                        <p>X-Sentinel-Bypass for testing</p>
+                    </div>
+                </div>
+                <div class="compliance-item">
+                    <span class="check">✓</span>
+                    <div>
+                        <h4>Privacy Mode</h4>
+                        <p>Redact granular geo-data</p>
+                    </div>
+                </div>
+                <div class="compliance-item">
+                    <span class="check">✓</span>
+                    <div>
+                        <h4>Stateless RAM Cache</h4>
+                        <p>20-minute LRU TTL, no persistence</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <section class="stats">
+        <div class="container">
+            <div class="stats-grid">
+                <div class="stat">
+                    <div class="stat-number">92%</div>
+                    <div class="stat-label">Bot Signups Blocked</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number">&lt;50ms</div>
+                    <div class="stat-label">Decision Latency</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number">0</div>
+                    <div class="stat-label">User-Hostile CAPTCHAs</div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <section class="cta">
+        <div class="container">
+            <h2>Start Using Sentinel Today</h2>
+            <p>Join developers protecting their APIs with clear, signal-based trust decisions.</p>
+
+            <div class="cta-buttons">
+                <a href="./login.html" class="btn btn-primary btn-large">Get Your API Key</a>
+                <a href="https://wa.me/2347030767766?text=Hi,%20I'm%20interested%20in%20Sentinel%20API"
+                    class="btn btn-secondary btn-large">Contact Sales</a>
+            </div>
+        </div>
+    </section>
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <div class="footer-logo">
+                        <img src="./logo.png" alt="Sentinel Logo" height="20"
+                            style="margin-right: 8px; filter: grayscale(1) invert(1);">
+                        SENTINEL
+                    </div>
+                    <p><a href="https://app.risksignal.name.ng" style="color: inherit; text-decoration: none;">Powered
+                            by RiskSignal Intelligence</a></p>
+                </div>
+
+                <div class="footer-links">
+                    <div class="footer-column">
+                        <h4>Product</h4>
+                        <a href="#">Documentation</a>
+                        <a href="#">API Reference</a>
+                        <a href="#">Pricing</a>
+                    </div>
+                    <div class="footer-column">
+                        <h4>Resources</h4>
+                        <a href="#">Blog</a>
+                        <a href="#">GitHub</a>
+                        <a href="#">Status</a>
+                    </div>
+                    <div class="footer-column">
+                        <h4>Legal</h4>
+                        <a href="./privacy.html">Privacy Policy</a>
+                        <a href="./terms.html">Terms of Service</a>
+                        <a href="#">Security</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <p>&copy; 2026 Sentinel. <a href="https://app.risksignal.name.ng"
+                        style="color: inherit; text-decoration: none;">Powered by RiskSignal Intelligence.</a></p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="./script.js"></script>
+    <script>
+        const supabaseUrl = 'https://ahwkraeuotptvwvutbng.supabase.co';
+        const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFod2tyYWV1b3RwdHZ3dnV0Ym5nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcwNzYxNjIsImV4cCI6MjA4MjY1MjE2Mn0.bsB4kxE-kOx355IMXmeNGGp2rKHl1l1CcMGG_clZUos';
+        const sp = supabase.createClient(supabaseUrl, supabaseAnonKey);
+
+        async function updateAuthStatus() {
+            const { data } = await sp.auth.getSession();
+            const btn = document.getElementById('auth-nav-btn');
+            if (data.session) {
+                btn.innerText = 'DASHBOARD';
+                btn.href = './dashboard.html';
+                btn.classList.remove('btn-secondary');
+                btn.classList.add('btn-primary');
+                btn.style.color = '#000'; // Force black text for contrast
+            }
+        }
+        updateAuthStatus();
+
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('revealed');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('section, .feature-card, .problem-card, .stat').forEach(el => {
+            el.classList.add('reveal-on-scroll');
+            observer.observe(el);
+        });
+    </script>
+</body>
+
+</html>

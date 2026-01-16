@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documentation | Turnstile for APIs Integration</title>
+    <meta name="description"
+        content="Technical documentation for Sentinel: implementing Turnstile-grade protection for APIs. Block 92% of bots in under 50ms.">
+    <meta name="keywords"
+        content="Turnstile for APIs docs, bot reduction integration, CAPTCHA alternative, API security outcomes">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://app.risksignal.name.ng/docs">
+    <meta property="og:title" content="Documentation | Implementing the Sentinel Trust API">
+    <meta property="og:description"
+        content="Comprehensive guides for integrating Sentinel's bot protection and Zero Trust API vectors.">
+    <meta property="og:image" content="https://app.risksignal.name.ng/og-image.png">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="./styles.css">
+    <link rel="icon" type="image/png" href="./logo.png">
+    <style>
+        :root {
+            --sidebar-width: 250px;
+        }
+
+        body {
+            background: #000;
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .docs-sidebar {
+            width: var(--sidebar-width);
+            background: #070707;
+            border-right: 1px solid #111;
+            padding: 2rem 1.5rem;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        .docs-main {
+            margin-left: var(--sidebar-width);
+            flex: 1;
+            padding: 4rem 10% 4rem 4rem;
+            max-width: 1000px;
+        }
+
+        .nav-group {
+            margin-bottom: 2rem;
+        }
+
+        .nav-group-title {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: #444;
+            margin-bottom: 0.75rem;
+            font-weight: 700;
+        }
+
+        .nav-link {
+            display: block;
+            padding: 0.4rem 0;
+            color: #888;
+            text-decoration: none;
+            font-size: 14px;
+            transition: color 0.2s;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            color: var(--accent);
+        }
+
+        section {
+            margin-bottom: 5rem;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: #fff;
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            margin-top: 3rem;
+            margin-bottom: 1rem;
+            color: #fff;
+            border-bottom: 1px solid #111;
+            padding-bottom: 0.5rem;
+        }
+
+        h3 {
+            font-size: 1.1rem;
+            margin-top: 2rem;
+            margin-bottom: 0.75rem;
+            color: var(--accent);
+        }
+
+        p {
+            color: #888;
+            line-height: 1.7;
+            margin-bottom: 1.25rem;
+            font-size: 15px;
+        }
+
+        .code-block {
+            background: #050505;
+            border: 1px solid #111;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            position: relative;
+        }
+
+        pre {
+            margin: 0;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            color: #aaa;
+            overflow-x: auto;
+        }
+
+        .endpoint-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            font-weight: 700;
+            margin-right: 8px;
+        }
+
+        .get {
+            background: rgba(0, 255, 136, 0.1);
+            color: var(--accent);
+        }
+
+        .post {
+            background: rgba(0, 170, 255, 0.1);
+            color: #0af;
+        }
+
+        .info-box {
+            background: rgba(0, 255, 136, 0.03);
+            border: 1px solid rgba(0, 255, 136, 0.1);
+            padding: 1.25rem;
+            border-radius: 8px;
+            margin: 2rem 0;
+        }
+
+        .info-box.warning {
+            background: rgba(255, 68, 68, 0.03);
+            border: 1px solid rgba(255, 68, 68, 0.1);
+        }
+
+        .method-item {
+            margin-bottom: 3rem;
+            padding-left: 1rem;
+            border-left: 2px solid #111;
+        }
+
+        @media (max-width: 900px) {
+            .docs-sidebar {
+                display: none;
+            }
+
+            .docs-main {
+                margin-left: 0;
+                padding: 2rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <aside class="docs-sidebar">
+        <div class="logo-text"
+            style="color: var(--accent); font-family: 'JetBrains Mono'; font-weight: 700; margin-bottom: 2rem; display: flex; align-items: center;">
+            <img src="./logo.png" alt="Sentinel Logo" height="20" style="margin-right: 8px;">
+            SENTINEL.DOCS
+        </div>
+
+        <div class="nav-group">
+            <div class="nav-group-title">Introduction</div>
+            <a href="#welcome" class="nav-link active">Welcome</a>
+            <a href="#core-concepts" class="nav-link">Core Concepts</a>
+            <a href="#auth" class="nav-link">Authentication</a>
+        </div>
+
+        <div class="nav-group">
+            <div class="nav-group-title">Remediation</div>
+            <a href="#widget" class="nav-link">Sentinel Widget</a>
+            <a href="#challenges" class="nav-link">Manual Challenges</a>
+        </div>
+
+        <div class="nav-group">
+            <div class="nav-group-title">API Reference</div>
+            <a href="#check" class="nav-link">POST /v1/check</a>
+            <a href="#issue" class="nav-link">POST /v1/challenge/issue</a>
+            <a href="#verify" class="nav-link">POST /v1/challenge/verify</a>
+        </div>
+
+        <div class="nav-group">
+            <div class="nav-group-title">Resources</div>
+            <a href="./dashboard.html" class="nav-link">Dashboard</a>
+            <a href="./about.html" class="nav-link">About Sentinel</a>
+            <a href="./demo.html" class="nav-link">Live Demo</a>
+        </div>
+    </aside>
+
+    <main class="docs-main">
+        <section id="welcome">
+            <h1>Introduction</h1>
+            <p>Sentinel is Turnstile for APIs. It blocks 92% of bot signups without CAPTCHAs by rendering sub-50ms trust
+                decisions using infrastructure and behavioral signals. Replace brittle security logic with a single
+                outcome-focused check.</p>
+
+            <div class="info-box">
+                <strong>New in v1.6.0:</strong> Sentinel now supports the <strong>Turnstile Widget</strong> and
+                decoupled challenge routing. Challenges are now free of charge for all API keys.
+            </div>
+        </section>
+
+        <section id="auth">
+            <h2>Authentication</h2>
+            <p>Sentinel uses your Dashboard API keys (Sentinel Vectors) to authenticate requests. We support two primary
+                methods:</p>
+
+            <h3>1. Standard Header</h3>
+            <p>Used for internal server-to-server communication.</p>
+            <div class="code-block">
+                <pre>x-api-key: sk_live_8b31a5c2f019...</pre>
+            </div>
+
+            <h3>2. Bearer Token</h3>
+            <p>Standardized for web widgets and mobile integrations.</p>
+            <div class="code-block">
+                <pre>Authorization: Bearer sk_live_8b31a5c2f019...</pre>
+            </div>
+        </section>
+
+        <section id="widget">
+            <h2>Sentinel Widget</h2>
+            <p>The fastest way to protect your frontend is our self-bootstrapping widget. It handles UI, animations, and
+                cryptographic Proof-of-Work (PoW) automatically.</p>
+
+            <h3>Implementation</h3>
+            <p>Place the target `div` and the script tag in your HTML. The widget will automatically find the element
+                and initialize.</p>
+
+            <div class="code-block">
+                <pre>&lt;!-- 1. The Placeholder --&gt;
+&lt;div id="sentinel-widget" data-sitekey="YOUR_API_KEY"&gt;&lt;/div&gt;
+
+&lt;!-- 2. The Native Library --&gt;
+&lt;script src="https://api.risksignal.com/widget.js" async defer&gt;&lt;/script&gt;</pre>
+            </div>
+
+            <h3>Success Handoff</h3>
+            <p>Upon successful verification, the widget automatically injects a hidden input into the nearest form and
+                fires a custom event.</p>
+            <div class="code-block">
+                <pre>document.addEventListener('sentinelSuccess', (e) => {
+    const token = e.detail.trust_token;
+    console.log("Trust Established:", token);
+});</pre>
+            </div>
+        </section>
+
+        <section id="check">
+            <h2>API: Core Analysis</h2>
+            <div class="method-item">
+                <div class="endpoint-badge post">POST</div>
+                <code style="color: #fff; font-size: 1.1rem;">/v1/check</code>
+                <p style="margin-top: 1rem;">Performs a deep forensic analysis on a target IP or domain.</p>
+
+                <h3>Request Parameters</h3>
+                <div class="code-block">
+                    <pre>{
+  "target": "8.8.8.8",
+  "profile": "api | signup | payments",
+  "privacy_mode": "strict | full"
+}</pre>
+                </div>
+
+                <h3>Response Decision</h3>
+                <div class="code-block">
+                    <pre>{
+  "allow": false,
+  "risk": "untrusted",
+  "remediation": {
+    "type": "challenge",
+    "recommended": true,
+    "behavioral_duration": 3.0
+  }
+}</pre>
+                </div>
+            </div>
+        </section>
+
+        <section id="challenges">
+            <h2>Manual Challenge Architecture</h2>
+            <p>For custom UI implementations, use our decoupled challenge endpoints. These requests do not burn your
+                analysis quota.</p>
+
+            <div class="method-item">
+                <div class="endpoint-badge post">POST</div>
+                <code>/v1/challenge/issue</code>
+                <p>Generates a stateless challenge for a specific IP.</p>
+            </div>
+
+            <div class="method-item">
+                <div class="endpoint-badge post">POST</div>
+                <code>/v1/challenge/verify</code>
+                <p>Validates the Proof-of-Work and issues a Trust Token.</p>
+            </div>
+        </section>
+
+        <footer
+            style="margin-top: 10rem; border-top: 1px solid #111; padding-top: 2rem; color: #444; font-size: 12px; font-family: 'JetBrains Mono';">
+            SENTINEL INTELLIGENCE SYSTEM // v1.6.0-ALPHA // POWERED BY RISKSIGNAL<br>
+            <a href="./privacy.html"
+                style="color: inherit; text-decoration: none; margin-top: 10px; display: inline-block;">PRIVACY</a> //
+            <a href="./terms.html"
+                style="color: inherit; text-decoration: none; margin-top: 10px; display: inline-block;">TERMS</a>
+        </footer>
+    </main>
+</body>
+
+</html>

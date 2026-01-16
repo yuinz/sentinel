@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Demo | Turnstile for APIs</title>
+    <meta name="description"
+        content="See how Sentinel blocks 92% of bot signups without CAPTCHAs. Test our sub-50ms trust decisions live.">
+    <meta name="keywords"
+        content="Turnstile for APIs demo, bot protection test, API security results, CAPTCHA-free bot prevention">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://app.risksignal.name.ng/demo">
+    <meta property="og:title" content="Live Demo | API Trust in Action">
+    <meta property="og:description"
+        content="Watch how Sentinel decides whether a request is trusted using real-time signals.">
+    <meta property="og:image" content="https://app.risksignal.name.ng/og-image.png">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="./styles.css">
+    <link rel="icon" type="image/png" href="./logo.png">
+    <style>
+        body {
+            background: #000;
+            color: #fff;
+        }
+
+        .demo-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            min-height: 100vh;
+        }
+
+        .demo-controls {
+            padding: 4rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            border-right: 1px solid #111;
+        }
+
+        .demo-visualizer {
+            padding: 4rem;
+            background: #050505;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            position: relative;
+        }
+
+        .input-group {
+            margin-bottom: 2rem;
+        }
+
+        .input-group label {
+            display: block;
+            font-family: 'JetBrains Mono';
+            font-size: 0.75rem;
+            color: #444;
+            text-transform: uppercase;
+            margin-bottom: 1rem;
+        }
+
+        .demo-input {
+            width: 100%;
+            background: #0a0a0a;
+            border: 1px solid #1a1a1a;
+            padding: 1rem;
+            color: #fff;
+            font-family: 'JetBrains Mono';
+            font-size: 1.25rem;
+            border-radius: 8px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .demo-input:focus {
+            border-color: var(--accent);
+        }
+
+        .signal-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .signal-card {
+            background: #0a0a0a;
+            border: 1px solid #111;
+            padding: 1.25rem;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transform: translateX(20px);
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .signal-card.visible {
+            transform: translateX(0);
+            opacity: 1;
+        }
+
+        .signal-info .name {
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 2px;
+        }
+
+        .signal-info .desc {
+            font-size: 0.75rem;
+            color: #555;
+        }
+
+        .signal-score {
+            font-family: 'JetBrains Mono';
+            font-weight: bold;
+        }
+
+        .trust-gauge {
+            margin-top: 3rem;
+            padding: 2rem;
+            background: #000;
+            border: 1px solid #111;
+            border-radius: 12px;
+            text-align: center;
+            display: none;
+        }
+
+        #trust-score-val {
+            font-size: 4rem;
+            font-weight: 800;
+            font-family: 'JetBrains Mono';
+            line-height: 1;
+        }
+
+        #verdict-tag {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            margin-top: 1rem;
+            text-transform: uppercase;
+        }
+
+        /* Widget Container */
+        #widget-container {
+            margin-top: 2rem;
+            display: none;
+        }
+
+        .nav-back {
+            position: absolute;
+            top: 2rem;
+            left: 2rem;
+            color: #444;
+            text-decoration: none;
+            font-size: 12px;
+            font-family: 'JetBrains Mono';
+        }
+
+        .nav-back:hover {
+            color: #fff;
+        }
+    </style>
+</head>
+
+<body>
+    <a href="./index.html" class="nav-back">← BACK TO SYSTEM</a>
+
+    <div class="demo-layout">
+        <div class="demo-controls">
+            <h1 style="font-size: 3rem; margin-bottom: 1rem;">Turnstile for APIs</h1>
+            <p style="color: #666; margin-bottom: 3rem;">Sentinel blocked 92% of bot signups without CAPTCHAs. Enter any
+                IP below to see a sub-50ms trust decision in action.</p>
+
+            <div class="input-group">
+                <label>Target IP Identification</label>
+                <input type="text" id="demo-ip" class="demo-input" placeholder="e.g. 152.199.19.161"
+                    value="152.199.19.161">
+            </div>
+
+            <button id="run-synthesis" class="btn btn-primary"
+                style="padding: 1.25rem; font-size: 1rem; width: 100%;">START REPUTATION SCAN</button>
+
+            <div id="widget-container">
+                <label
+                    style="display:block; margin-bottom: 1rem; color: #444; font-family: 'JetBrains Mono'; font-size: 0.7rem;">REMEDIATION
+                    REQUIRED</label>
+                <div id="sentinel-widget" data-sitekey="sk_live_demo"></div>
+            </div>
+        </div>
+
+        <div class="demo-visualizer">
+            <div id="visualizer-empty" style="text-align: center; color: #222;">
+                <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+                    style="margin-bottom: 1.5rem;">
+                    <circle cx="12" cy="12" r="10" />
+                    <path d="M12 2v20M2 12h20" />
+                </svg>
+                <p class="mono">AWAITING_SIGNAL_SYNTHESIS</p>
+            </div>
+
+            <div class="signal-stack" id="signal-stack">
+                <!-- Injected Signals -->
+            </div>
+
+            <div class="trust-gauge" id="trust-gauge">
+                <div id="trust-score-val">0</div>
+                <div style="color: #444; font-size: 0.75rem; margin-top: 0.5rem;">CUMULATIVE TRUST SCORE</div>
+                <div id="verdict-tag">ANALYZING</div>
+            </div>
+        </div>
+    </div>
+
+    <script src="./widget.js"></script>
+    <script>
+        const runBtn = document.getElementById('run-synthesis');
+        const ipInput = document.getElementById('demo-ip');
+        const stack = document.getElementById('signal-stack');
+        const gauge = document.getElementById('trust-gauge');
+        const scoreVal = document.getElementById('trust-score-val');
+        const verdictTag = document.getElementById('verdict-tag');
+        const emptyState = document.getElementById('visualizer-empty');
+        const widgetCont = document.getElementById('widget-container');
+
+        const mockSignals = [
+            { name: 'ASN GOVERNANCE', desc: 'Analyzing IP ownership and reputation history', weight: 40, impact: 'negative' },
+            { name: 'INFRASTRUCTURE TYPE', desc: 'Verifying Residential vs Hosting allocation', weight: 30, impact: 'negative' },
+            { name: 'VELOCITY ENTROPY', desc: 'Detecting automated scan patterns in last 60s', weight: 20, impact: 'positive' },
+            { name: 'CARRIER FIDELITY', desc: 'Checking for verified global mobile signatures', weight: 15, impact: 'positive' }
+        ];
+
+        runBtn.addEventListener('click', () => {
+            const ip = ipInput.value;
+            if (!ip) return;
+
+            // Reset
+            runBtn.disabled = true;
+            runBtn.innerText = 'SYNTHESIZING...';
+            stack.innerHTML = '';
+            gauge.style.display = 'none';
+            emptyState.style.display = 'none';
+            widgetCont.style.display = 'none';
+
+            let currentScore = 100;
+            let index = 0;
+
+            const addSignal = () => {
+                if (index >= mockSignals.length) {
+                    finalize(currentScore);
+                    return;
+                }
+
+                const s = mockSignals[index];
+                const card = document.createElement('div');
+                card.className = 'signal-card';
+
+                const scoreChange = s.impact === 'negative' ? -(Math.random() * s.weight) : (Math.random() * s.weight);
+                currentScore += scoreChange;
+                currentScore = Math.max(0, Math.min(100, currentScore));
+
+                card.innerHTML = `
+                    <div class="signal-info">
+                        <div class="name mono">${s.name}</div>
+                        <div class="desc">${s.desc}</div>
+                    </div>
+                    <div class="signal-score" style="color: ${scoreChange < 0 ? 'var(--accent)' : '#fff'}">
+                        ${scoreChange < 0 ? '' : '+'}${scoreChange.toFixed(0)}
+                    </div>
+                `;
+
+                stack.appendChild(card);
+                setTimeout(() => card.classList.add('visible'), 50);
+
+                index++;
+                setTimeout(addSignal, 600);
+            };
+
+            addSignal();
+        });
+
+        function finalize(score) {
+            gauge.style.display = 'block';
+            runBtn.disabled = false;
+            runBtn.innerText = 'BLOCK RE-SCAN';
+
+            let displayScore = 0;
+            const timer = setInterval(() => {
+                if (displayScore >= score) {
+                    clearInterval(timer);
+                } else {
+                    displayScore++;
+                    scoreVal.innerText = displayScore;
+                }
+            }, 20);
+
+            let verdict = 'TRUSTED';
+            let color = '#ffffff';
+
+            if (score < 40) {
+                verdict = 'UNTRUSTED';
+                color = 'var(--accent)';
+                widgetCont.style.display = 'block';
+            } else if (score < 70) {
+                verdict = 'UNSTABLE';
+                color = '#ffcc00';
+                widgetCont.style.display = 'block';
+            }
+
+            verdictTag.innerText = verdict;
+            verdictTag.style.background = `${color}22`;
+            verdictTag.style.color = color;
+            scoreVal.style.color = color;
+        }
+
+        document.addEventListener('sentinelSuccess', () => {
+            finalize(100);
+            verdictTag.innerText = 'TRUST RECOVERY SUCCESS';
+            widgetCont.style.display = 'none';
+        });
+    </script>
+    <footer
+        style="padding: 4rem 0; text-align: center; color: #333; font-family: 'JetBrains Mono'; font-size: 12px; border-top: 1px solid #111; margin-top: 4rem;">
+        SENTINEL INTELLIGENCE SYSTEM // 2026 // POWERED BY RISKSIGNAL<br>
+        <a href="./privacy.html"
+            style="color: inherit; text-decoration: none; margin-top: 10px; display: inline-block;">PRIVACY</a> //
+        <a href="./terms.html"
+            style="color: inherit; text-decoration: none; margin-top: 10px; display: inline-block;">TERMS</a>
+    </footer>
+</body>
+
+</html>

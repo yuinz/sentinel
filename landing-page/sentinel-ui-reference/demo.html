@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sentinel Widget Demo</title>
+    <style>
+        body {
+            background: #050505;
+            color: #fff;
+            font-family: system-ui, -apple-system, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        .demo-container {
+            width: 400px;
+            padding: 2rem;
+            background: #0a0a0a;
+            border-radius: 12px;
+            border: 1px solid #1a1a1a;
+        }
+
+        h2 {
+            margin-bottom: 1rem;
+            font-weight: 500;
+            font-size: 1.2rem;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 1rem;
+            background: #111;
+            border: 1px solid #222;
+            border-radius: 6px;
+            color: #fff;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background: #00ff88;
+            color: #000;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 1.5rem;
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        button.ready {
+            opacity: 1;
+            pointer-events: auto;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="demo-container">
+        <h2>Signup</h2>
+        <input type="email" placeholder="Email address" value="test@example.com">
+        <input type="password" placeholder="Password" value="••••••••••••">
+
+        <!-- The Sentinel Widget -->
+        <div id="sentinel-widget"></div>
+
+        <button id="submit-btn">Create Account</button>
+    </div>
+
+    <script src="./sentinel-widget.js"></script>
+    <script>
+        const widget = document.getElementById('sentinel-widget');
+        const btn = document.getElementById('submit-btn');
+
+        widget.addEventListener('sentinel-verified', (e) => {
+            console.log("Verified with token:", e.detail.token);
+            btn.classList.add('ready');
+            btn.innerText = "Proceed to Signup";
+        });
+
+        btn.addEventListener('click', () => {
+            alert("Signup successful! Trust token sent to backend.");
+        });
+    </script>
+</body>
+
+</html>

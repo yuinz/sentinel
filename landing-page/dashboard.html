@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Console | Manage Trust API Security & Bot Mitigation</title>
+    <meta name="description"
+        content="Monitor real-time API security analytics, manage trust vectors, and oversee bot protection policies from the Sentinel Management Console.">
+    <meta name="keywords"
+        content="Trust API console, bot mitigation analytics, behavioral threat detection, trust vector management, Zero Trust dashboard, real-time security observability">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="./styles.css">
+    <link rel="icon" type="image/png" href="./logo.png">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root {
+            --sidebar-width: 200px;
+            --card-padding: 1.25rem;
+            --input-height: 32px;
+        }
+
+        body {
+            background: #000;
+            font-family: 'Inter', sans-serif;
+            font-size: 13px;
+        }
+
+        .dashboard-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Compact Sidebar */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: #0a0a0a;
+            border-right: 1px solid #1a1a1a;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+            z-index: 100;
+        }
+
+        .sidebar-header {
+            padding: 1.5rem 1.25rem;
+            border-bottom: 1px solid #1a1a1a;
+        }
+
+        .logo-text {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+            font-size: 1rem;
+            letter-spacing: -0.02em;
+            color: var(--accent);
+        }
+
+        .sidebar-nav {
+            padding: 1rem 0.5rem;
+            flex: 1;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.5rem 0.75rem;
+            color: #888;
+            text-decoration: none;
+            border-radius: 4px;
+            margin-bottom: 2px;
+            transition: all 0.2s;
+        }
+
+        .nav-item:hover,
+        .nav-item.active {
+            color: #fff;
+            background: #111;
+        }
+
+        .nav-item.active {
+            background: rgba(0, 255, 136, 0.05);
+            color: var(--accent);
+        }
+
+        .sidebar-footer {
+            padding: 1rem;
+            border-top: 1px solid #1a1a1a;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            flex: 1;
+            padding: 2rem;
+            max-width: 1200px;
+        }
+
+        .page-header {
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+
+        .page-header h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+
+        .page-header p {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        /* Stats & Charts Grid */
+        .dash-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background: #0a0a0a;
+            border: 1px solid #1a1a1a;
+            border-radius: 8px;
+            padding: var(--card-padding);
+        }
+
+        .card-title {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #555;
+            margin-bottom: 1.25rem;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        /* Mini Stats */
+        .mini-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .mini-stat {
+            background: #070707;
+            border: 1px solid #151515;
+            padding: 1rem;
+            border-radius: 6px;
+        }
+
+        .mini-stat-label {
+            color: #555;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
+        }
+
+        .mini-stat-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        /* Bars Visualization */
+        .chart-row {
+            display: flex;
+            align-items: flex-end;
+            gap: 8px;
+            height: 120px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #1a1a1a;
+        }
+
+        .chart-bar-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .chart-bar {
+            width: 100%;
+            background: #111;
+            border-radius: 2px 2px 0 0;
+            transition: height 0.3s ease, background 0.3s;
+            position: relative;
+        }
+
+        .chart-bar:hover {
+            background: var(--accent);
+        }
+
+        .chart-label {
+            font-size: 10px;
+            color: #444;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* Risk Dist List */
+        .risk-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #1a1a1a;
+        }
+
+        .risk-item:last-child {
+            border: none;
+        }
+
+        .risk-tag {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            padding: 2px 6px;
+            border-radius: 3px;
+        }
+
+        .tag-stable {
+            background: rgba(0, 255, 136, 0.1);
+            color: var(--accent);
+        }
+
+        .tag-unstable {
+            background: rgba(255, 204, 0, 0.1);
+            color: #ffcc00;
+        }
+
+        .tag-untrusted {
+            background: rgba(255, 68, 68, 0.1);
+            color: #ff4444;
+        }
+
+        .risk-val {
+            font-weight: 600;
+            color: #fff;
+        }
+
+        /* API Keys Table */
+        .keys-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        .keys-table th {
+            text-align: left;
+            padding: 0.75rem;
+            font-size: 0.75rem;
+            color: #555;
+            border-bottom: 1px solid #1a1a1a;
+        }
+
+        .keys-table td {
+            padding: 1rem 0.75rem;
+            border-bottom: 1px solid #111;
+        }
+
+        .key-mono {
+            font-family: 'JetBrains Mono', monospace;
+            color: #aaa;
+            font-size: 11px;
+            background: #050505;
+            padding: 4px 8px;
+            border-radius: 4px;
+            border: 1px solid #111;
+        }
+
+        .btn-action {
+            padding: 4px 10px;
+            background: #111;
+            border: 1px solid #222;
+            color: #888;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 11px;
+            transition: all 0.2s;
+        }
+
+        .btn-action:hover {
+            color: #fff;
+            border-color: #444;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: #000;
+            border: none;
+            padding: 6px 14px;
+            font-weight: 600;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .user-pill {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 4px;
+            padding-right: 12px;
+            background: #111;
+            border-radius: 20px;
+            border: 1px solid #222;
+        }
+
+        .user-pill img {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+        }
+
+        .badge-active {
+            width: 6px;
+            height: 6px;
+            background: var(--accent);
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 6px;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #222;
+            border-radius: 10px;
+        }
+
+        @media (max-width: 900px) {
+            .dash-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                display: none;
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="dashboard-container">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo-text">
+                    <img src="./logo.png" alt="Sentinel Logo" height="20" style="margin-right: 8px;">
+                    SENTINEL
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-item active" id="nav-overview">
+                    <span class="icon">//</span> Overview
+                </a>
+                <a href="#" class="nav-item" id="nav-analytics">
+                    <span class="icon">-></span> Analytics
+                </a>
+                <a href="#" class="nav-item" id="nav-keys">
+                    <span class="icon">**</span> Credentials
+                </a>
+                <div style="height: 24px;"></div>
+                <div class="nav-title"
+                    style="margin-left: 0.75rem; margin-bottom: 0.5rem; font-family: var(--font-mono); font-size: 10px; color: #444; text-transform: uppercase;">
+                    Engine</div>
+                <a href="./docs.html" class="nav-item">
+                    <span class="icon">/</span> Docs
+                </a>
+                <a href="./index.html" class="nav-item">
+                    <span class="icon">_</span> Portal
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div
+                    style="padding: 0 0.75rem; margin-bottom: 1rem; font-family: var(--font-mono); font-size: 10px; color: #333;">
+                    <a href="./privacy.html" style="color: inherit; text-decoration: none;">PRIVACY</a> //
+                    <a href="./terms.html" style="color: inherit; text-decoration: none;">TERMS</a>
+                </div>
+                <a href="#" id="logout-btn" class="nav-item"
+                    style="color: var(--accent); border: 1px solid rgba(255,0,0,0.1); margin-top: auto; font-family: var(--font-mono); font-size: 11px;">
+                    <span class="icon">!</span> TERMINATE_SESSION
+                </a>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="page-header">
+                <div>
+                    <h1>System Dashboard</h1>
+                    <p>Manage your Sentinel API keys and monitor usage</p>
+                </div>
+                <div class="user-pill">
+                    <img src="https://github.com/identicons/user.png" id="user-avatar" alt="Avatar">
+                    <span id="user-name">Loading Profile...</span>
+                </div>
+            </header>
+
+            <div id="section-overview">
+                <!-- Mini Stats -->
+                <div class="mini-stats-grid">
+                    <div class="mini-stat">
+                        <div class="mini-stat-label">Total Signals</div>
+                        <div class="mini-stat-value" id="total-checks">0</div>
+                    </div>
+                    <div class="mini-stat">
+                        <div class="mini-stat-label">Query Credits</div>
+                        <div class="mini-stat-value" id="remaining-checks">500</div>
+                    </div>
+                    <div class="mini-stat">
+                        <div class="mini-stat-label">Active Vectors</div>
+                        <div class="mini-stat-value" id="active-keys">0</div>
+                    </div>
+                </div>
+
+                <!-- Charts Row -->
+                <div class="dash-grid">
+                    <div class="card">
+                        <div class="card-title">
+                            Trust Decisions (Daily)
+                            <span style="font-weight: 400; color: #444;">Last 7 Days</span>
+                        </div>
+                        <div class="chart-row" id="decisions-chart">
+                            <!-- JS Inject -->
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-title">Risk Distribution</div>
+                        <div class="risk-list">
+                            <div class="risk-item">
+                                <span class="risk-tag tag-stable">STABLE</span>
+                                <span class="risk-val" id="risk-stable">0%</span>
+                            </div>
+                            <div class="risk-item">
+                                <span class="risk-tag tag-unstable">UNSTABLE</span>
+                                <span class="risk-val" id="risk-unstable">0%</span>
+                            </div>
+                            <div class="risk-item">
+                                <span class="risk-tag tag-untrusted">UNTRUSTED</span>
+                                <span class="risk-val" id="risk-untrusted">0%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card" id="api-keys-section">
+                <div class="card-title">
+                    API Credentials
+                    <button class="btn-primary" id="generate-key-btn">New Vector</button>
+                </div>
+                <table class="keys-table">
+                    <thead>
+                        <tr>
+                            <th>Identifier</th>
+                            <th>Credit Usage</th>
+                            <th>Credential String</th>
+                            <th style="text-align: right;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="api-keys-list">
+                        <!-- JS Inject -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div style="height: 4rem;"></div>
+        </main>
+    </div>
+
+    <script>
+        const supabaseUrl = 'https://ahwkraeuotptvwvutbng.supabase.co';
+        const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFod2tyYWV1b3RwdHZ3dnV0Ym5nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcwNzYxNjIsImV4cCI6MjA4MjY1MjE2Mn0.bsB4kxE-kOx355IMXmeNGGp2rKHl1l1CcMGG_clZUos';
+        const sp = supabase.createClient(supabaseUrl, supabaseAnonKey);
+
+        let currentUser = null;
+        let session = null;
+        let redirectTimeout = null;
+
+        // Monitor Auth
+        sp.auth.onAuthStateChange(async (event, currentSession) => {
+            console.log(`🔐 Auth: ${event}`);
+            if (currentSession) {
+                if (redirectTimeout) clearTimeout(redirectTimeout);
+                session = currentSession;
+                currentUser = currentSession.user;
+
+                const meta = currentUser.user_metadata;
+                document.getElementById('user-name').innerText = meta.full_name || meta.user_name || currentUser.email.split('@')[0];
+                document.getElementById('user-avatar').src = meta.avatar_url || 'https://github.com/identicons/user.png';
+
+                loadApiKeys(currentSession);
+                renderCharts();
+            } else {
+                if (event === 'INITIAL_SESSION' || event === 'SIGNED_OUT') {
+                    if (window.location.hash.includes('access_token')) return;
+                    redirectTimeout = setTimeout(() => window.location.href = './login.html', 1500);
+                }
+            }
+        });
+
+        async function loadApiKeys(curr) {
+            const s = curr || session;
+            if (!s) return;
+
+            try {
+                const res = await fetch('/api/keys', {
+                    headers: { 'Authorization': `Bearer ${s.access_token}` }
+                });
+                if (!res.ok) return;
+                const keys = await res.json();
+
+                const list = document.getElementById('api-keys-list');
+                const totalChecks = keys.reduce((a, b) => a + (b.usage_count || 0), 0);
+                const totalLimit = keys.reduce((a, b) => a + (b.max_usage || 500), 0);
+
+                document.getElementById('total-checks').innerText = totalChecks;
+                document.getElementById('remaining-checks').innerText = totalLimit - totalChecks;
+                document.getElementById('active-keys').innerText = keys.length;
+
+                list.innerHTML = keys.length === 0 ?
+                    '<tr><td colspan="4" style="text-align:center;color:#444;padding:2rem;">No active vectors detected.</td></tr>' :
+                    keys.map(k => `
+                        <tr>
+                            <td style="font-weight:500;color:#fff;"><span class="badge-active"></span> ${k.name || 'Core Vector'}</td>
+                            <td style="color:#666;font-family:monospace;">${k.usage_count} / ${k.max_usage}</td>
+                            <td><span class="key-mono">${k.api_key.substring(0, 12)}••••••••</span></td>
+                            <td style="text-align:right;">
+                                <button class="btn-action" onclick="copyKey('${k.api_key}')">Copy</button>
+                            </td>
+                        </tr>
+                    `).join('');
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        document.getElementById('generate-key-btn').addEventListener('click', async () => {
+            if (!session) return;
+            const res = await fetch('/api/keys/generate', {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${session.access_token}` }
+            });
+            if (res.ok) loadApiKeys();
+        });
+
+        function copyKey(k) {
+            navigator.clipboard.writeText(k).then(() => alert('CREDENTIAL COPIED'));
+        }
+
+        function renderCharts() {
+            const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+            const data = [120, 280, 190, 440, 310, 150, 90];
+            const max = Math.max(...data);
+
+            document.getElementById('decisions-chart').innerHTML = days.map((d, i) => `
+                <div class="chart-bar-container">
+                    <div class="chart-bar" style="height: ${(data[i] / max) * 100}%" title="${data[i]} queries"></div>
+                    <div class="chart-label">${d}</div>
+                </div>
+            `).join('');
+
+            // Risk Update
+            document.getElementById('risk-stable').innerText = '82%';
+            document.getElementById('risk-unstable').innerText = '14%';
+            document.getElementById('risk-untrusted').innerText = '4%';
+        }
+
+        document.getElementById('logout-btn').addEventListener('click', () => {
+            sp.auth.signOut().then(() => window.location.href = './index.html');
+        });
+    </script>
+</body>
+
+</html>

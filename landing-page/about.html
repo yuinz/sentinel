@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About Sentinel | Turnstile for APIs</title>
+    <meta name="description"
+        content="Stop 92% of bot signups without CAPTCHAs. Learn how Sentinel provides Turnstile-grade protection for the modern API economy.">
+    <meta name="keywords"
+        content="Turnstile for APIs, bot reduction metrics, API security outcomes, CAPTCHA replacement, sub-50ms security">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://app.risksignal.name.ng/about">
+    <meta property="og:title" content="About Sentinel | Simple API Trust">
+    <meta property="og:description"
+        content="Inside the engine that replaces CAPTCHAs with simple, effective trust decisions.">
+    <meta property="og:image" content="https://app.risksignal.name.ng/og-image.png">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="./styles.css">
+    <link rel="icon" type="image/png" href="./logo.png">
+    <style>
+        body {
+            background: #000;
+            color: #fff;
+            overflow-x: hidden;
+        }
+
+        .hero {
+            height: 60vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 0 2rem;
+            position: relative;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at center, rgba(255, 0, 0, 0.05) 0%, transparent 70%);
+            z-index: -1;
+        }
+
+        .hero h1 {
+            font-size: 4rem;
+            font-weight: 800;
+            letter-spacing: -0.05em;
+            margin-bottom: 1rem;
+        }
+
+        .hero p {
+            font-size: 1.25rem;
+            color: #888;
+            max-width: 600px;
+            line-height: 1.6;
+        }
+
+        .content-section {
+            padding: 8rem 2rem;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 4rem;
+            margin-top: 4rem;
+        }
+
+        .feature-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--accent);
+        }
+
+        .feature-card p {
+            color: #888;
+            line-height: 1.7;
+            font-size: 1.1rem;
+        }
+
+        .big-quote {
+            font-size: 2.5rem;
+            font-weight: 700;
+            line-height: 1.2;
+            letter-spacing: -0.02em;
+            margin: 4rem 0;
+            color: #fff;
+            padding-left: 2rem;
+            border-left: 4px solid var(--accent);
+        }
+
+        .stat-line {
+            display: flex;
+            gap: 4rem;
+            margin-top: 6rem;
+            border-top: 1px solid #111;
+            padding-top: 3rem;
+        }
+
+        .stat-item .val {
+            font-size: 2.5rem;
+            font-weight: 700;
+            font-family: 'JetBrains Mono';
+            color: #fff;
+        }
+
+        .stat-item .lbl {
+            font-size: 0.8rem;
+            color: #444;
+            text-transform: uppercase;
+            margin-top: 0.5rem;
+        }
+
+        .cta-box {
+            background: #070707;
+            border: 1px solid #111;
+            padding: 4rem;
+            text-align: center;
+            border-radius: 12px;
+            margin-top: 6rem;
+        }
+
+        .nav-minimal {
+            padding: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-minimal a {
+            color: #888;
+            text-decoration: none;
+            font-size: 14px;
+            margin-left: 2rem;
+        }
+
+        .nav-minimal a:hover {
+            color: var(--accent);
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="nav-minimal">
+        <div class="logo-text"
+            style="color: var(--accent); font-family: 'JetBrains Mono'; font-weight: 700; font-size: 1.25rem; display: flex; align-items: center;">
+            <img src="./logo.png" alt="Sentinel Logo" height="24" style="margin-right: 8px;">
+            SENTINEL
+        </div>
+        <div>
+            <a href="./index.html">Home</a>
+            <a href="./demo.html">Demo</a>
+            <a href="./docs.html">Docs</a>
+            <a href="./dashboard.html"
+                style="color: #fff; border: 1px solid #333; padding: 0.5rem 1rem; border-radius: 4px;">Console</a>
+        </div>
+    </nav>
+
+    <header class="hero">
+        <h1>Turnstile for APIs.</h1>
+        <p>Blocked 92% of bot signups without CAPTCHAs. Render sub-50ms trust decisions using infrastructure and
+            behavioral signals. No friction, just results.</p>
+    </header>
+
+    <main class="content-section">
+        <div class="big-quote">
+            "The internet was built on trust. Today, trust is a signal that must be verified at scale."
+        </div>
+
+        <div class="grid">
+            <div class="feature-card">
+                <h3>The ASN Matrix</h3>
+                <p>We monitor the governance and economic behavior of over 100,000 Autonomous Systems. If a request
+                    comes from infrastructure designed for abuse, Sentinel knows.</p>
+            </div>
+            <div class="feature-card">
+                <h3>Behavioral Entropy</h3>
+                <p>Humans are beautifully chaotic. Bots are precisely robotic. Our engine analyzes the timing and
+                    velocity entropy of every interaction to spot the difference in milliseconds.</p>
+            </div>
+            <div class="feature-card">
+                <h3>Economic Defenses</h3>
+                <p>We don't block; we challenge. By forcing clients to perform cryptographic work, we make automated
+                    attacks economically impossible while keeping humans flowing seamlessly.</p>
+            </div>
+            <div class="feature-card">
+                <h3>Dark Intelligence</h3>
+                <p>Integration with global honeypots and abuse telemetry allows us to predict threats before they hit
+                    your load balancers.</p>
+            </div>
+        </div>
+
+        <div class="stat-line">
+            <div class="stat-item">
+                <div class="val">92%</div>
+                <div class="lbl">Reduction in Bot Signups</div>
+            </div>
+            <div class="stat-item">
+                <div class="val">&lt;50ms</div>
+                <div class="lbl">Decision Latency</div>
+            </div>
+            <div class="stat-item">
+                <div class="val">100%</div>
+                <div class="lbl">CAPTCHA-Free Experience</div>
+            </div>
+        </div>
+
+        <div class="cta-box">
+            <h2 style="font-size: 2.5rem; margin-bottom: 1rem;">Ready for Inevitable Security?</h2>
+            <p style="margin-bottom: 2rem;">Join the organizations using Sentinel to secure their API economy.</p>
+            <a href="./dashboard.html" class="btn btn-primary"
+                style="display: inline-block; padding: 1rem 2.5rem; font-size: 1rem;">Deploy Your Vector</a>
+        </div>
+    </main>
+
+    <footer
+        style="padding: 4rem 0; text-align: center; color: #333; font-family: 'JetBrains Mono'; font-size: 12px; border-top: 1px solid #111; margin-top: 4rem;">
+        SENTINEL INTELLIGENCE SYSTEM // 2026 // POWERED BY RISKSIGNAL<br>
+        <a href="./privacy.html"
+            style="color: inherit; text-decoration: none; margin-top: 10px; display: inline-block;">PRIVACY</a> //
+        <a href="./terms.html"
+            style="color: inherit; text-decoration: none; margin-top: 10px; display: inline-block;">TERMS</a>
+    </footer>
+</body>
+
+</html>

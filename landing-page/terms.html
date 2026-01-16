@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terms of Service | Sentinel Trust API</title>
+    <meta name="description"
+        content="Sentinel Terms of Service. Usage policies, API quotas, and liability for the Sentinel Trust API platform.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="./styles.css">
+    <link rel="icon" type="image/png" href="./logo.png">
+    <style>
+        body {
+            background: #000;
+            color: #fff;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .legal-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 6rem 2rem;
+        }
+
+        .nav-minimal {
+            padding: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-minimal a {
+            color: #888;
+            text-decoration: none;
+            font-size: 14px;
+            margin-left: 2rem;
+        }
+
+        .nav-minimal a:hover {
+            color: var(--accent);
+        }
+
+        h1 {
+            font-size: 3rem;
+            margin-bottom: 2rem;
+            letter-spacing: -0.05em;
+            color: var(--accent);
+            font-family: 'JetBrains Mono';
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            margin-top: 3rem;
+            margin-bottom: 1rem;
+            color: #fff;
+            border-bottom: 1px solid #111;
+            padding-bottom: 0.5rem;
+        }
+
+        p {
+            color: #888;
+            line-height: 1.8;
+            margin-bottom: 1.5rem;
+        }
+
+        ul {
+            margin-bottom: 1.5rem;
+            padding-left: 1.5rem;
+            list-style-type: none;
+        }
+
+        li {
+            color: #888;
+            margin-bottom: 0.5rem;
+            position: relative;
+        }
+
+        li::before {
+            content: "→";
+            position: absolute;
+            left: -1.5rem;
+            color: var(--accent);
+        }
+
+        .last-updated {
+            font-family: 'JetBrains Mono';
+            font-size: 0.8rem;
+            color: #444;
+            text-transform: uppercase;
+            margin-bottom: 4rem;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="nav-minimal">
+        <div class="logo-text"
+            style="color: var(--accent); font-family: 'JetBrains Mono'; font-weight: 700; font-size: 1.25rem; display: flex; align-items: center;">
+            <img src="./logo.png" alt="Sentinel Logo" height="24" style="margin-right: 8px;">
+            SENTINEL
+        </div>
+        <div>
+            <a href="./index.html">Home</a>
+            <a href="./about.html">About</a>
+            <a href="./docs.html">Docs</a>
+        </div>
+    </nav>
+
+    <main class="legal-container">
+        <div class="last-updated">Last Updated: January 16, 2026</div>
+        <h1>Terms of Service</h1>
+
+        <p>By accessing the Sentinel Trust API ("Service"), provided by RiskSignal Intelligence, you agree to comply
+            with and be bound by the following terms and conditions.</p>
+
+        <h2>1. Service Engagement</h2>
+        <p>Sentinel provides autonomous reputation assessment and bot mitigation through its API vectors. We grant you a
+            revocable, non-exclusive license to integrate our Service into your applications.</p>
+
+        <h2>2. API Usage & Quotas</h2>
+        <ul>
+            <li>You are responsible for the security of your API keys (Trust Vectors).</li>
+            <li>Usage is subject to the quotas associated with your account tier.</li>
+            <li>Requests exceeding your quota may be throttled or blocked to protect system integrity.</li>
+            <li>The use of the Service for any illegal activities or to facilitate harassment is strictly prohibited.
+            </li>
+        </ul>
+
+        <h2>3. Proactive Security</h2>
+        <p>Sentinel leverages global telemetry. By using the Service, you grant us the right to process technical data
+            from your clients to calculate risk scores. You must ensure your own privacy policy discloses the use of
+            third-party security providers to your end-users.</p>
+
+        <h2>4. Availability & Liability</h2>
+        <p>While we target 99.9% uptime, Sentinel is provided "as is." We are not liable for any downtime, false
+            positives, or false negatives in our reputation engine. Our decisions are probabilistic assessments and
+            should be used as one signal among many in your security stack.</p>
+
+        <h2>5. Account Termination</h2>
+        <p>We reserve the right to suspend or terminate access to the Service for any reason, including violation of
+            these terms or non-payment of professional tier subscriptions.</p>
+
+        <h2>6. Jurisdiction</h2>
+        <p>These terms are governed by the laws of the jurisdiction in which RiskSignal Intelligence operates.</p>
+    </main>
+
+    <footer
+        style="padding: 4rem 0; text-align: center; color: #333; font-family: 'JetBrains Mono'; font-size: 12px; border-top: 1px solid #111;">
+        SENTINEL INTELLIGENCE SYSTEM // 2026 // POWERED BY RISKSIGNAL
+    </footer>
+</body>
+
+</html>

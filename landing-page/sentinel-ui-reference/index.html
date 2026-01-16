@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sentinel Verify | Reference UI</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #050505;
+            --accent: #00ff88;
+            --accent-glow: rgba(0, 255, 136, 0.3);
+            --danger: #ff4444;
+            --card-bg: #0f0f0f;
+            --text-main: #ffffff;
+            --text-dim: #888888;
+            --glass: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.08);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text-main);
+            font-family: 'Outfit', sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .sentinel-card {
+            background: var(--card-bg);
+            border: 1px solid var(--glass-border);
+            padding: 3rem;
+            border-radius: 24px;
+            width: 400px;
+            text-align: center;
+            box-shadow: 0 40px 100px rgba(0, 0, 0, 0.8), 
+                        inset 0 1px 1px var(--glass-border);
+            position: relative;
+            z-index: 10;
+        }
+
+        .sentinel-logo {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+            font-size: 0.8rem;
+            letter-spacing: 0.2rem;
+            color: var(--accent);
+            text-transform: uppercase;
+            margin-bottom: 2rem;
+            display: block;
+            opacity: 0.8;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        p {
+            color: var(--text-dim);
+            font-size: 0.95rem;
+            margin-bottom: 2.5rem;
+            line-height: 1.5;
+        }
+
+        /* The Verify Gate Component */
+        .verify-gate {
+            position: relative;
+            width: 160px;
+            height: 160px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .progress-svg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            transform: rotate(-90deg);
+        }
+
+        .progress-bg {
+            fill: none;
+            stroke: var(--glass);
+            stroke-width: 8;
+        }
+
+        .progress-bar {
+            fill: none;
+            stroke: var(--accent);
+            stroke-width: 8;
+            stroke-dasharray: 440;
+            stroke-dashoffset: 440;
+            stroke-linecap: round;
+            transition: stroke-dashoffset 0.1s linear;
+        }
+
+        .gate-center {
+            width: 120px;
+            height: 120px;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+
+        .gate-center svg {
+            width: 40px;
+            height: 40px;
+            fill: var(--accent);
+            transition: transform 0.3s ease;
+        }
+
+        /* Interaction States */
+        .verify-gate:active .gate-center {
+            transform: scale(0.95);
+            background: rgba(0, 255, 136, 0.05);
+            border-color: var(--accent);
+            box-shadow: 0 0 40px var(--accent-glow);
+        }
+
+        .instruction {
+            margin-top: 2rem;
+            font-size: 0.85rem;
+            color: var(--accent);
+            font-weight: 600;
+            letter-spacing: 0.05rem;
+            transition: all 0.3s ease;
+            height: 1rem;
+        }
+
+        .status-failed {
+            color: var(--danger);
+        }
+
+        @keyframes success-pulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .success .progress-bar {
+            animation: success-pulse 0.5s ease-out;
+        }
+
+        .success .gate-center {
+            background: var(--accent) !important;
+            box-shadow: 0 0 60px var(--accent-glow) !important;
+        }
+
+        .success .gate-center svg {
+            fill: var(--bg) !important;
+        }
+
+        /* Abstract Background Elements */
+        .bg-glow {
+            position: absolute;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+            top: -300px;
+            right: -300px;
+            z-index: 1;
+            opacity: 0.3;
+        }
+
+        .mono {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            color: var(--text-dim);
+            margin-top: 3rem;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-glow"></div>
+
+    <div class="sentinel-card">
+        <span class="sentinel-logo">SENTINEL // VERIFY</span>
+        <h1>Verifying Request</h1>
+        <p>Your network infrastructure requires a temporary intent baseline.</p>
+
+        <div class="verify-gate" id="gate">
+            <svg class="progress-svg">
+                <circle class="progress-bg" cx="80" cy="80" r="70"></circle>
+                <circle class="progress-bar" id="bar" cx="80" cy="80" r="70"></circle>
+            </svg>
+            <div class="gate-center">
+                <svg viewBox="0 0 24 24" id="gate-icon">
+                    <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 6c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2zm0 13.91c-1.88-1.04-4.13-2.61-5.63-4.41.97-.68 2.53-1.09 4.13-1.09.11 0 .22.01.33.02.5-.47 1.1-.73 1.76-.73.04 0 .07 0 .11.01.99-.02 1.94-.03 2.9.02.83.04 1.2.14 1.73.53-1.55 2.12-3.69 3.8-5.33 4.65z"/>
+                </svg>
+            </div>
+        </div>
+
+        <div class="instruction" id="hint">Click and hold to continue</div>
+
+        <span class="mono">ID: SHD-9221-RECOVERABLE</span>
+    </div>
+
+    <script>
+        const gate = document.getElementById('gate');
+        const bar = document.getElementById('bar');
+        const hint = document.getElementById('hint');
+        const icon = document.getElementById('gate-icon');
+
+        let holdDuration = 3000; // 3 seconds (server recommended)
+        let startTime = null;
+        let progressInterval = null;
+        let isSuccess = false;
+
+        const CIRCUMFERENCE = 2 * Math.PI * 70;
+        bar.style.strokeDasharray = CIRCUMFERENCE;
+        bar.style.strokeDashoffset = CIRCUMFERENCE;
+
+        function startHolding(e) {
+            if (isSuccess) return;
+            e.preventDefault();
+            
+            startTime = Date.now();
+            hint.innerText = "Hold steady...";
+            hint.classList.remove('status-failed');
+
+            progressInterval = setInterval(() => {
+                const elapsed = Date.now() - startTime;
+                const ratio = Math.min(elapsed / holdDuration, 1);
+                
+                // Update Progress Ring
+                bar.style.strokeDashoffset = CIRCUMFERENCE - (ratio * CIRCUMFERENCE);
+
+                // Simulation: Optional Haptic Feedback for Mobile
+                if (window.navigator.vibrate) {
+                    window.navigator.vibrate(ratio * 10);
+                }
+
+                if (ratio >= 1) {
+                    completeVerification();
+                }
+            }, 16);
+        }
+
+        function releaseHolding() {
+            if (isSuccess) return;
+            
+            clearInterval(progressInterval);
+            const elapsed = Date.now() - startTime;
+
+            if (elapsed < holdDuration) {
+                // Reset Progress
+                bar.style.strokeDashoffset = CIRCUMFERENCE;
+                hint.innerText = "Released too early. Try again.";
+                hint.classList.add('status-failed');
+                
+                if (window.navigator.vibrate) {
+                    window.navigator.vibrate([10, 30, 10]);
+                }
+            }
+        }
+
+        function completeVerification() {
+            isSuccess = true;
+            clearInterval(progressInterval);
+            
+            hint.innerText = "Identity Verified";
+            hint.style.color = "var(--accent)";
+            document.querySelector('.sentinel-card').classList.add('success');
+            
+            // Switch Icon to Checkmark
+            icon.innerHTML = '<path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>';
+
+            if (window.navigator.vibrate) {
+                window.navigator.vibrate(50);
+            }
+
+            console.log("SENTINEL SIGNAL: Intent Hold Satisfied. Issuing Verify Hook...");
+            
+            // In a real app, this is where you'd call /v1/challenge/verify
+        }
+
+        // Event Listeners
+        gate.addEventListener('mousedown', startHolding);
+        window.addEventListener('mouseup', releaseHolding);
+
+        gate.addEventListener('touchstart', startHolding);
+        window.addEventListener('touchend', releaseHolding);
+
+        // Keyboard Accessibility (Spacebar)
+        window.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' && startTime === null) {
+                startHolding(e);
+            }
+        });
+        window.addEventListener('keyup', (e) => {
+            if (e.code === 'Space') {
+                releaseHolding();
+                startTime = null;
+            }
+        });
+    </script>
+</body>
+</html>

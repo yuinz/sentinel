@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Policy | Sentinel Trust API</title>
+    <meta name="description"
+        content="Sentinel Privacy Policy. Transparent data handling, GDPR compliance, and our commitment to stateless security.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="./styles.css">
+    <link rel="icon" type="image/png" href="./logo.png">
+    <style>
+        body {
+            background: #000;
+            color: #fff;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .legal-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 6rem 2rem;
+        }
+
+        .nav-minimal {
+            padding: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-minimal a {
+            color: #888;
+            text-decoration: none;
+            font-size: 14px;
+            margin-left: 2rem;
+        }
+
+        .nav-minimal a:hover {
+            color: var(--accent);
+        }
+
+        h1 {
+            font-size: 3rem;
+            margin-bottom: 2rem;
+            letter-spacing: -0.05em;
+            color: var(--accent);
+            font-family: 'JetBrains Mono';
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            margin-top: 3rem;
+            margin-bottom: 1rem;
+            color: #fff;
+            border-bottom: 1px solid #111;
+            padding-bottom: 0.5rem;
+        }
+
+        p {
+            color: #888;
+            line-height: 1.8;
+            margin-bottom: 1.5rem;
+        }
+
+        ul {
+            margin-bottom: 1.5rem;
+            padding-left: 1.5rem;
+            list-style-type: none;
+        }
+
+        li {
+            color: #888;
+            margin-bottom: 0.5rem;
+            position: relative;
+        }
+
+        li::before {
+            content: "→";
+            position: absolute;
+            left: -1.5rem;
+            color: var(--accent);
+        }
+
+        .last-updated {
+            font-family: 'JetBrains Mono';
+            font-size: 0.8rem;
+            color: #444;
+            text-transform: uppercase;
+            margin-bottom: 4rem;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="nav-minimal">
+        <div class="logo-text"
+            style="color: var(--accent); font-family: 'JetBrains Mono'; font-weight: 700; font-size: 1.25rem; display: flex; align-items: center;">
+            <img src="./logo.png" alt="Sentinel Logo" height="24" style="margin-right: 8px;">
+            SENTINEL
+        </div>
+        <div>
+            <a href="./index.html">Home</a>
+            <a href="./about.html">About</a>
+            <a href="./docs.html">Docs</a>
+        </div>
+    </nav>
+
+    <main class="legal-container">
+        <div class="last-updated">Last Updated: January 16, 2026</div>
+        <h1>Privacy Policy</h1>
+
+        <p>At Sentinel, we prioritize the privacy and security of our users and their end-users. This Privacy Policy
+            outlines how we handle data through the Sentinel Trust API and our associated services.</p>
+
+        <h2>1. Data Philosophy</h2>
+        <p>Sentinel is built on a "Stateless by Design" philosophy. We do not build long-term behavioral profiles of
+            individuals. Our goal is to synthesize a trust decision in real-time and then discard granular data.</p>
+
+        <h2>2. Information We Collect</h2>
+        <p>When you use the Sentinel Trust API, we process the following technical signals:</p>
+        <ul>
+            <li>IP Address and Network Metadata (ASN, ISP, Geo-location at the city level).</li>
+            <li>Browser and Device Fingerprints (User-Agent string, language settings).</li>
+            <li>Behavioral Timing (Interaction velocity, mouse movement patterns for Turnstile).</li>
+        </ul>
+
+        <h2>3. How We Use Data</h2>
+        <p>Data processed by Sentinel is used exclusively for:</p>
+        <ul>
+            <li>Calculating reputation scores and issuing Trust Tokens.</li>
+            <li>Detecting and mitigating automated bot attacks.</li>
+            <li>Preventing credential stuffing and account takeover fraud.</li>
+            <li>Improving our autonomous decision engine.</li>
+        </ul>
+
+        <h2>4. Data Retention</h2>
+        <p>Analytic signals are held in transient RAM cache for a maximum of 20 minutes to facilitate session-level
+            defense. Forensic logs containing truncated IP addresses are retained for 30 days for security auditing
+            before being permanently deleted.</p>
+
+        <h2>5. GDPR & International Compliance</h2>
+        <p>Sentinel is fully GDPR compliant. We act as a Data Processor for our customers. We provide Privacy Mode
+            settings to redact granular geo-data and PII at the edge, ensuring compliance in strict regulatory
+            environments.</p>
+
+        <h2>6. Third-Party Sharing</h2>
+        <p>We do not sell, rent, or trade your data. We may share processed metadata with our parent platform,
+            RiskSignal Intelligence, to enhance global threat telemetry.</p>
+    </main>
+
+    <footer
+        style="padding: 4rem 0; text-align: center; color: #333; font-family: 'JetBrains Mono'; font-size: 12px; border-top: 1px solid #111;">
+        SENTINEL INTELLIGENCE SYSTEM // 2026 // POWERED BY RISKSIGNAL
+    </footer>
+</body>
+
+</html>
