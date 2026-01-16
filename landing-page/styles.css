@@ -1220,18 +1220,18 @@ body {
         top: 80px;
         left: 0;
         width: 100%;
-        background: rgba(5, 5, 5, 0.95);
-        backdrop-filter: blur(10px);
+        background: #050505;
+        backdrop-filter: blur(15px);
         flex-direction: column;
-        padding: 2rem;
+        padding: 2.5rem 1.5rem;
         gap: 1.5rem;
-        border-bottom: 1px solid var(--border);
-        transform: translateY(-100%);
-        transition: transform 0.3s ease;
+        border-bottom: 2px solid var(--accent);
+        transform: translateY(-110%);
+        transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         opacity: 0;
         pointer-events: none;
         z-index: 900;
-        height: auto;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8);
     }
 
     .nav-menu.active {
@@ -1350,18 +1350,22 @@ body {
     }
 
     .hero-cta {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 0.5rem;
-        padding: 0 0.5rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        padding: 0 1rem;
+        width: 100%;
+        max-width: 400px;
+        margin: 0 auto;
     }
 
     .hero-cta .btn {
         width: 100%;
         text-align: center;
-        padding: 0.8rem 0.5rem;
-        font-size: 0.7rem;
-        white-space: nowrap;
+        padding: 1rem;
+        font-size: 0.85rem;
+        white-space: normal;
+        line-height: 1.4;
     }
 
     .risk-demo-container {
