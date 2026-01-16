@@ -139,8 +139,10 @@ const preCheck = async (req, res) => {
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     res.setHeader('Pragma', 'no-cache');
     res.setHeader('Expires', '0');
-    // 2. Resolve IP (With Mocking support for Dev/Lab testing)
-    let target = req.headers['x-sentinel-mock-ip'] ||
+    // 2. Resolve IP (With Mocking support ONLY in non-prod lab testing)
+    const isProd = process.env.NODE_ENV === 'production';
+    const mockIp = !isProd ? req.headers['x-sentinel-mock-ip'] : null;
+    let target = mockIp ||
         req.ip ||
         req.headers['x-forwarded-for'] ||
         '127.0.0.1';

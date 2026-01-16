@@ -16,6 +16,9 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+// Trust Proxy for accurate IP resolution behind Nginx/Cloudflare
+app.set('trust proxy', 1);
+
 // 1. Security & Middleware
 app.use(helmet({
     contentSecurityPolicy: {

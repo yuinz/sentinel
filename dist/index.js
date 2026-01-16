@@ -18,6 +18,8 @@ const error_1 = require("./middleware/error");
 dotenv_1.default.config();
 const app = (0, express_1.default)();
 const PORT = process.env.PORT || 3001;
+// Trust Proxy for accurate IP resolution behind Nginx/Cloudflare
+app.set('trust proxy', 1);
 // 1. Security & Middleware
 app.use((0, helmet_1.default)({
     contentSecurityPolicy: {
