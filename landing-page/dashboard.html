@@ -680,7 +680,8 @@
                 const stats = await res.json();
 
                 // 1. Total Signals Counter
-                document.getElementById('total-signals').innerText = stats.total_signals || 0;
+                const totalSignalsEl = document.getElementById('total-checks');
+                if (totalSignalsEl) totalSignalsEl.innerText = stats.total_signals || 0;
 
                 // 2. Bar Chart (Daily Decisions)
                 const max = Math.max(...stats.values, 10); // Minimum scale of 10
