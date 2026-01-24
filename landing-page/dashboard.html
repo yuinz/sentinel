@@ -663,6 +663,68 @@
             .sidebar-overlay.active {
                 display: block;
             }
+
+            /* Hide sidebar by default on mobile */
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+
+            /* Show sidebar when mobile-open class is active */
+            .sidebar.mobile-open {
+                transform: translateX(0);
+            }
+
+            /* Adjust main content to full width on mobile */
+            .main-content {
+                margin-left: 0;
+            }
+
+            /* Adjust top bar to full width on mobile */
+            .system-top-bar {
+                left: 0;
+            }
+
+            /* Make stats grid responsive */
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 1rem;
+            }
+
+            /* Make dash-grid single column on mobile */
+            .dash-grid {
+                grid-template-columns: 1fr;
+            }
+
+            /* Adjust content padding on mobile */
+            .content-scroll {
+                padding: 1.5rem 1rem;
+                padding-top: 4rem;
+            }
+
+            /* Make page header stack vertically */
+            .page-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+
+            /* Adjust table font size on mobile */
+            .sentinel-table {
+                font-size: 10px;
+            }
+
+            .sentinel-table th,
+            .sentinel-table td {
+                padding: 0.75rem 0.5rem;
+            }
+
+            /* Make detail content single column on mobile */
+            .detail-content {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+                padding: 1rem;
+            }
         }
     </style>
 </head>
