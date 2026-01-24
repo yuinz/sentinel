@@ -102,6 +102,29 @@ body {
     color: var(--accent);
 }
 
+.header-actions {
+    display: none;
+    gap: 1.5rem;
+    align-items: center;
+    margin-left: auto;
+    margin-right: 1.5rem;
+}
+
+.link-compact {
+    text-decoration: none;
+    color: var(--text-secondary);
+    font-size: 0.75rem;
+    font-weight: 600;
+    font-family: var(--font-mono);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    transition: color 0.3s ease;
+}
+
+.link-compact:hover {
+    color: var(--accent);
+}
+
 .btn-sm {
     padding: 0.6rem 1.2rem;
     font-size: 0.85rem;
@@ -1222,45 +1245,57 @@ body {
         display: block;
     }
 
+    .header-actions {
+        display: flex;
+    }
+
     .nav-menu {
         position: fixed;
         top: 80px;
         left: 0;
         width: 100%;
         background: #050505;
-        backdrop-filter: blur(15px);
+        backdrop-filter: blur(20px);
         flex-direction: column;
         padding: 2.5rem 1.5rem;
-        gap: 1.5rem;
+        gap: 0;
         border-bottom: 2px solid var(--accent);
         transform: translateY(-110%);
         transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         opacity: 0;
         pointer-events: none;
         z-index: 900;
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.9);
     }
 
     .nav-menu.active {
         transform: translateY(0);
         opacity: 1;
         pointer-events: all;
+        display: flex;
     }
 
     .nav-menu a {
-        font-size: 1.1rem;
+        display: flex;
         width: 100%;
-        text-align: left;
-        display: block;
-        padding: 0.75rem 0;
+        padding: 1.25rem 0;
+        font-size: 1.1rem;
         border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        color: #fff;
+        text-decoration: none;
+        font-weight: 500;
     }
 
     .nav-menu a.btn {
         text-align: center;
-        margin-top: 1rem;
+        justify-content: center;
+        margin-top: 1.5rem;
         border-bottom: none;
+        background: var(--accent);
+        color: #000;
     }
+
+
 
     .container {
         padding: 0 1rem;

@@ -207,9 +207,60 @@ const setupUtils = () => {
     }
 };
 
+const setupScrollReveal = () => {
+    const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('revealed');
+                observer.unobserve(entry.target);
+            }
+        });
+    }, observerOptions);
+
+    // Apply reveal to elements that might already have the class or need it
+    document.querySelectorAll('section, .feature-card, .problem-card, .stat, .blog-card, .reveal-on-scroll').forEach(el => {
+        if (!el.classList.contains('reveal-on-scroll')) {
+            el.classList.add('reveal-on-scroll');
+        }
+        observer.observe(el);
+    });
+};
+
+const setupDynamicHero = () => {
+    const heroTitle = document.querySelector('.hero-title');
+    if (!heroTitle) return;
+
+    const variations = [
+        { main: "Bots Pay.", accent: "Human Pass.", color: "var(--accent)" },
+        { main: "Malice Blocks.", accent: "Trust Flows.", color: "#00ff88" },
+        { main: "Scripts Fail.", accent: "Users Sail.", color: "#00d2ff" },
+        { main: "Scrapers Halt.", accent: "People Vault.", color: "#ff00ff" },
+        { main: "Spam Dies.", accent: "Intent Flies.", color: "#ffaa00" },
+        { main: "Threats Drop.", accent: "Traffic Pops.", color: "#0077ff" },
+        { main: "Auto Denied.", accent: "Authentic Verified.", color: "#bd00ff" },
+        { main: "Bad Actors Pay.", accent: "Real Users Play.", color: "#00ff88" },
+        { main: "Entropy Scanned.", accent: "Security Manned.", color: "#ff3333" },
+        { main: "Identity Known.", accent: "Friction Blown.", color: "#ffff00" },
+        { main: "Proxies Drop.", accent: "Identity Prop.", color: "#00ffcc" }
+    ];
+
+    // Select based on session to keep it consistent for one visit if desired, 
+    // but the user said "when user refresh or come back next time", so pure random is fine.
+    const selected = variations[Math.floor(Math.random() * variations.length)];
+
+    heroTitle.innerHTML = `${selected.main} <span style="color: ${selected.color}">${selected.accent}</span>`;
+};
+
 document.addEventListener('DOMContentLoaded', () => {
+    setupDynamicHero();
     technicalInit();
     setupDemoWidget();
     setupRiskDemo();
     setupUtils();
+    setupScrollReveal();
 });

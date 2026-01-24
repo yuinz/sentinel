@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cloudflare Turnstile for APIs: Why Sentinel is the Missing Link | Sentinel Blog</title>
+    <meta name="description"
+        content="Cloudflare Turnstile revolutionized browser security. But what about your APIs? Discover why Sentinel is the ultimate 'Turnstile for APIs'.">
+    <meta name="keywords"
+        content="Cloudflare Turnstile for APIs, Turnstile alternative, API security, invisible challenge, bot protection for REST APIs, stop automated signups, Sentinel API">
+    <link rel="canonical" href="https://sentinel.risksignal.name.ng/blog/turnstile-for-apis.html" />
+    <meta name="robots" content="index, follow">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://sentinel.risksignal.name.ng/blog/turnstile-for-apis.html">
+    <meta property="og:title" content="Cloudflare Turnstile for APIs: Why Sentinel is the Missing Link">
+    <meta property="og:description"
+        content="Bridging the gap between browser-level Turnstile challenges and high-performance API security.">
+    <meta property="og:image" content="https://sentinel.risksignal.name.ng/blog-latency.png">
+    <meta property="article:published_time" content="2026-01-23T00:00:00Z">
+    <meta property="article:author" content="Sentinel Engineering Team">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://sentinel.risksignal.name.ng/blog/turnstile-for-apis.html">
+    <meta property="twitter:title" content="Cloudflare Turnstile for APIs: Why Sentinel is the Missing Link">
+    <meta property="twitter:description"
+        content="The invisible success of Turnstile, now available for your entire infrastructure.">
+    <meta property="twitter:image" content="https://sentinel.risksignal.name.ng/blog-latency.png">
+
+    <!-- Schema.org JSON-LD -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BlogPosting",
+      "headline": "Cloudflare Turnstile for APIs: Why Sentinel is the Missing Link",
+      "image": "https://sentinel.risksignal.name.ng/blog-latency.png",
+      "author": {
+        "@type": "Organization",
+        "name": "Sentinel Engineering"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Sentinel",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://sentinel.risksignal.name.ng/logo.png"
+        }
+      },
+      "datePublished": "2026-01-23",
+      "description": "Explaining the concept of 'Turnstile for APIs' and how Sentinel provides identical frictionless security for non-browser endpoints."
+    }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="../styles.css">
+    <link rel="icon" type="image/png" href="../logo.png">
+    <style>
+        /* Reusing established blog styles */
+        .article-header {
+            padding: 180px 0 100px;
+            background: linear-gradient(to bottom, rgba(0, 255, 136, 0.05) 0%, transparent 100%);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .article-meta {
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            margin-bottom: 1.5rem;
+            display: block;
+            text-align: center;
+        }
+
+        .article-title {
+            font-size: clamp(2.5rem, 6vw, 4rem);
+            font-weight: 800;
+            line-height: 1.1;
+            text-align: center;
+            max-width: 900px;
+            margin: 0 auto 2rem;
+            letter-spacing: -0.04em;
+        }
+
+        .article-featured-image {
+            width: 100%;
+            height: 500px;
+            background-size: cover;
+            background-position: center;
+            border-radius: 20px;
+            margin: -60px auto 4rem;
+            border: 1px solid var(--border);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .article-body {
+            max-width: 800px;
+            margin: 0 auto 100px;
+            color: #ccc;
+            line-height: 1.8;
+            font-size: 1.15rem;
+        }
+
+        .article-body h2 {
+            color: #fff;
+            font-size: 2rem;
+            margin: 4rem 0 1.5rem;
+            letter-spacing: -0.02em;
+        }
+
+        .article-body h3 {
+            color: var(--accent);
+            font-size: 1.4rem;
+            margin: 2.5rem 0 1rem;
+        }
+
+        .article-body p {
+            margin-bottom: 2rem;
+        }
+
+        .article-body pre {
+            background: #080808;
+            border: 1px solid #1a1a1a;
+            padding: 1.5rem;
+            border-radius: 12px;
+            overflow-x: auto;
+            margin: 2rem 0;
+            font-size: 0.95rem;
+        }
+
+        .author-box {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            padding: 3rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            margin-top: 6rem;
+        }
+
+        .author-avatar {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            color: #000;
+        }
+    </style>
+</head>
+
+<body>
+    <header class="main-header">
+        <div class="container header-container">
+            <div class="logo">
+                <img src="../logo.png" alt="Sentinel Logo" height="24" style="margin-right: 8px;">
+                SENTINEL
+            </div>
+            <nav class="nav-menu">
+                <a href="../index.html">Home</a>
+                <a href="../blog.html">Blog</a>
+                <a href="../docs.html">Docs</a>
+            </nav>
+        </div>
+    </header>
+
+    <article>
+        <header class="article-header">
+            <div class="container">
+                <span class="article-meta">Product Strategy // Jan 23, 2026</span>
+                <h1 class="article-title">Cloudflare Turnstile for APIs: Why Sentinel is the Missing Link</h1>
+            </div>
+        </header>
+
+        <div class="container">
+            <div class="article-featured-image" id="featured-img"></div>
+
+            <div class="article-body">
+                <p>Cloudflare <strong>Turnstile</strong> changed the game for web security. By providing a smart,
+                    invisible challenge that replaces the traditional CAPTCHA, it proved that security doesn't have to
+                    mean friction. Developers flocked to it because it was easy to implement and kept users happy.</p>
+
+                <p>But as our applications move further away from traditional browser-based models and towards
+                    <strong>API-first architectures</strong>, a glaring gap has emerged. Turnstile is brilliant for
+                    a login page, but how do you apply those same principles to a JSON REST API? How do you protect
+                    a GraphQL endpoint or a mobile backend where there is no browser environment to execute a
+                    JavaScript challenge?
+                </p>
+
+                <h2>The Turnstile Limitation</h2>
+                <p>The magic of Turnstile (and its predecessors like reCAPTCHA v3) relies heavily on browser signals:
+                    DOM fingerprinting, canvas rendering, and interaction proxies. In an <strong>API
+                        environment</strong>,
+                    those signals simply don't exist. When a malicious script hits your `/api/v1/signup` endpoint, it
+                    doesn't provide a browser context. It's just a raw POST request.</p>
+
+                <p>This is why developers seeking <strong>Cloudflare Turnstile for APIs</strong> often find themselves
+                    stuck. You can't force an API client to solve a visual or browser-based puzzle without breaking the
+                    integration entirely.</p>
+
+                <h2>Enter Sentinel: The Deterministic Trust Layer</h2>
+                <p>Sentinel was built to be exactly what's missing: a <strong>Turnstile for APIs</strong>. We provide
+                    the same "invisible success" but optimized for the distinct signals of API traffic. We don't need
+                    a browser because we look at the request's <strong>infrastructure and behavioral identity</strong>.
+                </p>
+
+                <h3>How Sentinel mimics the Turnstile Experience for APIs:</h3>
+                <ul>
+                    <li><strong>No-Challenge Success:</strong> Just like Turnstile, 99% of requests are verified
+                        silently. Our engine makes a PASS/BLOCK decision in under 50ms based on the incoming request's
+                        profile.</li>
+                    <li><strong>Privacy First:</strong> We don't track users across the web. We only analyze the signals
+                        present in the request itself, keeping your implementation GDPR and CCPA compliant.</li>
+                    <li><strong>Universal Integration:</strong> Whether your client is a browser, a Python script, or
+                        an IoT device, Sentinel's <strong>Trust API</strong> works everywhere.</li>
+                </ul>
+
+                <h2>Decoupled Verification (SOCA)</h2>
+                <p>Sometimes, a request is truly ambiguous. In these cases, Sentinel offers an optional
+                    <strong>Behavioral Work Challenge (SOCA)</strong>. This is our equivalent of a Turnstile popup, but
+                    designed for applications. It issues a temporary trust token that can be attached to subsequent
+                    API calls, allowing "untrusted" clients to gracefully recover trust without a puzzle.
+                </p>
+
+                <h2>Why it Matters</h2>
+                <p>Security is no longer about building a higher wall; it's about building a smarter gate. By using a
+                    <strong>Turnstile for APIs</strong>, you protect your infrastructure from the 92% of bots that
+                    target sign-up and payment endpoints, without impacting the 100k+ legitimate users who keep your
+                    business alive.
+                </p>
+
+                <p>Stop looking for browser solutions to API problems. Start using <strong>Sentinel</strong>.</p>
+
+                <div class="author-box">
+                    <div class="author-avatar">SE</div>
+                    <div>
+                        <h4 style="margin: 0; font-size: 1.2rem;">The Sentinel Engineering Team</h4>
+                        <p style="margin: 0.5rem 0 0; font-size: 0.9rem; color: var(--text-secondary);">Building
+                            the deterministic trust layer for the modern API economy.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </article>
+
+    <footer class="footer">
+        <div class="container" style="text-align: center; padding: 4rem 0; border-top: 1px solid var(--border);">
+            <p>&copy; 2026 Sentinel. <a href="../blog.html" style="color: var(--accent); text-decoration: none;">Back to
+                    Blog</a></p>
+        </div>
+    </footer>
+
+    <script>
+        document.getElementById('featured-img').style.backgroundImage = 'url("../blog-latency.png")';
+    </script>
+</body>
+
+</html>

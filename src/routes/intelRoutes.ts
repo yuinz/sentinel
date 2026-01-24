@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { checkTarget, getHealth, issueChallenge, verifyChallenge, preCheck, getVisitorStats } from '../controllers/intelController';
+import { checkTarget, getHealth, issueChallenge, verifyChallenge, preCheck, getVisitorStats, flushCache } from '../controllers/intelController';
 import { authMiddleware, quotaMiddleware } from '../middleware/auth';
 
 const router = Router();
@@ -19,5 +19,8 @@ router.get('/intel/secret-stats', getVisitorStats);
 
 // SOC Health Vitals
 router.get('/health', authMiddleware as any, getHealth);
+
+// System Maintenance
+router.post('/cache/flush', authMiddleware as any, flushCache);
 
 export default router;

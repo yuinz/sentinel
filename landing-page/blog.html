@@ -162,6 +162,78 @@
 
     <main class="container">
         <div class="blog-grid">
+            <a href="./blog/economics-of-bot-protection.html" class="blog-card reveal-on-scroll"
+                style="border-color: #bd00ff; background: rgba(189,0,255,0.02);">
+                <div class="blog-image" id="img-economics"></div>
+                <div class="blog-content">
+                    <span class="blog-tag">Industry Analysis</span>
+                    <h2 class="blog-title">The Economics of Bot Protection: Why Legacy WAFs are Costing You More</h2>
+                    <p class="blog-excerpt">Hidden costs of legacy WAFs go beyond the monthly bill. Explore how false
+                        positives impact your bottom line.</p>
+                    <div class="blog-footer">
+                        <span>Jan 23, 2026</span>
+                        <span class="read-more">Read Post</span>
+                    </div>
+                </div>
+            </a>
+            <a href="./blog/secure-signup-flow.html" class="blog-card reveal-on-scroll"
+                style="border-color: #00d2ff; background: rgba(0,210,255,0.02);">
+                <div class="blog-image" id="img-signup"></div>
+                <div class="blog-content">
+                    <span class="blog-tag">Growth Strategy</span>
+                    <h2 class="blog-title">How to Secure Your Signup Flow: A Guide for SaaS Founders</h2>
+                    <p class="blog-excerpt">Stop fake users from diluting your metrics. Build a secure, frictionless
+                        signup flow that scales.</p>
+                    <div class="blog-footer">
+                        <span>Jan 23, 2026</span>
+                        <span class="read-more">Read Post</span>
+                    </div>
+                </div>
+            </a>
+            <a href="./blog/stopping-ato.html" class="blog-card reveal-on-scroll"
+                style="border-color: #ffaa00; background: rgba(255,170,0,0.02);">
+                <div class="blog-image" id="img-ato"></div>
+                <div class="blog-content">
+                    <span class="blog-tag">Security Depth</span>
+                    <h2 class="blog-title">Stopping Account Takeover (ATO) with Behavioral Fingerprinting</h2>
+                    <p class="blog-excerpt">How to defend your users against credential stuffing and automated login
+                        attacks using sub-50ms trust intent.</p>
+                    <div class="blog-footer">
+                        <span>Jan 23, 2026</span>
+                        <span class="read-more">Read Post</span>
+                    </div>
+                </div>
+            </a>
+            <a href="./blog/why-is-captcha-dead.html" class="blog-card reveal-on-scroll"
+                style="border-color: var(--accent); background: rgba(255,0,0,0.02);">
+                <div class="blog-image" id="img-captcha"></div>
+                <div class="blog-content">
+                    <span class="blog-tag">Future of Security</span>
+                    <h2 class="blog-title">Why CAPTCHA is Dead in 2026: The Rise of Behavioral Trust</h2>
+                    <p class="blog-excerpt">Explore why traditional puzzles fail and why a modern CAPTCHA alternative is
+                        mandatory for protecting API endpoints.</p>
+                    <div class="blog-footer">
+                        <span>Jan 23, 2026</span>
+                        <span class="read-more">Read Post</span>
+                    </div>
+                </div>
+            </a>
+
+            <a href="./blog/turnstile-for-apis.html" class="blog-card reveal-on-scroll"
+                style="border-color: #00ff88; background: rgba(0,255,136,0.02);">
+                <div class="blog-image" id="img-turnstile"></div>
+                <div class="blog-content">
+                    <span class="blog-tag">Product Strategy</span>
+                    <h2 class="blog-title">Cloudflare Turnstile for APIs: Why Sentinel is the Missing Link</h2>
+                    <p class="blog-excerpt">How to bring the invisible challenge experience of Cloudflare Turnstile to
+                        pure API and backend infrastructure.</p>
+                    <div class="blog-footer">
+                        <span>Jan 23, 2026</span>
+                        <span class="read-more">Read Post</span>
+                    </div>
+                </div>
+            </a>
+
             <a href="./blog/beyond-the-bot.html" class="blog-card reveal-on-scroll">
                 <div class="blog-image" id="img-infra"></div>
                 <div class="blog-content">
@@ -190,6 +262,36 @@
                 </div>
             </a>
         </div>
+
+        <!-- FAQ Schema for SEO -->
+        <script type="application/ld+json">
+        {
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          "mainEntity": [{
+            "@type": "Question",
+            "name": "What is the best CAPTCHA alternative for APIs?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Sentinel is the premier CAPTCHA alternative for APIs, providing sub-50ms trust decisions using infrastructure and behavioral signals instead of user-hostile puzzles."
+            }
+          }, {
+            "@type": "Question",
+            "name": "Is there a Cloudflare Turnstile for APIs?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "While Cloudflare Turnstile is optimized for the browser, Sentinel serves as the equivalent 'Turnstile for APIs', offering invisible bot protection for backend endpoints, mobile apps, and server-side requests."
+            }
+          }, {
+            "@type": "Question",
+            "name": "How do I stop bot signups without using reCAPTCHA?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "You can stop bot signups by implementing behavioral analysis and ASN mapping. Sentinel blocks 92% of bot signups automatically without ever showing a CAPTCHA challenge to a legitimate user."
+            }
+          }]
+        }
+        </script>
     </main>
 
     <footer class="footer">
@@ -230,12 +332,34 @@
         </div>
     </footer>
 
+    <script src="./script.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
+        const supabaseUrl = 'https://ahwkraeuotptvwvutbng.supabase.co';
+        const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFod2tyYWV1b3RwdHZ3dnV0Ym5nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcwNzYxNjIsImV4cCI6MjA4MjY1MjE2Mn0.bsB4kxE-kOx355IMXmeNGGp2rKHl1l1CcMGG_clZUos';
+        const sp = supabase.createClient(supabaseUrl, supabaseAnonKey);
+
+        async function updateAuthStatus() {
+            const { data } = await sp.auth.getSession();
+            const btn = document.getElementById('auth-nav-btn');
+            if (data.session) {
+                btn.innerText = 'DASHBOARD';
+                btn.href = './dashboard.html';
+                btn.classList.remove('btn-secondary');
+                btn.classList.add('btn-primary');
+                btn.style.color = '#000';
+            }
+        }
+        updateAuthStatus();
+
         // Inject images from artifacts
-        // blog_post_infra_trust_...
-        // blog_post_latency_tax_...
         document.getElementById('img-infra').style.backgroundImage = 'url("./blog-infra.png")';
         document.getElementById('img-latency').style.backgroundImage = 'url("./blog-latency.png")';
+        document.getElementById('img-captcha').style.backgroundImage = 'url("./blog-infra.png")';
+        document.getElementById('img-turnstile').style.backgroundImage = 'url("./blog-latency.png")';
+        document.getElementById('img-ato').style.backgroundImage = 'url("./blog-infra.png")';
+        document.getElementById('img-signup').style.backgroundImage = 'url("./blog-latency.png")';
+        document.getElementById('img-economics').style.backgroundImage = 'url("./blog-infra.png")';
     </script>
 </body>
 

@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getVisitorStats = exports.verifyChallenge = exports.issueChallenge = exports.preCheck = exports.getHealth = exports.checkTarget = void 0;
+exports.flushCache = exports.getVisitorStats = exports.verifyChallenge = exports.issueChallenge = exports.preCheck = exports.getHealth = exports.checkTarget = void 0;
 const supabase_1 = require("../config/supabase");
 const intelService_1 = require("../services/intelService");
 const zod_1 = require("zod");
@@ -56,6 +56,8 @@ const checkTarget = async (req, res) => {
                 verdict: result.verdict,
                 profile: profile,
                 latency_ms: result.latency_ms,
+                reason: result.verdict_reasons?.[0] || 'reputation_verified',
+                confidence: result.confidence,
                 bwt_verified: isBwtValid || !!trustToken,
                 created_at: new Date().toISOString()
             }).then(({ error }) => {
@@ -215,3 +217,17 @@ const getVisitorStats = async (req, res) => {
     }
 };
 exports.getVisitorStats = getVisitorStats;
+const flushCache = async (req, res) => {
+    try {
+        cache_1.intelCache.clear();
+        cache_1.velocityCache.clear();
+        cache_1.cacheStats.hits = 0;
+        cache_1.cacheStats.misses = 0;
+        logger_1.default.info('System Cache Flush Triggered');
+        return res.json({ success: true, message: 'All telemetry and velocity caches purged.' });
+    }
+    catch (err) {
+        return res.status(500).json({ error: 'Cache purge failed.' });
+    }
+};
+exports.flushCache = flushCache;

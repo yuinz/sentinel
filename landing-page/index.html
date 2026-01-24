@@ -51,6 +51,10 @@
                 <a href="./docs.html">Docs</a>
                 <a href="./login.html" class="btn btn-secondary btn-sm" id="auth-nav-btn">Sign In</a>
             </nav>
+            <div class="header-actions">
+                <a href="#integration" class="link-compact">Integration</a>
+                <a href="./docs.html" class="link-compact">Docs</a>
+            </div>
             <button class="menu-btn" id="menu-toggle" aria-label="Toggle Menu">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <line x1="3" y1="12" x2="21" y2="12"></line>
@@ -421,6 +425,92 @@ if (!res.allow) {
             </div>
         </div>
     </section>
+    <section class="blog-preview" style="padding: 100px 0; background: var(--bg-elevated); border-top: 1px solid #111;">
+        <div class="container">
+            <h2 style="text-align: center; margin-bottom: 50px;">Engineering Insights</h2>
+            <div class="features-grid" style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));">
+                <a href="./blog/why-is-captcha-dead.html" class="feature-card"
+                    style="text-decoration: none; transition: transform 0.3s ease; border-color: rgba(255,0,0,0.1);">
+                    <div
+                        style="color: var(--accent); font-family: var(--font-mono); font-size: 10px; margin-bottom: 20px;">
+                        CAPTCHA_EVOLUTION // 2026</div>
+                    <h3 style="font-size: 1.4rem; margin-bottom: 15px;">Why CAPTCHA is Dead</h3>
+                    <p style="color: #888; margin-bottom: 25px; line-height: 1.6;">How AI broke traditional puzzles and
+                        why the best CAPTCHA alternative is behavioral trust.</p>
+                    <span style="color: var(--accent); font-family: var(--font-mono); font-size: 11px;">READ_ARTICLE
+                        →</span>
+                </a>
+                <a href="./blog/turnstile-for-apis.html" class="feature-card"
+                    style="text-decoration: none; transition: transform 0.3s ease; border-color: rgba(0,255,136,0.1);">
+                    <div style="color: #00ff88; font-family: var(--font-mono); font-size: 10px; margin-bottom: 20px;">
+                        STRATEGY // OPTIMIZATION</div>
+                    <h3 style="font-size: 1.4rem; margin-bottom: 15px;">Turnstile for APIs</h3>
+                    <p style="color: #888; margin-bottom: 25px; line-height: 1.6;">Bringing the invisible challenge
+                        experience to pure backend and infrastructure layers.</p>
+                    <span style="color: #00ff88; font-family: var(--font-mono); font-size: 11px;">READ_ARTICLE →</span>
+                </a>
+                <a href="./blog/stopping-ato.html" class="feature-card"
+                    style="text-decoration: none; transition: transform 0.3s ease; border-color: rgba(255,170,0,0.1);">
+                    <div style="color: #ffaa00; font-family: var(--font-mono); font-size: 10px; margin-bottom: 20px;">
+                        SECURITY // DEPTH</div>
+                    <h3 style="font-size: 1.4rem; margin-bottom: 15px;">Stopping ATO</h3>
+                    <p style="color: #888; margin-bottom: 25px; line-height: 1.6;">How to defend against credential
+                        stuffing and automated login attacks using behavioral intent.</p>
+                    <span style="color: #ffaa00; font-family: var(--font-mono); font-size: 11px;">READ_ARTICLE →</span>
+                </a>
+                <a href="./blog/secure-signup-flow.html" class="feature-card"
+                    style="text-decoration: none; transition: transform 0.3s ease; border-color: rgba(0,210,255,0.1);">
+                    <div style="color: #00d2ff; font-family: var(--font-mono); font-size: 10px; margin-bottom: 20px;">
+                        GROWTH // SAAS</div>
+                    <h3 style="font-size: 1.4rem; margin-bottom: 15px;">Secure Signup Flow</h3>
+                    <p style="color: #888; margin-bottom: 25px; line-height: 1.6;">A founder's guide to stopping bot
+                        signups and fake users without killing conversion rates.</p>
+                    <span style="color: #00d2ff; font-family: var(--font-mono); font-size: 11px;">READ_ARTICLE →</span>
+                </a>
+            </div>
+            <div style="text-align: center; margin-top: 50px;">
+                <a href="./blog.html" class="btn btn-secondary">View All Research</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- SEO FAQ Schema -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [{
+        "@type": "Question",
+        "name": "What is the best CAPTCHA alternative for stoping bot signups?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Sentinel is a high-performance CAPTCHA alternative that blocks 92% of bot signups using behavioral signals. It is often referred to as the 'Turnstile for APIs' due to its invisible challenge mechanism."
+        }
+      }, {
+        "@type": "Question",
+        "name": "How does Sentinel compare to Cloudflare Turnstile?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "While Cloudflare Turnstile is primarily for browser environments, Sentinel provides an identical invisible experience for pure APIs and server-side requests, making it a true 'Turnstile for APIs'."
+        }
+      }, {
+        "@type": "Question",
+        "name": "Can Sentinel stop account takeover and credential stuffing?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes, Sentinel uses behavioral fingerprinting and cross-session signal analysis to identify and block automated login attempts and credential stuffing attacks in real-time."
+        }
+      }, {
+        "@type": "Question",
+        "name": "How do I secure my SaaS signup flow from fake accounts?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The most effective way to secure a SaaS signup flow is to replace legacy CAPTCHAs with invisible behavioral trust synthesis. This stops automated signups while maintaining high conversion rates."
+        }
+      }]
+    }
+    </script>
+
     <section class="pricing-tiers" style="padding: 100px 0; border-top: 1px solid #111;">
         <div class="container">
             <h2 style="text-align: center; margin-bottom: 20px;">Architecture Tiers</h2>
@@ -580,26 +670,43 @@ if (!res.allow) {
                             by RiskSignal Intelligence</a></p>
                 </div>
 
-                <div class="footer-links">
+                <div class="footer-links" style="flex: 2;">
                     <div class="footer-column">
                         <h4>Product</h4>
-                        <a href="#">Documentation</a>
-                        <a href="#">API Reference</a>
-                        <a href="#">Pricing</a>
+                        <a href="./index.html#features">Features</a>
+                        <a href="./docs.html">Documentation</a>
+                        <a href="./index.html#pricing">Pricing</a>
+                        <a href="./index.html#integration">Integration</a>
+                    </div>
+                    <div class="footer-column">
+                        <h4>Compare</h4>
+                        <a href="./blog/why-is-captcha-dead.html">vs. reCAPTCHA</a>
+                        <a href="./blog/turnstile-for-apis.html">vs. Cloudflare Turnstile</a>
+                        <a href="./blog/beyond-the-bot.html">vs. Legacy WAFs</a>
+                        <a href="./blog/stopping-ato.html">vs. Auth0 BAP</a>
                     </div>
                     <div class="footer-column">
                         <h4>Resources</h4>
                         <a href="./blog.html">Blog</a>
                         <a href="#">GitHub</a>
                         <a href="#">Status</a>
+                        <a href="#">API Uptime</a>
                     </div>
                     <div class="footer-column">
                         <h4>Legal</h4>
                         <a href="./privacy.html">Privacy Policy</a>
                         <a href="./terms.html">Terms of Service</a>
-                        <a href="#">Security</a>
+                        <a href="#">DPA / GDPR</a>
                     </div>
                 </div>
+            </div>
+
+            <!-- SEO Semantic Keywords -->
+            <div style="opacity: 0.05; font-size: 8px; margin-top: 40px; pointer-events: none;">
+                Sentinel is the leading CAPTCHA alternative and Turnstile for APIs. Stop bot signups, prevent account
+                takeover, and secure your REST API endpoints with sub-50ms behavioral trust decisions. Our behavioral
+                analytics engine replaces legacy blacklists and reCAPTCHA puzzles with deterministic infrastructure
+                signals. Built for modern DevOps and security engineers.
             </div>
 
             <div class="footer-bottom">
@@ -627,25 +734,6 @@ if (!res.allow) {
             }
         }
         updateAuthStatus();
-
-        const observerOptions = {
-            threshold: 0.1,
-            rootMargin: '0px 0px -50px 0px'
-        };
-
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('revealed');
-                    observer.unobserve(entry.target);
-                }
-            });
-        }, observerOptions);
-
-        document.querySelectorAll('section, .feature-card, .problem-card, .stat').forEach(el => {
-            el.classList.add('reveal-on-scroll');
-            observer.observe(el);
-        });
     </script>
 </body>
 

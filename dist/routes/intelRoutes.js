@@ -15,4 +15,6 @@ router.post('/challenge/verify', intelController_1.verifyChallenge);
 router.get('/intel/secret-stats', intelController_1.getVisitorStats);
 // SOC Health Vitals
 router.get('/health', auth_1.authMiddleware, intelController_1.getHealth);
+// System Maintenance
+router.post('/cache/flush', auth_1.authMiddleware, intelController_1.flushCache);
 exports.default = router;

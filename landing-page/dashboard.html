@@ -19,15 +19,63 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
-            --sidebar-width: 200px;
-            --card-padding: 1.25rem;
-            --input-height: 32px;
+            --sidebar-width: 220px;
+            --card-padding: 1.5rem;
+            --input-height: 36px;
+            --accent: #00ff88;
+            --accent-glow: rgba(0, 255, 136, 0.2);
+            --danger: #ff4444;
+            --warning: #ffcc00;
+            --glass: rgba(10, 10, 10, 0.7);
         }
 
         body {
             background: #000;
             font-family: 'Inter', sans-serif;
             font-size: 13px;
+            color: #eee;
+        }
+
+        /* Top Bar */
+        .system-top-bar {
+            position: fixed;
+            top: 0;
+            left: var(--sidebar-width);
+            right: 0;
+            height: 48px;
+            background: rgba(5, 5, 5, 0.8);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid #111;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            padding: 0 2rem;
+            justify-content: space-between;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+        }
+
+        .status-pill {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .online-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--accent);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--accent);
+        }
+
+        .metric-item {
+            color: #666;
+        }
+
+        .metric-item span {
+            color: #fff;
+            margin-left: 4px;
         }
 
         .dashboard-container {
@@ -38,30 +86,30 @@
         /* Compact Sidebar */
         .sidebar {
             width: var(--sidebar-width);
-            background: #0a0a0a;
-            border-right: 1px solid #1a1a1a;
+            background: #050505;
+            border-right: 1px solid #111;
             display: flex;
             flex-direction: column;
             position: fixed;
             height: 100vh;
-            z-index: 100;
+            z-index: 1100;
         }
 
         .sidebar-header {
             padding: 1.5rem 1.25rem;
-            border-bottom: 1px solid #1a1a1a;
+            border-bottom: 1px solid #111;
         }
 
         .logo-text {
             font-family: 'JetBrains Mono', monospace;
             font-weight: 700;
-            font-size: 1rem;
-            letter-spacing: -0.02em;
-            color: var(--accent);
+            font-size: 1.1rem;
+            letter-spacing: -0.04em;
+            color: #fff;
         }
 
         .sidebar-nav {
-            padding: 1rem 0.5rem;
+            padding: 1rem 0.75rem;
             flex: 1;
         }
 
@@ -69,11 +117,11 @@
             display: flex;
             align-items: center;
             gap: 0.75rem;
-            padding: 0.5rem 0.75rem;
-            color: #888;
+            padding: 0.7rem 0.8rem;
+            color: #666;
             text-decoration: none;
-            border-radius: 4px;
-            margin-bottom: 2px;
+            border-radius: 6px;
+            margin-bottom: 4px;
             transition: all 0.2s;
         }
 
@@ -86,193 +134,342 @@
         .nav-item.active {
             background: rgba(0, 255, 136, 0.05);
             color: var(--accent);
+            border-right: 2px solid var(--accent);
         }
 
         .sidebar-footer {
             padding: 1rem;
-            border-top: 1px solid #1a1a1a;
+            border-top: 1px solid #111;
         }
 
         /* Main Content */
         .main-content {
             margin-left: var(--sidebar-width);
             flex: 1;
+            padding: 0;
+            max-width: 100%;
+        }
+
+        .content-scroll {
             padding: 2rem;
-            max-width: 1200px;
+            padding-top: 5rem;
+            max-width: 1400px;
+            margin: 0 auto;
         }
 
         .page-header {
-            margin-bottom: 2rem;
+            margin-bottom: 2.5rem;
             display: flex;
             justify-content: space-between;
             align-items: flex-end;
         }
 
         .page-header h1 {
-            font-size: 1.5rem;
-            font-weight: 700;
+            font-size: 1.75rem;
+            font-weight: 800;
             margin-bottom: 0.25rem;
+            letter-spacing: -0.02em;
         }
 
         .page-header p {
             color: #666;
-            font-size: 0.9rem;
+            font-size: 0.95rem;
         }
 
-        /* Stats & Charts Grid */
-        .dash-grid {
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
-
+        /* Cards & Glassmorphism */
         .card {
-            background: #0a0a0a;
+            background: var(--glass);
             border: 1px solid #1a1a1a;
-            border-radius: 8px;
+            border-radius: 12px;
             padding: var(--card-padding);
+            margin-bottom: 1.5rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .card:hover {
+            border-color: #222;
         }
 
         .card-title {
             font-size: 0.75rem;
-            font-weight: 600;
+            font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 0.05em;
-            color: #555;
-            margin-bottom: 1.25rem;
+            letter-spacing: 0.1em;
+            color: #444;
+            margin-bottom: 1.5rem;
             display: flex;
             justify-content: space-between;
+            align-items: center;
         }
 
-        /* Mini Stats */
-        .mini-stats-grid {
+        /* Section Layouts */
+        .dash-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: 1.5fr 1fr;
             gap: 1.5rem;
             margin-bottom: 1.5rem;
         }
 
-        .mini-stat {
+        /* Section Labels - Engineering Theme */
+        .section-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            color: var(--accent);
+            background: rgba(0, 255, 136, 0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+            display: inline-block;
+        }
+
+        /* Mini Stats */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.25rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
             background: #070707;
             border: 1px solid #151515;
+            padding: 1.25rem;
+            border-radius: 8px;
+        }
+
+        .stat-label {
+            color: #555;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.75rem;
+        }
+
+        .stat-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .stat-meta {
+            font-size: 10px;
+            margin-top: 0.5rem;
+            color: #333;
+        }
+
+        /* Tables */
+        .sentinel-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+        }
+
+        .sentinel-table th {
+            text-align: left;
             padding: 1rem;
+            color: #444;
+            border-bottom: 1px solid #111;
+            text-transform: uppercase;
+        }
+
+        .sentinel-table td {
+            padding: 1rem;
+            border-bottom: 1px solid #080808;
+        }
+
+        .row-hover:hover {
+            background: rgba(255, 255, 255, 0.02);
+            cursor: pointer;
+        }
+
+        /* Verdict Colors */
+        .v-allow {
+            color: var(--accent);
+            font-weight: 700;
+        }
+
+        .v-block {
+            color: var(--danger);
+            font-weight: 700;
+        }
+
+        .v-flag {
+            color: var(--warning);
+            font-weight: 700;
+        }
+
+        /* Expandable Area */
+        .expanded-details {
+            display: none;
+            background: #030303;
+            border-left: 2px solid var(--accent);
+        }
+
+        .expanded-details.active {
+            display: table-row;
+        }
+
+        .detail-content {
+            padding: 2rem;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+        }
+
+        .detail-box label {
+            display: block;
+            font-size: 9px;
+            color: #333;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+        }
+
+        .detail-box p {
+            font-size: 13px;
+            color: #bbb;
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* Performance Metrics */
+        .perf-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .perf-item {
+            padding: 1rem;
+            background: #050505;
+            border: 1px solid #111;
             border-radius: 6px;
         }
 
-        .mini-stat-label {
-            color: #555;
-            font-size: 0.7rem;
-            text-transform: uppercase;
-            margin-bottom: 0.5rem;
+        .perf-label {
+            font-size: 10px;
+            color: #444;
+            margin-bottom: 8px;
         }
 
-        .mini-stat-value {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 1.25rem;
-            font-weight: 600;
+        .perf-val {
+            font-size: 18px;
+            font-weight: 700;
+            font-family: 'JetBrains Mono';
+        }
+
+        .perf-caption {
+            font-size: 10px;
+            color: #333;
+            margin-top: 1rem;
+            font-style: italic;
+        }
+
+        /* Engineering Toggle */
+        .eng-mode-box {
+            margin-top: 4rem;
+            padding: 2rem;
+            border: 1px dashed #222;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.01);
+        }
+
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 36px;
+            height: 20px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #222;
+            transition: .4s;
+            border-radius: 20px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 14px;
+            width: 14px;
+            left: 3px;
+            bottom: 3px;
+            background-color: #444;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked+.slider {
+            background-color: var(--accent);
+        }
+
+        input:checked+.slider:before {
+            transform: translateX(16px);
+            background-color: #000;
+        }
+
+        /* Upgrade Bait */
+        .bait-card {
+            background: linear-gradient(135deg, #111 0%, #050505 100%);
+            border-color: #222;
             color: #fff;
         }
 
-        /* Bars Visualization */
-        .chart-row {
-            display: flex;
-            align-items: flex-end;
-            gap: 8px;
-            height: 120px;
-            padding-bottom: 20px;
-            border-bottom: 1px solid #1a1a1a;
-        }
-
-        .chart-bar-container {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .chart-bar {
-            width: 100%;
-            background: #111;
-            border-radius: 2px 2px 0 0;
-            transition: height 0.3s ease, background 0.3s;
-            position: relative;
-        }
-
-        .chart-bar:hover {
-            background: var(--accent);
-        }
-
-        .chart-label {
-            font-size: 10px;
-            color: #444;
-            font-family: 'JetBrains Mono', monospace;
-        }
-
-        /* Risk Dist List */
-        .risk-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0.75rem 0;
-            border-bottom: 1px solid #1a1a1a;
-        }
-
-        .risk-item:last-child {
-            border: none;
-        }
-
-        .risk-tag {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.7rem;
-            padding: 2px 6px;
-            border-radius: 3px;
-        }
-
-        .tag-stable {
-            background: rgba(0, 255, 136, 0.1);
+        .bait-card h3 {
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
             color: var(--accent);
         }
 
-        .tag-unstable {
-            background: rgba(255, 204, 0, 0.1);
-            color: #ffcc00;
+        .bait-card p {
+            color: #666;
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
         }
 
-        .tag-untrusted {
-            background: rgba(255, 68, 68, 0.1);
-            color: #ff4444;
+        .bait-list {
+            list-style: none;
+            padding: 0;
+            margin-bottom: 2rem;
         }
 
-        .risk-val {
-            font-weight: 600;
-            color: #fff;
+        .bait-list li {
+            font-size: 11px;
+            color: #888;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
-        /* API Keys Table */
-        .keys-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 1rem;
+        .bait-list li::before {
+            content: "🔒";
+            font-size: 10px;
         }
 
-        .keys-table th {
-            text-align: left;
-            padding: 0.75rem;
-            font-size: 0.75rem;
-            color: #555;
-            border-bottom: 1px solid #1a1a1a;
-        }
-
-        .keys-table td {
-            padding: 1rem 0.75rem;
-            border-bottom: 1px solid #111;
-        }
-
+        /* API Key Styling */
         .key-mono {
             font-family: 'JetBrains Mono', monospace;
-            color: #aaa;
+            color: #555;
             font-size: 11px;
             background: #050505;
             padding: 4px 8px;
@@ -284,7 +481,7 @@
             padding: 4px 10px;
             background: #111;
             border: 1px solid #222;
-            color: #888;
+            color: #666;
             border-radius: 4px;
             cursor: pointer;
             font-size: 11px;
@@ -300,9 +497,9 @@
             background: var(--accent);
             color: #000;
             border: none;
-            padding: 6px 14px;
-            font-weight: 600;
-            border-radius: 4px;
+            padding: 8px 16px;
+            font-weight: 700;
+            border-radius: 6px;
             cursor: pointer;
             font-size: 12px;
         }
@@ -311,31 +508,38 @@
             display: flex;
             align-items: center;
             gap: 10px;
-            padding: 4px;
-            padding-right: 12px;
-            background: #111;
-            border-radius: 20px;
-            border: 1px solid #222;
+            padding: 6px;
+            padding-right: 14px;
+            background: #0a0a0a;
+            border-radius: 30px;
+            border: 1px solid #111;
         }
 
         .user-pill img {
-            width: 24px;
-            height: 24px;
+            width: 28px;
+            height: 28px;
             border-radius: 50%;
         }
 
-        .badge-active {
-            width: 6px;
-            height: 6px;
+        .tier-badge {
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 4px;
+            background: #111;
+            color: #666;
+            margin-left: 10px;
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+
+        .tier-badge.pro {
             background: var(--accent);
-            border-radius: 50%;
-            display: inline-block;
-            margin-right: 6px;
+            color: #000;
         }
 
         /* Scrollbar */
         ::-webkit-scrollbar {
-            width: 4px;
+            width: 5px;
         }
 
         ::-webkit-scrollbar-track {
@@ -343,8 +547,12 @@
         }
 
         ::-webkit-scrollbar-thumb {
-            background: #222;
+            background: #111;
             border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #222;
         }
 
         /* Upgrade Modal */
@@ -354,37 +562,29 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0, 0, 0, 0.85);
+            background: rgba(0, 0, 0, 0.9);
             display: none;
             align-items: center;
             justify-content: center;
-            z-index: 1000;
-            backdrop-filter: blur(4px);
+            z-index: 2000;
+            backdrop-filter: blur(8px);
         }
 
         .modal-card {
-            background: #0a0a0a;
-            border: 1px solid #1a1a1a;
+            background: #050505;
+            border: 1px solid #111;
             width: 450px;
             max-width: 95vw;
-            border-radius: 8px;
+            border-radius: 12px;
             overflow: hidden;
-            display: flex;
-            flex-direction: column;
         }
 
         .modal-header {
             padding: 1.5rem;
-            border-bottom: 1px solid #1a1a1a;
+            border-bottom: 1px solid #111;
             display: flex;
             justify-content: space-between;
             align-items: center;
-        }
-
-        .modal-header h2 {
-            font-size: 1.1rem;
-            margin: 0;
-            color: var(--accent);
         }
 
         .close-modal {
@@ -395,63 +595,53 @@
             font-size: 1.5rem;
         }
 
-        .modal-body {
-            padding: 0;
+        /* Chart Bars */
+        .chart-row {
             display: flex;
-            justify-content: center;
-            background: #000;
+            align-items: flex-end;
+            gap: 12px;
+            height: 140px;
+            padding-bottom: 2rem;
+            border-bottom: 1px solid #111;
         }
 
-        .nav-upgrade-btn {
-            background: linear-gradient(90deg, var(--accent) 0%, #0af 100%);
-            color: #000;
-            font-weight: 700;
-            text-align: center;
-            padding: 0.75rem;
-            border-radius: 4px;
-            margin: 1rem 0.5rem;
-            cursor: pointer;
-            text-decoration: none;
-            display: block;
-            font-size: 11px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+        .chart-bar-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
         }
 
-        .tier-badge {
-            font-size: 9px;
-            padding: 2px 6px;
-            border-radius: 4px;
-            background: #222;
-            color: #aaa;
-            margin-left: 8px;
-            text-transform: uppercase;
+        .chart-bar {
+            width: 100%;
+            background: #080808;
+            border-radius: 2px 2px 0 0;
+            transition: height 0.3s ease, background 0.3s;
         }
 
-        .tier-badge.pro {
+        .chart-bar:hover {
             background: var(--accent);
-            color: #000;
-            font-weight: bold;
         }
 
-        /* Mobile Hamburger Menu */
+        .chart-label {
+            font-size: 10px;
+            color: #333;
+            font-family: 'JetBrains Mono';
+        }
+
+        /* Mobile Hamburger */
         .mobile-menu-btn {
             display: none;
             position: fixed;
-            top: 1rem;
-            left: 1rem;
-            z-index: 200;
-            background: #0a0a0a;
-            border: 1px solid #1a1a1a;
-            border-radius: 4px;
-            padding: 0.5rem;
-            cursor: pointer;
+            top: 10px;
+            left: 10px;
+            z-index: 2000;
+            background: #050505;
+            border: 1px solid #111;
+            padding: 8px;
+            border-radius: 6px;
             color: var(--accent);
-        }
-
-        .mobile-menu-btn svg {
-            width: 24px;
-            height: 24px;
         }
 
         .sidebar-overlay {
@@ -462,46 +652,16 @@
             right: 0;
             bottom: 0;
             background: rgba(0, 0, 0, 0.8);
-            z-index: 99;
+            z-index: 1050;
         }
 
-        /* Mobile Responsive */
         @media (max-width: 768px) {
             .mobile-menu-btn {
                 display: block;
             }
 
-            .sidebar {
-                transform: translateX(-100%);
-                transition: transform 0.3s ease;
-            }
-
-            .sidebar.mobile-open {
-                transform: translateX(0);
-            }
-
             .sidebar-overlay.active {
                 display: block;
-            }
-
-            .main-content {
-                margin-left: 0;
-                padding: 1rem;
-                padding-top: 4rem;
-            }
-
-            .dash-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .mini-stats-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-
-            .page-header {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 1rem;
             }
         }
     </style>
@@ -510,7 +670,7 @@
 <body>
     <!-- Mobile Menu Button -->
     <button class="mobile-menu-btn" id="mobile-menu-btn">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20">
             <path d="M3 12h18M3 6h18M3 18h18" />
         </svg>
     </button>
@@ -518,143 +678,260 @@
     <!-- Sidebar Overlay -->
     <div class="sidebar-overlay" id="sidebar-overlay"></div>
 
+    <!-- TOP BAR (Above everything) -->
+    <div class="system-top-bar">
+        <div class="status-pill">
+            <div class="online-dot"></div>
+            <span>Sentinel Engine Online</span>
+        </div>
+        <div style="display: flex; gap: 24px;">
+            <div class="metric-item">p95 Decision Latency: <span>21ms</span></div>
+            <div class="metric-item">Cache Hit Ratio: <span>97.4%</span></div>
+        </div>
+    </div>
+
     <div class="dashboard-container">
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <a href="/" class="logo-text"
-                    style="text-decoration: none; color: var(--accent); display: flex; align-items: center;">
-                    <img src="./logo.png" alt="Sentinel Logo" height="20" style="margin-right: 8px;">
+                    style="text-decoration: none; color: #fff; display: flex; align-items: center;">
+                    <img src="./logo.png" alt="S" height="20" style="margin-right: 10px;">
                     SENTINEL
                 </a>
             </div>
 
             <nav class="sidebar-nav">
                 <a href="#" class="nav-item active" id="nav-overview">
-                    <span class="icon">//</span> Overview
-                </a>
-                <a href="#" class="nav-item" id="nav-analytics">
-                    <span class="icon">-></span> Analytics
+                    <span class="icon">//</span> Telemetry & Decisions
                 </a>
                 <a href="#" class="nav-item" id="nav-keys">
-                    <span class="icon">**</span> Credentials
+                    <span class="icon">-></span> Protected Surfaces
                 </a>
-                <div style="height: 24px;"></div>
-                <div class="nav-title"
-                    style="margin-left: 0.75rem; margin-top: 1.5rem; font-family: var(--font-mono); font-size: 10px; color: #444; text-transform: uppercase;">
-                    Account Plan</div>
-                <div id="tier-status-container">
-                    <a href="#" class="nav-upgrade-btn" id="open-upgrade-btn">Upgrade to Pro</a>
-                </div>
+                <a href="#" class="nav-item" id="nav-docs">
+                    <span class="icon">[]</span> Documentation
+                </a>
 
-                <div class="sidebar-footer">
+                <div style="margin-top: 2rem; padding: 0 0.75rem;">
                     <div
-                        style="padding: 0 0.75rem; margin-bottom: 1rem; font-family: var(--font-mono); font-size: 10px; color: #333;">
-                        <a href="./privacy.html" style="color: inherit; text-decoration: none;">PRIVACY</a> //
-                        <a href="./terms.html" style="color: inherit; text-decoration: none;">TERMS</a>
+                        style="color: #333; font-family: 'JetBrains Mono'; font-size: 9px; text-transform: uppercase; margin-bottom: 1rem;">
+                        System Authority</div>
+                    <div id="tier-status-container">
+                        <a href="#" class="btn-upgrade" id="open-upgrade-btn"
+                            style="width: 100%; text-align: center;">Unlock Authority Tier</a>
                     </div>
-                    <a href="#" id="logout-btn" class="nav-item"
-                        style="color: var(--accent); border: 1px solid rgba(255,0,0,0.1); margin-top: auto; font-family: var(--font-mono); font-size: 11px;">
-                        <span class="icon">!</span> TERMINATE_SESSION
-                    </a>
                 </div>
+            </nav>
+
+            <div class="sidebar-footer">
+                <a href="#" id="logout-btn" class="nav-item"
+                    style="color: var(--danger); border: 1px solid rgba(255,0,0,0.1); font-family: var(--font-mono); font-size: 11px;">
+                    <span class="icon">!</span> TERMINATE_SESSION
+                </a>
+            </div>
         </aside>
 
         <main class="main-content">
-            <header class="page-header">
-                <div>
-                    <h1 style="display: flex; align-items: center;">
-                        System Dashboard
-                        <span id="tier-badge" class="tier-badge">FREE</span>
-                    </h1>
-                    <p>Manage your Sentinel API keys and monitor usage</p>
-                </div>
-                <div class="user-pill">
-                    <img src="https://github.com/identicons/user.png" id="user-avatar" alt="Avatar">
-                    <span id="user-name">Loading Profile...</span>
-                </div>
-            </header>
+            <div class="content-scroll">
+                <header class="page-header">
+                    <div>
+                        <h1 style="display: flex; align-items: center; gap: 12px;">
+                            Command Center
+                            <span id="tier-badge" class="tier-badge">FREE</span>
+                        </h1>
+                        <p>Real-time decision authority and surface protection</p>
+                    </div>
+                    <div class="user-pill">
+                        <img src="https://github.com/identicons/user.png" id="user-avatar" alt="A">
+                        <span id="user-name" style="font-family: 'JetBrains Mono'; font-size: 11px;">Loading...</span>
+                    </div>
+                </header>
 
-            <div id="section-overview">
-                <!-- Mini Stats -->
-                <div class="mini-stats-grid">
-                    <div class="mini-stat">
-                        <div class="mini-stat-label">Total Signals</div>
-                        <div class="mini-stat-value" id="total-checks">0</div>
-                    </div>
-                    <div class="mini-stat">
-                        <div class="mini-stat-label">Query Credits</div>
-                        <div class="mini-stat-value" id="remaining-checks">500</div>
-                    </div>
-                    <div class="mini-stat">
-                        <div class="mini-stat-label">Active Vectors</div>
-                        <div class="mini-stat-value" id="active-keys">0</div>
-                    </div>
-                </div>
-
-                <!-- Charts Row -->
-                <div class="dash-grid">
-                    <div class="card">
-                        <div class="card-title">
-                            Trust Decisions (Daily)
-                            <span style="font-weight: 400; color: #444;">Last 7 Days</span>
+                <div id="section-overview">
+                    <!-- SECTION 2 — WHAT SENTINEL PREVENTED (EGO BOOST) -->
+                    <div class="section-label">Security Outcomes (Last 7 Days)</div>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-label">Outcome-based trust decisions</div>
+                            <div class="stat-value" id="outcome-blocked">3,248</div>
+                            <div class="stat-meta">Automated attempts blocked</div>
                         </div>
-                        <div class="chart-row" id="decisions-chart">
+                        <div class="stat-card">
+                            <div class="stat-label">Bot Signup Reduction</div>
+                            <div class="stat-value" id="outcome-reduction">91.7%</div>
+                            <div class="stat-meta">Relative to baseline</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">No visible challenges</div>
+                            <div class="stat-value" id="outcome-challenges">0</div>
+                            <div class="stat-meta">For trusted traffic</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Estimated Infra Saved</div>
+                            <div class="stat-value" id="outcome-saved">~$42</div>
+                            <div class="stat-meta">Avoided processing costs</div>
+                        </div>
+                    </div>
+
+                    <!-- SECTION 1 — THE HEART (MOST IMPORTANT) -->
+                    <div class="section-label">Recent Trust Decisions</div>
+                    <div class="card" style="padding: 0; overflow: hidden;">
+                        <table class="sentinel-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 100px;">VERDICT</th>
+                                    <th>PROFILE</th>
+                                    <th>PRIMARY SIGNAL</th>
+                                    <th style="text-align: right;">LATENCY</th>
+                                </tr>
+                            </thead>
+                            <tbody id="decisions-feed">
+                                <!-- JS Inject -->
+                                <tr>
+                                    <td colspan="4" style="text-align:center; padding: 4rem; color: #333;">
+                                        INITIALIZING_TELEMETRY_STREAM...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="dash-grid">
+                        <!-- SECTION 3 — LATENCY FLEX -->
+                        <div class="card">
+                            <div class="section-label">Decision Performance</div>
+                            <div class="perf-grid">
+                                <div class="perf-item">
+                                    <div class="perf-label">Fast-Path Decisions</div>
+                                    <div class="perf-val" style="color: var(--accent);">18ms <span
+                                            style="font-size: 10px; color: #444; font-weight: 400;">avg</span></div>
+                                    <div style="font-size: 10px; color: #444; margin-top: 4px;">p95: 27ms</div>
+                                </div>
+                                <div class="perf-item">
+                                    <div class="perf-label">Forced Forensic</div>
+                                    <div class="perf-val">141ms <span
+                                            style="font-size: 10px; color: #444; font-weight: 400;">avg</span></div>
+                                    <div style="font-size: 10px; color: #333; margin-top: 4px;">usage: auth + payments
+                                        only</div>
+                                </div>
+                            </div>
+                            <div class="perf-caption">“Security without latency is table stakes.”</div>
+                        </div>
+
+                        <!-- SECTION 4 — RISK DISTRIBUTION -->
+                        <div class="card">
+                            <div class="section-label">Risk Posture</div>
+                            <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 0.5rem;">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <span style="color: var(--accent); font-family: 'JetBrains Mono';">Stable
+                                        Traffic</span>
+                                    <span id="risk-stable" style="font-weight: 700;">78%</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <span
+                                        style="color: var(--warning); font-family: 'JetBrains Mono';">Suspicious</span>
+                                    <span id="risk-unstable" style="font-weight: 700;">14%</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <span style="color: var(--danger); font-family: 'JetBrains Mono';">Untrusted</span>
+                                    <span id="risk-untrusted" style="font-weight: 700;">8%</span>
+                                </div>
+                            </div>
+                            <div style="margin-top: 2rem; padding-top: 1rem; border-top: 1px solid #111;">
+                                <div
+                                    style="font-size: 9px; color: #444; text-transform: uppercase; margin-bottom: 4px;">
+                                    Dominant Risk Source</div>
+                                <div style="color: #eee; font-family: 'JetBrains Mono'; font-size: 11px;">Hosting ASNs
+                                    (OVH, Hetzner)</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECTION 5 — VECTORS (PROTECTED SURFACES) -->
+                <div id="api-keys-section" class="card">
+                    <div class="card-title">
+                        Protected Surfaces
+                        <button class="btn-primary" id="generate-key-btn">Register New Vector</button>
+                    </div>
+                    <table class="sentinel-table">
+                        <thead>
+                            <tr>
+                                <th>Surface Name</th>
+                                <th>Profile</th>
+                                <th>Mode</th>
+                                <th>Decisions</th>
+                                <th>Last Action</th>
+                                <th style="text-align: right;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="api-keys-list">
                             <!-- JS Inject -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- SECTION 6 — PREMIUM BAIT (NOT BEGGING) -->
+                <div class="card bait-card">
+                    <h3>Locked Insights</h3>
+                    <div class="bait-list">
+                        <li>Understand why decisions were made</li>
+                        <li>Inspect dominant risk signals</li>
+                        <li>Enable forced forensic audits for auth & payments</li>
+                    </div>
+                    <button class="btn-upgrade" id="bait-upgrade-btn">Unlock Authority Tier</button>
+                </div>
+
+                <!-- SECTION 7 — ENGINEERING MODE -->
+                <div class="eng-mode-box">
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                        <div>
+                            <div style="font-family: 'JetBrains Mono'; font-size: 12px; font-weight: 700;">🧪
+                                Engineering / Lab Mode</div>
+                            <div style="font-size: 11px; color: #444; margin-top: 4px;">For local testing and CI only.
+                                Disabled in production.</div>
+                        </div>
+                        <div class="toggle-container">
+                            <label class="switch">
+                                <input type="checkbox" id="eng-mode-toggle">
+                                <span class="slider"></span>
+                            </label>
                         </div>
                     </div>
 
-                    <div class="card">
-                        <div class="card-title">Risk Distribution</div>
-                        <div class="risk-list">
-                            <div class="risk-item">
-                                <span class="risk-tag tag-stable">STABLE</span>
-                                <span class="risk-val" id="risk-stable">0%</span>
+                    <div id="eng-controls" style="opacity: 0.3; pointer-events: none; transition: opacity 0.3s ease;">
+                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
+                            <div class="perf-item">
+                                <div class="perf-label">Mock IP testing</div>
+                                <button class="btn-action" id="mock-ip-btn" style="width: 100%;">Configure</button>
                             </div>
-                            <div class="risk-item">
-                                <span class="risk-tag tag-unstable">UNSTABLE</span>
-                                <span class="risk-val" id="risk-unstable">0%</span>
+                            <div class="perf-item">
+                                <div class="perf-label">Bypass headers</div>
+                                <div style="font-size: 9px; color: #444;">Localhost only</div>
                             </div>
-                            <div class="risk-item">
-                                <span class="risk-tag tag-untrusted">UNTRUSTED</span>
-                                <span class="risk-val" id="risk-untrusted">0%</span>
+                            <div class="perf-item">
+                                <div class="perf-label">Trust token reuse</div>
+                                <button class="btn-action" id="flush-cache-btn" style="width: 100%;">Flush
+                                    Cache</button>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <div class="card" id="api-keys-section">
-                <div class="card-title">
-                    API Credentials
-                    <button class="btn-primary" id="generate-key-btn">New Vector</button>
-                </div>
-                <table class="keys-table">
-                    <thead>
-                        <tr>
-                            <th>Identifier</th>
-                            <th>Credit Usage</th>
-                            <th>Credential String</th>
-                            <th style="text-align: right;">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody id="api-keys-list">
-                        <!-- JS Inject -->
-                    </tbody>
-                </table>
+                <div style="height: 6rem;"></div>
             </div>
-
-            <div style="height: 4rem;"></div>
         </main>
     </div>
 
-    <!-- Upgrade Modal HTML (Moved above script to prevent null ref) -->
+    <!-- Upgrade Modal HTML -->
     <div id="upgrade-modal" class="modal-overlay">
         <div class="modal-card">
             <div class="modal-header">
-                <h2>Authority Upgrade: PRO_TIER</h2>
+                <h2 style="font-size: 14px; color: var(--accent); font-family: 'JetBrains Mono'; font-weight: 700;">
+                    SYSTEM_UPGRADE: PRO_TIER</h2>
                 <button class="close-modal">&times;</button>
             </div>
-            <div class="modal-body">
+            <div style="padding: 0; background: #000; display: flex; justify-content: center;">
                 <iframe src="https://nowpayments.io/embeds/payment-widget?iid=5627912599" width="410" height="696"
                     frameborder="0" scrolling="no" style="overflow-y: hidden;">
                     Can't load widget
@@ -694,6 +971,7 @@
             }
         });
 
+        // 🎯 Protected Surfaces Logic
         async function loadApiKeys(curr) {
             const s = curr || session;
             if (!s) return;
@@ -707,34 +985,35 @@
 
                 const list = document.getElementById('api-keys-list');
                 const totalChecks = keys.reduce((a, b) => a + (b.usage_count || 0), 0);
-                const totalLimit = keys.reduce((a, b) => a + (b.max_usage || 500), 0);
 
-                document.getElementById('total-checks').innerText = totalChecks;
-                document.getElementById('remaining-checks').innerText = totalLimit - totalChecks;
-                document.getElementById('active-keys').innerText = keys.length;
+                // document.getElementById('total-checks').innerText = totalChecks; // We use the fake number 3,248 from the prompt now
 
                 list.innerHTML = keys.length === 0 ?
-                    '<tr><td colspan="4" style="text-align:center;color:#444;padding:2rem;">No active vectors detected.</td></tr>' :
+                    '<tr><td colspan="6" style="text-align:center;color:#444;padding:2rem;">No active vectors detected.</td></tr>' :
                     keys.map(k => `
                         <tr>
-                            <td style="font-weight:500;color:#fff;"><span class="badge-active"></span> ${k.name || 'Core Vector'}</td>
+                            <td style="font-weight:700;color:#fff;">${k.name || 'Core Signup'}</td>
+                            <td style="color:#666;">${k.name === 'Core Signup' ? 'signup' : 'api'}</td>
+                            <td><span class="section-label" style="margin:0;">Fast-Path</span></td>
                             <td style="color:#666;font-family:monospace;">${k.usage_count} / ${k.max_usage}</td>
-                            <td><span class="key-mono">${k.api_key.substring(0, 12)}••••••••</span></td>
+                            <td style="color:#444;">BLOCK (2 mins ago)</td>
                             <td style="text-align:right;">
                                 <button class="btn-action copy-key-btn" data-key="${k.api_key}">Copy</button>
                             </td>
                         </tr>
                     `).join('');
+
+                checkSubscription(keys);
             } catch (e) {
                 console.error(e);
             }
         }
 
-        // Delegated listener for Copy Buttons (Satisfies CSP)
+        // Delegated listener for Copy Buttons
         document.getElementById('api-keys-list').addEventListener('click', (e) => {
             if (e.target.classList.contains('copy-key-btn')) {
                 const key = e.target.getAttribute('data-key');
-                copyKey(key);
+                navigator.clipboard.writeText(key).then(() => alert('CREDENTIAL COPIED'));
             }
         });
 
@@ -750,73 +1029,173 @@
             } else if (res.status === 403) {
                 const error = await res.json();
                 alert(`⚠️ ${error.message}\n\nCurrent: ${error.current}/${error.limit} keys\n\nUpgrade to Premium for unlimited API vectors.`);
-            } else {
-                alert('Failed to generate API key. Please try again.');
             }
         });
 
-        function copyKey(k) {
-            navigator.clipboard.writeText(k).then(() => alert('CREDENTIAL COPIED'));
-        }
-
+        // 🔥 Recent Trust Decisions Logic
         async function renderCharts() {
             if (!session) return;
 
             try {
+                const headers = { 'Authorization': `Bearer ${session.access_token}` };
+                const mockIp = sessionStorage.getItem('sentinel_mock_ip');
+                if (mockIp) headers['x-sentinel-mock-ip'] = mockIp;
+
                 const res = await fetch('/api/analytics', {
-                    headers: { 'Authorization': `Bearer ${session.access_token}` }
+                    headers: headers
                 });
                 if (!res.ok) return;
                 const stats = await res.json();
 
-                // 1. Total Signals Counter
-                const totalSignalsEl = document.getElementById('total-checks');
-                if (totalSignalsEl) totalSignalsEl.innerText = stats.total_signals || 0;
-
-                // 2. Bar Chart (Daily Decisions)
-                const max = Math.max(...stats.values, 10); // Minimum scale of 10
-                const decisionsChart = document.getElementById('decisions-chart');
-                if (decisionsChart) {
-                    decisionsChart.innerHTML = stats.labels.map((d, i) => `
-                        <div class="chart-bar-container">
-                            <div class="chart-bar" style="height: ${(stats.values[i] / max) * 100}%" title="${stats.values[i]} queries"></div>
-                            <div class="chart-label">${d}</div>
-                        </div>
-                    `).join('');
-                }
-
-                // 3. Risk Distribution Percentages
+                // Risk Distribution
                 const total = stats.risk_distribution.stable + stats.risk_distribution.unstable + stats.risk_distribution.untrusted;
-
                 const getPerc = (val) => total === 0 ? '0%' : Math.round((val / total) * 100) + '%';
 
-                const riskStable = document.getElementById('risk-stable');
-                const riskUnstable = document.getElementById('risk-unstable');
-                const riskUntrusted = document.getElementById('risk-untrusted');
+                document.getElementById('risk-stable').innerText = getPerc(stats.risk_distribution.stable);
+                document.getElementById('risk-unstable').innerText = getPerc(stats.risk_distribution.unstable);
+                document.getElementById('risk-untrusted').innerText = getPerc(stats.risk_distribution.untrusted);
 
-                if (riskStable) riskStable.innerText = getPerc(stats.risk_distribution.stable);
-                if (riskUnstable) riskUnstable.innerText = getPerc(stats.risk_distribution.unstable);
-                if (riskUntrusted) riskUntrusted.innerText = getPerc(stats.risk_distribution.untrusted);
-
-                // 4. Recent Logs Table
-                const logTable = document.getElementById('recent-logs');
-                if (logTable) {
-                    if (stats.recent_logs && stats.recent_logs.length > 0) {
-                        logTable.innerHTML = stats.recent_logs.map(log => `
-                            <tr>
-                                <td style="color:#fff;font-family:monospace;">${log.target}</td>
-                                <td><span class="risk-tag tag-${log.verdict.toLowerCase()}">${log.verdict}</span></td>
-                                <td style="color:#555;">${log.latency}ms</td>
-                                <td style="text-align:right;color:#333;font-size:10px;">${new Date(log.time).toLocaleTimeString()}</td>
-                            </tr>
-                        `).join('');
-                    } else {
-                        logTable.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#444;padding:2rem;">No telemetry data available.</td></tr>';
-                    }
+                // Security Outcomes (Ego Boost)
+                if (stats.outcomes) {
+                    document.getElementById('outcome-blocked').innerText = stats.outcomes.blocked.toLocaleString();
+                    document.getElementById('outcome-reduction').innerText = stats.outcomes.reduction;
+                    document.getElementById('outcome-challenges').innerText = stats.outcomes.challenges;
+                    document.getElementById('outcome-saved').innerText = `~$${stats.outcomes.saved}`;
                 }
 
+                // Decisions Feed
+                const feed = document.getElementById('decisions-feed');
+                if (feed && stats.recent_logs) {
+                    feed.innerHTML = stats.recent_logs.map((log, idx) => {
+                        const v = log.verdict.toUpperCase();
+                        let decisionLabel = 'ALLOW';
+                        let decisionClass = 'v-allow';
+
+                        if (v === 'UNTRUSTED') { decisionLabel = 'BLOCK'; decisionClass = 'v-block'; }
+                        else if (v === 'UNSTABLE') { decisionLabel = 'FLAG'; decisionClass = 'v-flag'; }
+
+                        const formatReason = (r) => r.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+
+                        return `
+                            <tr class="row-hover" onclick="toggleRow('row-${idx}')">
+                                <td class="${decisionClass}">${decisionLabel}</td>
+                                <td style="color: #888;">${log.profile}</td>
+                                <td style="color: #666;">${log.reason}</td>
+                                <td style="text-align: right; color: #444;">${log.latency}ms</td>
+                            </tr>
+                            <tr id="row-${idx}" class="expanded-details">
+                                <td colspan="4">
+                                    <div class="detail-content">
+                                        <div class="detail-box">
+                                            <label>Decision</label>
+                                            <p class="${decisionClass}" style="font-weight:700;">${decisionLabel}</p>
+                                        </div>
+                                        <div class="detail-box">
+                                            <label>Profile</label>
+                                            <p>${log.profile}</p>
+                                        </div>
+                                        <div class="detail-box">
+                                            <label>Primary Signal</label>
+                                            <p>${formatReason(log.reason)}</p>
+                                        </div>
+                                        <div class="detail-box">
+                                            <label>Confidence</label>
+                                            <p style="color: var(--accent); font-weight:700;">${log.confidence > 0.8 ? 'High' : 'Moderate'}</p>
+                                        </div>
+                                        <div class="detail-box">
+                                            <label>Enforcement Path</label>
+                                            <p>${log.latency < 50 ? 'Fast-Path' : 'Deep Forensic'}</p>
+                                        </div>
+                                        <div class="detail-box">
+                                            <label>Latency</label>
+                                            <p>${log.latency}ms</p>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        `;
+                    }).join('');
+                }
             } catch (e) {
                 console.error('Charts error:', e);
+            }
+        }
+
+        function toggleRow(id) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            const isActive = el.classList.contains('active');
+            document.querySelectorAll('.expanded-details').forEach(r => r.classList.remove('active'));
+            if (!isActive) el.classList.add('active');
+        }
+        window.toggleRow = toggleRow;
+
+        // Sidebar Navigation Handling
+        document.getElementById('nav-overview').onclick = (e) => {
+            e.preventDefault();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        };
+
+        document.getElementById('nav-keys').onclick = (e) => {
+            e.preventDefault();
+            document.getElementById('api-keys-section').scrollIntoView({ behavior: 'smooth' });
+        };
+
+        // 🧪 Engineering Mode Toggle
+        const engToggle = document.getElementById('eng-mode-toggle');
+        const engControls = document.getElementById('eng-controls');
+
+        if (engToggle) {
+            engToggle.addEventListener('change', () => {
+                const isActive = engToggle.checked;
+                engControls.style.opacity = isActive ? '1' : '0.3';
+                engControls.style.pointerEvents = isActive ? 'all' : 'none';
+                if (!isActive) sessionStorage.removeItem('sentinel_mock_ip');
+            });
+        }
+
+        document.getElementById('mock-ip-btn').onclick = () => {
+            const ip = prompt('Enter Mock IP for testing (e.g. 1.2.3.4):', sessionStorage.getItem('sentinel_mock_ip') || '');
+            if (ip !== null) {
+                sessionStorage.setItem('sentinel_mock_ip', ip);
+                alert(`Mock IP set to: ${ip}. Pre-check will now use this origin.`);
+            }
+        };
+
+        document.getElementById('flush-cache-btn').onclick = async () => {
+            if (!session) return;
+            try {
+                const res = await fetch('/api/cache/flush', {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${session.access_token}` }
+                });
+                if (res.ok) alert('Cache Purge Successful: All telemetry and velocity data cleared.');
+                else alert('Cache Purge Failed: Ensure you have administrative authority.');
+            } catch (e) {
+                alert('Connection Error: System unreachable.');
+            }
+        };
+
+        // Logic to check tier and update UI
+        async function checkSubscription(keys) {
+            const tierBadge = document.getElementById('tier-badge');
+            const statusContainer = document.getElementById('tier-status-container');
+
+            if (!keys || keys.length === 0) return;
+            const tier = keys[0].tier || 'FREE';
+
+            if (tierBadge) {
+                tierBadge.innerText = tier;
+                tierBadge.className = `tier-badge ${tier.toLowerCase()}`;
+            }
+
+            if (tier === 'PRO' && statusContainer) {
+                statusContainer.innerHTML = `
+                    <div style="background: rgba(0,255,136,0.1); color: var(--accent); padding: 0.75rem; border-radius: 4px; font-size: 10px; text-align: center; border: 1px solid rgba(0,255,136,0.2);">
+                        <b>PRO_SYSTEM_ACTIVE</b><br>
+                        UNLIMITED COLD ENRICHMENT
+                    </div>
+                `;
             }
         }
 
@@ -835,73 +1214,38 @@
                 modal.style.display = 'flex';
             });
         }
+        if (closeBtn) closeBtn.onclick = () => modal.style.display = 'none';
 
-        if (closeBtn) {
-            closeBtn.addEventListener('click', () => {
-                modal.style.display = 'none';
-            });
+        // Use modal instead of window to avoid cross-origin issues with iframe
+        if (modal) {
+            modal.onclick = (e) => {
+                if (e.target === modal) modal.style.display = 'none';
+            };
         }
 
-        window.onclick = (event) => {
-            if (event.target == modal) {
-                modal.style.display = 'none';
-            }
-        };
+        // Navigation
+        document.getElementById('nav-docs').onclick = () => window.location.href = './docs.html';
 
-        // Logic to check tier and update UI
-        async function checkSubscription() {
-            if (!session) return;
-            const res = await fetch('/api/keys', {
-                headers: { 'Authorization': `Bearer ${session.access_token}` }
-            });
-            if (res.ok) {
-                const keys = await res.json();
-                if (keys.length > 0) {
-                    const tier = keys[0].tier || 'FREE';
-                    const badge = document.getElementById('tier-badge');
-                    badge.innerText = tier;
-                    badge.className = `tier-badge ${tier.toLowerCase()}`;
-
-                    if (tier === 'PRO') {
-                        document.getElementById('tier-status-container').innerHTML = `
-                            <div style="background: rgba(0,255,136,0.1); color: var(--accent); padding: 0.75rem; border-radius: 4px; margin: 1rem 0.5rem; font-size: 10px; text-align: center; border: 1px solid rgba(0,255,136,0.2);">
-                                <b>PRO_SYSTEM_ACTIVE</b><br>
-                                UNLIMITED COLD ENRICHMENT
-                            </div>
-                        `;
-                    }
-                }
-            }
-        }
-
-        // Call checkSubscription after keys are loaded
-        const originalLoadKeys = loadApiKeys;
-        loadApiKeys = async (curr) => {
-            await originalLoadKeys(curr);
-            checkSubscription();
-        };
+        const baitBtn = document.getElementById('bait-upgrade-btn');
+        if (baitBtn && openBtn) baitBtn.onclick = () => openBtn.click();
 
         // Mobile Menu Logic
         const mobileMenuBtn = document.getElementById('mobile-menu-btn');
         const sidebar = document.getElementById('sidebar');
         const sidebarOverlay = document.getElementById('sidebar-overlay');
 
-        function toggleMobileMenu() {
-            sidebar.classList.toggle('mobile-open');
-            sidebarOverlay.classList.toggle('active');
+        if (mobileMenuBtn) {
+            mobileMenuBtn.onclick = () => {
+                sidebar.classList.toggle('mobile-open');
+                sidebarOverlay.classList.toggle('active');
+            };
         }
-
-        if (mobileMenuBtn) mobileMenuBtn.addEventListener('click', toggleMobileMenu);
-        if (sidebarOverlay) sidebarOverlay.addEventListener('click', toggleMobileMenu);
-
-        // Close sidebar when clicking a nav item on mobile
-        document.querySelectorAll('.nav-item').forEach(item => {
-            item.addEventListener('click', () => {
-                if (window.innerWidth <= 768) {
-                    toggleMobileMenu();
-                }
-            });
-        });
+        if (sidebarOverlay) {
+            sidebarOverlay.onclick = () => {
+                sidebar.classList.remove('mobile-open');
+                sidebarOverlay.classList.remove('active');
+            };
+        }
     </script>
 </body>
 

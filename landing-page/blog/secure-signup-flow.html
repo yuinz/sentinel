@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How to Secure Your Signup Flow: A Guide for SaaS Founders | Sentinel Blog</title>
+    <meta name="description"
+        content="Bot signups are a plague for SaaS growth. Learn the exact steps to stop 92% of fake accounts without using intrusive CAPTCHAs.">
+    <meta name="keywords"
+        content="stop bot signups, secure signup flow, SaaS bot protection, prevent fake accounts, API security for signups, CAPTCHA alternative for SaaS">
+    <link rel="canonical" href="https://sentinel.risksignal.name.ng/blog/secure-signup-flow.html" />
+    <meta name="robots" content="index, follow">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://sentinel.risksignal.name.ng/blog/secure-signup-flow.html">
+    <meta property="og:title" content="How to Secure Your Signup Flow: A Guide for SaaS Founders">
+    <meta property="og:description"
+        content="Stop fake users from diluting your metrics. Build a secure, frictionless signup flow that scales.">
+    <meta property="og:image" content="https://sentinel.risksignal.name.ng/blog-latency.png">
+    <meta property="article:published_time" content="2026-01-23T00:00:00Z">
+    <meta property="article:author" content="Sentinel Engineering Team">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://sentinel.risksignal.name.ng/blog/secure-signup-flow.html">
+    <meta property="twitter:title" content="How to Secure Your Signup Flow: A Guide for SaaS Founders">
+    <meta property="twitter:image" content="https://sentinel.risksignal.name.ng/blog-latency.png">
+    <link rel="stylesheet" href="../styles.css">
+    <link rel="icon" type="image/png" href="../logo.png">
+    <style>
+        .article-header {
+            padding: 180px 0 100px;
+            background: linear-gradient(to bottom, rgba(0, 210, 255, 0.05) 0%, transparent 100%);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .article-meta {
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            color: #00d2ff;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            margin-bottom: 1.5rem;
+            display: block;
+            text-align: center;
+        }
+
+        .article-title {
+            font-size: clamp(2.5rem, 6vw, 4rem);
+            font-weight: 800;
+            line-height: 1.1;
+            text-align: center;
+            max-width: 900px;
+            margin: 0 auto 2rem;
+            letter-spacing: -0.04em;
+        }
+
+        .article-featured-image {
+            width: 100%;
+            height: 400px;
+            background-size: cover;
+            background-position: center;
+            border-radius: 20px;
+            margin: -60px auto 4rem;
+            border: 1px solid var(--border);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .article-body {
+            max-width: 800px;
+            margin: 0 auto 100px;
+            color: #ccc;
+            line-height: 1.8;
+            font-size: 1.15rem;
+        }
+
+        .article-body h2 {
+            color: #fff;
+            font-size: 2rem;
+            margin: 4rem 0 1.5rem;
+            letter-spacing: -0.02em;
+        }
+
+        .author-box {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            padding: 3rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            margin-top: 6rem;
+        }
+
+        .author-avatar {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: #00d2ff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            color: #000;
+        }
+    </style>
+</head>
+
+<body>
+    <header class="main-header">
+        <div class="container header-container">
+            <div class="logo">
+                <img src="../logo.png" alt="Sentinel Logo" height="24" style="margin-right: 8px;">
+                SENTINEL
+            </div>
+            <nav class="nav-menu">
+                <a href="../index.html">Home</a>
+                <a href="../blog.html">Blog</a>
+                <a href="../docs.html">Docs</a>
+            </nav>
+        </div>
+    </header>
+
+    <article>
+        <header class="article-header">
+            <div class="container">
+                <span class="article-meta">Growth Strategy // Jan 23, 2026</span>
+                <h1 class="article-title">How to Secure Your Signup Flow: A Guide for SaaS Founders</h1>
+            </div>
+        </header>
+
+        <div class="container">
+            <div class="article-featured-image" id="featured-img"></div>
+
+            <div class="article-body">
+                <p>For a SaaS founder, the signup flow is the most sacred part of the application. It's the moment a
+                    prospect becomes a user. But for a malicious actor, it's the front door to your infrastructure.
+                    Unprotected signup flows are often exploited to create thousands of "sleeper" accounts for spam,
+                    scrapping, or abusing free-tier resources.</p>
+
+                <p>The challenge is simple: How do you stop the garbage without making it harder for the good users
+                    to get in?</p>
+
+                <h2>The Mistake of the "Gatekeeper" Mentality</h2>
+                <p>Most developers reach for a "Gatekeeper" solution first—usually a CAPTCHA. While this stops simple
+                    scripts, it's a conversion disaster. Every extra second a user spends solving a puzzle is a
+                    percentage of your revenue disappearing. In 2026, user patience is at an all-time low.</p>
+
+                <h2>Step 1: Focus on Infrastructure Identity</h2>
+                <p>Most bot signups originate from identifiable "clouds." If a signup request is coming from a data
+                    center IP (like AWS or DigitalOcean) but your product is a B2C mobile app, that's a massive red
+                    flag. You don't need a puzzle to know that a server is trying to create an account.</p>
+
+                <h2>Step 2: Implement Behavioral Work Tokens</h2>
+                <p>Instead of a visual challenge, use a <strong>Behavioral Work Token</strong>. This happens entirely
+                    in the background. The user's interaction with the signup form generates a small, non-interactive
+                    proof of intent that your API verifies in milliseconds. This is the "Sentinel way"—seamless for
+                    the user, impossible for the bot.</p>
+
+                <blockquote>
+                    "The best security is the one your user doesn't know exists. If they reach your dashboard without
+                    seeing a single 'Click here', and you blocked 5,000 bots that morning—you've won."
+                </blockquote>
+
+                <h2>Step 3: Post-Signup Risk Scoring</h2>
+                <p>Security shouldn't end at the `CREATE USER` command. Sentinel allows you to attach a persistent
+                    <strong>Trust Token</strong> to new users. If their behavior becomes anomalous post-signup—like
+                    suddenly hitting your API 100 times a second—you can dynamically increase their risk score and
+                    restrict their access. This protects your downstream services from being overwhelmed by
+                    successfully created bot accounts.
+                </p>
+
+                <h2>Summary checklist for Founders:</h2>
+                <ul>
+                    <li>Ditch the legacy image CAPTCHAs.</li>
+                    <li>Verify the ASN/ISP of the signup request.</li>
+                    <li>Use invisible trust synthesis (Sentinel).</li>
+                    <li>Monitor velocity on the `/signup` endpoint across multiple dimensions (IP, Fingerprint, Email
+                        Domain).</li>
+                </ul>
+
+                <h2>Conclusion</h2>
+                <p>Your signup flow is for users, not bots. By implementing a modern, signal-based defense, you protect
+                    your metrics, your infrastructure, and your conversion rate all at once. Build for growth, protect
+                    for scale.</p>
+
+                <div class="author-box">
+                    <div class="author-avatar">SF</div>
+                    <div>
+                        <h4 style="margin: 0; font-size: 1.2rem;">SaaS Growth Engineering</h4>
+                        <p style="margin: 0.5rem 0 0; font-size: 0.9rem; color: var(--text-secondary);">Specializing in
+                            high-conversion security architectures and bot prevention strategies for startups.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </article>
+
+    <footer class="footer">
+        <div class="container" style="text-align: center; padding: 4rem 0; border-top: 1px solid var(--border);">
+            <p>&copy; 2026 Sentinel. <a href="../blog.html" style="color: var(--accent); text-decoration: none;">Back to
+                    Blog</a></p>
+        </div>
+    </footer>
+
+    <script>
+        document.getElementById('featured-img').style.backgroundImage = 'url("../blog-latency.png")';
+    </script>
+</body>
+
+</html>

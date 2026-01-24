@@ -434,6 +434,13 @@
             <div class="code-block">
                 <pre>Authorization: Bearer sl_8b31a5c2f019...</pre>
             </div>
+
+            <h3 style="color: #ffaa00;">🧪 Labs / Engineering Headers</h3>
+            <p>For CI/CD pipelines and local simulation. Only active when <code>NODE_ENV=development</code>.</p>
+            <div class="code-block">
+                <pre>x-sentinel-bypass: true      // Bypasses all risk checks
+x-sentinel-mock-ip: 1.2.3.4  // Overrides request origin IP</pre>
+            </div>
         </section>
 
         <section id="widget">

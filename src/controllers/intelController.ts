@@ -6,7 +6,7 @@ import { z as zod } from 'zod';
 import axios from 'axios';
 import crypto from 'crypto';
 import logger from '../utils/logger';
-import { intelCache, cacheStats } from '../utils/cache';
+import { intelCache, cacheStats, velocityCache } from '../utils/cache';
 
 const checkSchema = zod.object({
     target: zod.string().min(3).max(255),
@@ -60,6 +60,8 @@ export const checkTarget = async (req: AuthRequest, res: Response) => {
                 verdict: result.verdict,
                 profile: profile,
                 latency_ms: result.latency_ms,
+                reason: result.verdict_reasons?.[0] || 'reputation_verified',
+                confidence: result.confidence,
                 bwt_verified: isBwtValid || !!trustToken,
                 created_at: new Date().toISOString()
             }).then(({ error }) => {
@@ -226,5 +228,18 @@ export const getVisitorStats = async (req: Request, res: Response) => {
     } catch (err: any) {
         logger.error('Failed to fetch visitor stats:', err);
         return res.status(500).json({ error: 'Intelligence retrieval failed.' });
+    }
+};
+export const flushCache = async (req: Request, res: Response) => {
+    try {
+        intelCache.clear();
+        velocityCache.clear();
+        cacheStats.hits = 0;
+        cacheStats.misses = 0;
+
+        logger.info('System Cache Flush Triggered');
+        return res.json({ success: true, message: 'All telemetry and velocity caches purged.' });
+    } catch (err: any) {
+        return res.status(500).json({ error: 'Cache purge failed.' });
     }
 };

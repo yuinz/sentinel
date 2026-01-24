@@ -87,23 +87,59 @@ The core server-side endpoint that renders an ultimate verdict in under 50ms.
 - **Mobile Carrier ID:** Prioritize verified cellular traffic.
 - **Priority Tech Support.**
 
+### Advanced Engineering (Undocumented)
+
+Sentinel contains high-level abstractions for SOC teams and platform engineers to monitor engine health and simulate threats.
+
+### 1. Global Intelligence Stats (`GET /v1/intel/secret-stats`)
+A public-access endpoint for real-time traffic volume and geo-distribution auditing.
+- **Outcome:** Real-time visibility into engine-wide traffic spikes and country-level origin analysis.
+
+### 2. SOC Health Vitals (`GET /v1/health`)
+Provides a deep forensic heartbeat of the Sentinel engine. **Requires Auth.**
+- **Metrics:** Uptime, Cache Hit Ratio, Intel Tether Status (Shodan/WhoIs connectivity), and Total Scans Serviced.
+- **Outcome:** Ensures the trust matrix is synchronized and running with optimal latency.
+
+### 3. Engineering Headers (Lab Testing)
+Used for local development and CI/CD automation without burning production quotas or triggering blocks.
+
+| Header | Value | Purpose |
+| :--- | :--- | :--- |
+| `x-sentinel-bypass` | `true` | Forces a PASS decision. Only works for `127.0.0.1` or `localhost`. |
+| `x-sentinel-mock-ip` | `IP_ADDR` | Simulates a specific IP origin. **Disabled in Production.** |
+| `x-bwt-nonce` | `STRING` | Inject a behavioral work nonce directly into the decision gate. |
+| `x-sentinel-trust` | `TOKEN` | Reuse a pre-verified trust token for repeated testing. |
+
 ### Payment and Upgrading
+
 Sentinel integrates with NowPayments for secure, friction-free upgrades using cryptocurrency (ETH, BTC, USDT). Unlock Premium features instantly without credit card requirements.
+
+## Quick Start (Engineering Mode)
+Test how your API handles high-risk traffic using the mock header:
+
+```bash
+curl -X POST https://api.sentinel.com/v1/precheck \
+     -H "x-sentinel-mock-ip: 185.220.101.10" # TOR Exit Node
+```
 
 ---
 
 ## Quick Start
-Protect your signup endpoint:
+Protect your signup endpoint with a deterministic PASSS/BLOCK decision:
 
 ```javascript
-const res = await fetch('https://api.sentinel.com/v1/check', {
+// Use ?mode=decision for simplified integration
+const res = await fetch('https://api.sentinel.com/v1/check?mode=decision', {
     method: 'POST',
     headers: { 'x-api-key': process.env.SENTINEL_KEY },
-    body: JSON.stringify({ target: userIp, profile: 'signup' })
+    body: JSON.stringify({ 
+        target: userIp, 
+        profile: 'signup' // api, signup, payments, crypto
+    })
 });
 
-const { allow, action } = await res.json();
-if (!allow) return blockRequest(); // Decision in <50ms
+const { allow, risk, reason } = await res.json();
+if (!allow) return blockRequest(risk, reason); // Decision in <50ms
 ```
 
 ---
