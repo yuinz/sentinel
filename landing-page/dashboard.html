@@ -17,6 +17,7 @@
     <link rel="stylesheet" href="./styles.css">
     <link rel="icon" type="image/png" href="./logo.png">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
     <style>
         :root {
             --sidebar-width: 220px;
@@ -27,6 +28,7 @@
             --danger: #ff4444;
             --warning: #ffcc00;
             --glass: rgba(10, 10, 10, 0.7);
+            --chart-grid: #111;
         }
 
         body {
@@ -810,51 +812,82 @@
 
                 <div id="section-overview">
                     <!-- SECTION 2 — WHAT SENTINEL PREVENTED (EGO BOOST) -->
-                    <div class="section-label">Security Outcomes (Last 7 Days)</div>
+                    <div class="section-label">System Performance & Mitigation</div>
                     <div class="stats-grid">
                         <div class="stat-card">
-                            <div class="stat-label">Outcome-based trust decisions</div>
-                            <div class="stat-value" id="outcome-blocked">3,248</div>
-                            <div class="stat-meta">Automated attempts blocked</div>
+                            <div class="stat-label">Total Signals Captured</div>
+                            <div class="stat-value counter" id="total-signals">0</div>
+                            <div class="stat-meta">Across all active vectors</div>
                         </div>
                         <div class="stat-card">
-                            <div class="stat-label">Bot Signup Reduction</div>
-                            <div class="stat-value" id="outcome-reduction">91.7%</div>
-                            <div class="stat-meta">Relative to baseline</div>
+                            <div class="stat-label">Bot Mitigation Rate</div>
+                            <div class="stat-value counter" id="outcome-reduction">0.0%</div>
+                            <div class="stat-meta">Detection accuracy score</div>
                         </div>
                         <div class="stat-card">
-                            <div class="stat-label">No visible challenges</div>
-                            <div class="stat-value" id="outcome-challenges">0</div>
-                            <div class="stat-meta">For trusted traffic</div>
+                            <div class="stat-label">Attempts Neutralized</div>
+                            <div class="stat-value counter" id="outcome-blocked" style="color: var(--danger);">0</div>
+                            <div class="stat-meta">Automated traffic blocked</div>
                         </div>
                         <div class="stat-card">
-                            <div class="stat-label">Estimated Infra Saved</div>
-                            <div class="stat-value" id="outcome-saved">~$42</div>
-                            <div class="stat-meta">Avoided processing costs</div>
+                            <div class="stat-label">Infrastructure Savings</div>
+                            <div class="stat-value counter" id="outcome-saved">$0.00</div>
+                            <div class="stat-meta">Estimated cost avoidance</div>
                         </div>
                     </div>
 
-                    <!-- SECTION 1 — THE HEART (MOST IMPORTANT) -->
-                    <div class="section-label">Recent Trust Decisions</div>
+                    <!-- SECTION 1 — LIVE DECISION TELEMETRY -->
+                    <div class="card" style="padding-bottom: 0.5rem; overflow: hidden; border-color: var(--accent);">
+                        <div class="section-label"
+                            style="display: flex; justify-content: space-between; width: 100%; box-sizing: border-box;">
+                            <span>Authority Authority Stream (Live)</span>
+                            <span id="streaming-indicator" style="display: flex; align-items: center; gap: 6px;">
+                                <span class="online-dot" style="margin:0; width: 6px; height: 6px;"></span>
+                                <span style="font-size: 8px;">CONNECTED_60FPS</span>
+                            </span>
+                        </div>
+                        <div id="decision-chart" style="height: 280px; margin: 1rem -1rem 0 -1rem;"></div>
+                    </div>
+
+                    <!-- SECTION 2 — DECISION HISTORY LOG -->
                     <div class="card" style="padding: 0; overflow: hidden;">
-                        <table class="sentinel-table">
-                            <thead>
-                                <tr>
-                                    <th style="width: 100px;">VERDICT</th>
-                                    <th>PROFILE</th>
-                                    <th>PRIMARY SIGNAL</th>
-                                    <th style="text-align: right;">LATENCY</th>
-                                </tr>
-                            </thead>
-                            <tbody id="decisions-feed">
-                                <!-- JS Inject -->
-                                <tr>
-                                    <td colspan="4" style="text-align:center; padding: 4rem; color: #333;">
-                                        INITIALIZING_TELEMETRY_STREAM...
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
+                        <div
+                            style="padding: 1rem 1.5rem; border-bottom: 1px solid #111; display:flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.02);">
+                            <div style="display: flex; gap: 1.5rem; align-items: center;">
+                                <div class="card-title" style="margin:0;">Intelligence Feed</div>
+                                <div style="display: flex; gap: 6px;">
+                                    <button class="btn-action filter-btn active" data-filter="all"
+                                        style="font-size: 9px; padding: 2px 8px;">ALL</button>
+                                    <button class="btn-action filter-btn" data-filter="BLOCK"
+                                        style="font-size: 9px; padding: 2px 8px; color: var(--danger);">BLOCKS</button>
+                                    <button class="btn-action filter-btn" data-filter="ALLOW"
+                                        style="font-size: 9px; padding: 2px 8px; color: var(--accent);">SAFE</button>
+                                </div>
+                            </div>
+                            <div style="position: relative;">
+                                <input type="text" id="ip-search" placeholder="Filter by IP..."
+                                    style="background: #000; border: 1px solid #222; color: #fff; border-radius: 4px; padding: 5px 12px; font-size: 11px; width: 160px; outline: none; font-family: 'JetBrains Mono';">
+                            </div>
+                        </div>
+                        <div style="max-height: 240px; overflow-y: auto;">
+                            <table class="sentinel-table">
+                                <thead style="position: sticky; top: 0; background: #0a0a0a; z-index: 10;">
+                                    <tr>
+                                        <th style="width: 100px;">VERDICT</th>
+                                        <th>PROFILE</th>
+                                        <th>PRIMARY SIGNAL</th>
+                                        <th style="text-align: right;">LATENCY</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="decisions-feed">
+                                    <tr>
+                                        <td colspan="4" style="text-align:center; padding: 2rem; color: #333;">
+                                            INITIALIZING_DATA_MODEL...
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
 
                     <div class="dash-grid">
@@ -994,7 +1027,7 @@
                 <button class="close-modal">&times;</button>
             </div>
             <div style="padding: 0; background: #000; display: flex; justify-content: center;">
-                <iframe src="https://nowpayments.io/embeds/payment-widget?iid=5627912599" width="410" height="696"
+                <iframe src="https://nowpayments.io/embeds/payment-widget?iid=5332615656" width="410" height="696"
                     frameborder="0" scrolling="no" style="overflow-y: hidden;">
                     Can't load widget
                 </iframe>
@@ -1055,10 +1088,10 @@
                     keys.map(k => `
                         <tr>
                             <td style="font-weight:700;color:#fff;">${k.name || 'Core Signup'}</td>
-                            <td style="color:#666;">${k.name === 'Core Signup' ? 'signup' : 'api'}</td>
+                            <td style="color:#666;">${k.profile || 'api'}</td>
                             <td><span class="section-label" style="margin:0;">Fast-Path</span></td>
-                            <td style="color:#666;font-family:monospace;">${k.usage_count} / ${k.max_usage}</td>
-                            <td style="color:#444;">BLOCK (2 mins ago)</td>
+                            <td style="color:#666;font-family:monospace;">${k.usage_count || 0} / ${k.max_usage || 500}</td>
+                            <td style="color:#444;">${k.usage_count > 0 ? 'ACTIVE' : 'IDLE'}</td>
                             <td style="text-align:right;">
                                 <button class="btn-action copy-key-btn" data-key="${k.api_key}">Copy</button>
                             </td>
@@ -1094,6 +1127,130 @@
             }
         });
 
+        // 🎮 INTERACTION STATE
+        let activeFilter = 'all';
+        let searchQuery = '';
+        let lastDecisionTotal = 0;
+
+        // 📈 Animated Counter Helper
+        function animateCounter(id, target, prefix = '', suffix = '') {
+            const el = document.getElementById(id);
+            if (!el) return;
+            const current = parseFloat(el.innerText.replace(/[^0-9.]/g, '')) || 0;
+            const duration = 1000;
+            const start = performance.now();
+
+            function update(timestamp) {
+                const elapsed = timestamp - start;
+                const progress = Math.min(elapsed / duration, 1);
+                const value = current + (target - current) * progress;
+                el.innerText = prefix + (progress === 1 ? target.toLocaleString(undefined, { minimumFractionDigits: target % 1 === 0 ? 0 : 1 }) : value.toFixed(target % 1 === 0 ? 0 : 1)) + suffix;
+                if (progress < 1) requestAnimationFrame(update);
+            }
+            requestAnimationFrame(update);
+        }
+
+        // 🔥 High-Density Decision Chart
+        let decisionChart = null;
+
+        function initDecisionChart(data) {
+            const options = {
+                series: [{
+                    name: 'Trust Score',
+                    data: data.map(d => ({ x: d.time, y: d.value }))
+                }],
+                chart: {
+                    type: 'area',
+                    height: 280,
+                    animations: { enabled: true, easing: 'linear', dynamicAnimation: { speed: 800 } },
+                    toolbar: { show: false },
+                    zoom: { enabled: false },
+                    background: 'transparent',
+                    fontFamily: 'JetBrains Mono, monospace'
+                },
+                dataLabels: { enabled: false },
+                stroke: {
+                    curve: 'stepped',
+                    width: 3,
+                    colors: ['#00ff88'],
+                    lineCap: 'butt',
+                },
+                markers: {
+                    size: 4,
+                    colors: ['#00ff88'],
+                    strokeColors: '#000',
+                    strokeWidth: 2,
+                    hover: { size: 6 }
+                },
+                fill: {
+                    type: 'gradient',
+                    gradient: {
+                        shadeIntensity: 1,
+                        opacityFrom: 0.3,
+                        opacityTo: 0.0,
+                        stops: [0, 90, 100]
+                    }
+                },
+                tooltip: {
+                    theme: 'dark',
+                    custom: function ({ series, seriesIndex, dataPointIndex, w }) {
+                        const val = series[seriesIndex][dataPointIndex];
+                        const status = val > 80 ? 'TRUSTED' : val > 60 ? 'UNSTABLE' : 'BLOCK';
+                        const color = val > 80 ? '#00ff88' : val > 60 ? '#ffcc00' : '#ff4444';
+                        return '<div class="chart-tooltip" style="background:#050505; border: 1px solid #222; padding: 10px;">' +
+                            '<span style="color:' + color + '; font-weight:bold;">' + status + '</span>' +
+                            '<div style="color:#666; font-size:10px;">Score: ' + val + '</div>' +
+                            '</div>';
+                    }
+                },
+                grid: {
+                    borderColor: '#111',
+                    strokeDashArray: 2,
+                    xaxis: { lines: { show: true } },
+                    yaxis: { lines: { show: true } }
+                },
+                xaxis: {
+                    type: 'category',
+                    labels: {
+                        show: true,
+                        style: { colors: '#444', fontSize: '9px' },
+                        rotate: 0,
+                        hideOverlappingLabels: true
+                    },
+                    axisBorder: { show: false },
+                    axisTicks: { show: false }
+                },
+                yaxis: {
+                    min: 0,
+                    max: 100,
+                    tickAmount: 4,
+                    labels: {
+                        show: true,
+                        style: { colors: '#333', fontSize: '9px' },
+                        formatter: (val) => val + '%'
+                    }
+                },
+                annotations: {
+                    yaxis: [
+                        {
+                            y: 75,
+                            borderColor: '#333',
+                            label: {
+                                borderColor: 'transparent',
+                                style: { color: '#444', background: 'transparent', fontSize: '8px' },
+                                text: 'TRUST_THRESHOLD',
+                                position: 'left',
+                                textAnchor: 'start'
+                            }
+                        }
+                    ]
+                }
+            };
+
+            decisionChart = new ApexCharts(document.querySelector("#decision-chart"), options);
+            decisionChart.render();
+        }
+
         // 🔥 Recent Trust Decisions Logic
         async function renderCharts() {
             if (!session) return;
@@ -1109,79 +1266,97 @@
                 if (!res.ok) return;
                 const stats = await res.json();
 
-                // Risk Distribution
-                const total = stats.risk_distribution.stable + stats.risk_distribution.unstable + stats.risk_distribution.untrusted;
-                const getPerc = (val) => total === 0 ? '0%' : Math.round((val / total) * 100) + '%';
+                // 1. Process Chart Data (Using real granular scores)
+                const rawLogs = stats.recent_logs || [];
+                const chartData = [...rawLogs].reverse().map(log => {
+                    return {
+                        value: log.trust_score || (log.verdict === 'TRUSTED' ? 100 : log.verdict === 'UNSTABLE' ? 50 : 20),
+                        time: new Date(log.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+                    };
+                });
 
+                if (!decisionChart) {
+                    initDecisionChart(chartData);
+                } else {
+                    decisionChart.updateSeries([{
+                        data: chartData.map(d => ({ x: d.time, y: d.value }))
+                    }]);
+                }
+
+                // 2. Animate Vitals
+                const total = stats.risk_distribution.stable + stats.risk_distribution.unstable + stats.risk_distribution.untrusted;
+
+                animateCounter('total-signals', stats.total_signals || total);
+                animateCounter('outcome-reduction', parseFloat(stats.outcomes.reduction), '', '%');
+                animateCounter('outcome-blocked', stats.outcomes.blocked);
+                animateCounter('outcome-saved', parseFloat(stats.outcomes.saved), '$');
+
+                // Risk Distribution
+                const getPerc = (val) => total === 0 ? '0%' : Math.round((val / total) * 100) + '%';
                 document.getElementById('risk-stable').innerText = getPerc(stats.risk_distribution.stable);
                 document.getElementById('risk-unstable').innerText = getPerc(stats.risk_distribution.unstable);
                 document.getElementById('risk-untrusted').innerText = getPerc(stats.risk_distribution.untrusted);
 
-                // Security Outcomes (Ego Boost)
-                if (stats.outcomes) {
-                    document.getElementById('outcome-blocked').innerText = stats.outcomes.blocked.toLocaleString();
-                    document.getElementById('outcome-reduction').innerText = stats.outcomes.reduction;
-                    document.getElementById('outcome-challenges').innerText = stats.outcomes.challenges;
-                    document.getElementById('outcome-saved').innerText = `~$${stats.outcomes.saved}`;
-                }
-
-                // Decisions Feed
+                // 3. Intelligence Feed with Filtering
                 const feed = document.getElementById('decisions-feed');
-                if (feed && stats.recent_logs) {
-                    feed.innerHTML = stats.recent_logs.map((log, idx) => {
-                        const v = log.verdict.toUpperCase();
-                        let decisionLabel = 'ALLOW';
-                        let decisionClass = 'v-allow';
+                if (feed) {
+                    const filtered = rawLogs.filter(log => {
+                        const matchesFilter = activeFilter === 'all' ||
+                            (activeFilter === 'BLOCK' && log.verdict === 'UNTRUSTED') ||
+                            (activeFilter === 'ALLOW' && log.verdict === 'TRUSTED');
 
-                        if (v === 'UNTRUSTED') { decisionLabel = 'BLOCK'; decisionClass = 'v-block'; }
-                        else if (v === 'UNSTABLE') { decisionLabel = 'FLAG'; decisionClass = 'v-flag'; }
+                        const matchesSearch = !searchQuery || log.target.toLowerCase().includes(searchQuery.toLowerCase());
 
-                        const formatReason = (r) => r.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+                        return matchesFilter && matchesSearch;
+                    });
 
-                        return `
-                            <tr class="row-hover" onclick="toggleRow('row-${idx}')">
-                                <td class="${decisionClass}">${decisionLabel}</td>
-                                <td style="color: #888;">${log.profile}</td>
-                                <td style="color: #666;">${log.reason}</td>
-                                <td style="text-align: right; color: #444;">${log.latency}ms</td>
-                            </tr>
-                            <tr id="row-${idx}" class="expanded-details">
-                                <td colspan="4">
-                                    <div class="detail-content">
-                                        <div class="detail-box">
-                                            <label>Decision</label>
-                                            <p class="${decisionClass}" style="font-weight:700;">${decisionLabel}</p>
+                    feed.innerHTML = filtered.length === 0 ?
+                        `<tr><td colspan="4" style="text-align:center; padding: 4rem; color: #333;">NO_MATCHING_TELEMETRY</td></tr>` :
+                        filtered.map((log, idx) => {
+                            const v = log.verdict.toUpperCase();
+                            let label = 'ALLOW', cls = 'v-allow';
+                            if (v === 'UNTRUSTED') { label = 'BLOCK'; cls = 'v-block'; }
+                            else if (v === 'UNSTABLE') { label = 'FLAG'; cls = 'v-flag'; }
+
+                            return `
+                                <tr class="row-hover" onclick="toggleRow('row-${idx}')">
+                                    <td class="${cls}">${label}</td>
+                                    <td style="color: #888;">${log.profile}</td>
+                                    <td style="color: #eee; font-family:monospace;">${log.target}</td>
+                                    <td style="text-align: right; color: #444;">${log.latency}ms</td>
+                                </tr>
+                                <tr id="row-${idx}" class="expanded-details">
+                                    <td colspan="4">
+                                        <div class="detail-content">
+                                            <div class="detail-box"><label>Incedent Origin</label><p>${log.target}</p></div>
+                                            <div class="detail-box"><label>Primary Signal</label><p>${log.reason.replace(/_/g, ' ')}</p></div>
+                                            <div class="detail-box"><label>AI Confidence</label><p style="color:var(--accent); font-weight:700;">${(log.confidence * 100).toFixed(1)}%</p></div>
                                         </div>
-                                        <div class="detail-box">
-                                            <label>Profile</label>
-                                            <p>${log.profile}</p>
-                                        </div>
-                                        <div class="detail-box">
-                                            <label>Primary Signal</label>
-                                            <p>${formatReason(log.reason)}</p>
-                                        </div>
-                                        <div class="detail-box">
-                                            <label>Confidence</label>
-                                            <p style="color: var(--accent); font-weight:700;">${log.confidence > 0.8 ? 'High' : 'Moderate'}</p>
-                                        </div>
-                                        <div class="detail-box">
-                                            <label>Enforcement Path</label>
-                                            <p>${log.latency < 50 ? 'Fast-Path' : 'Deep Forensic'}</p>
-                                        </div>
-                                        <div class="detail-box">
-                                            <label>Latency</label>
-                                            <p>${log.latency}ms</p>
-                                        </div>
-                                    </div>
-                                </td>
-                            </tr>
-                        `;
-                    }).join('');
+                                    </td>
+                                </tr>
+                            `;
+                        }).join('');
                 }
             } catch (e) {
                 console.error('Charts error:', e);
             }
         }
+
+        // 🖱️ Event Listeners for Interaction
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.onclick = () => {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                activeFilter = btn.dataset.filter;
+                renderCharts();
+            };
+        });
+
+        document.getElementById('ip-search').oninput = (e) => {
+            searchQuery = e.target.value;
+            renderCharts();
+        };
+
 
         function toggleRow(id) {
             const el = document.getElementById(id);

@@ -54,21 +54,26 @@ export const checkTarget = async (req: AuthRequest, res: Response) => {
         // 3. Telemetry Logic: Record the event for Analytics
         try {
             // We fire and forget this to keep response times <50ms
-            supabase.from('telemetry').insert({
+            const telemetryPayload = {
                 api_access_id: (req as any).apiRecordId,
                 target: target,
                 verdict: result.verdict,
+                trust_score: result.trust_score,
                 profile: profile,
                 latency_ms: result.latency_ms,
-                reason: result.verdict_reasons?.[0] || 'reputation_verified',
-                confidence: result.confidence,
+                reason: result.verdict_reasons?.[0] || (result.verdict === 'UNTRUSTED' ? 'untrusted_infrastructure' : 'reputation_verified'),
+                confidence: result.confidence / 100,
                 bwt_verified: isBwtValid || !!trustToken,
                 created_at: new Date().toISOString()
-            }).then(({ error }) => {
-                if (error) logger.error('Telemetry Log Error:', error);
+            };
+
+            supabase.from('telemetry').insert(telemetryPayload).then(({ error }) => {
+                if (error) {
+                    logger.error('Telemetry Log Error:', error);
+                }
             });
         } catch (e) {
-            logger.error('Telemetry recording failed');
+            logger.error('Telemetry recording failed', e);
         }
 
         // 4. Mode Selection (Standard vs Trust Decision)
@@ -83,6 +88,7 @@ export const checkTarget = async (req: AuthRequest, res: Response) => {
                 risk: result.verdict.toLowerCase(),
                 reason: result.verdict_reasons?.[0] || (allow ? 'reputation_verified' : 'untrusted_infrastructure'),
                 confidence: result.confidence / 100,
+                latency_ms: result.latency_ms,
                 remediation: result.remediation
             });
         }

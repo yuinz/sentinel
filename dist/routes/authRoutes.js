@@ -111,7 +111,7 @@ router.get('/analytics', ensureSupabaseAuth, async (req, res) => {
         sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
         const { data: logs, error: logsError } = await supabase_1.supabase
             .from('telemetry')
-            .select('verdict, created_at, target, latency_ms')
+            .select('verdict, created_at, target, latency_ms, profile, reason, confidence')
             .in('api_access_id', keyIds)
             .order('created_at', { ascending: false })
             .gte('created_at', sevenDaysAgo.toISOString());
@@ -151,7 +151,9 @@ router.get('/analytics', ensureSupabaseAuth, async (req, res) => {
         // If no data, default to 0. If data, calculate but cap at 98.4% for 'realism' 
         const mitigationRate = totalSignals > 0 ? ((blockedCount / totalSignals) * 100).toFixed(1) : "0.0";
         // Infra Saved: $0.013 per blocked request (processing + DB + bandwidth costs)
-        const infraSaved = (blockedCount * 0.013).toFixed(0);
+        // Show as decimal string for small values, or rounded for larger ones
+        const savedRaw = blockedCount * 0.013;
+        const infraSaved = savedRaw > 0 && savedRaw < 1 ? savedRaw.toFixed(2) : savedRaw.toFixed(0);
         res.json({
             labels: Object.keys(dailyData),
             values: Object.values(dailyData),
