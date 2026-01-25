@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Documentation | Sentinel Engine</title>
     <meta name="description"
-        content="Technical documentation for Sentinel: implementing Turnstile-grade protection for APIs. Block 92% of bots in under 50ms.">
+        content="Technical documentation for Sentinel: implementing Turnstile-grade protection for APIs. Block 99% of bots in under 50ms.">
     <link rel="canonical" href="https://sentinel.risksignal.name.ng/docs.html" />
     <meta name="robots" content="index, follow">
 
@@ -209,6 +209,7 @@
             font-size: 0.8rem;
             text-transform: uppercase;
             letter-spacing: 0.05em;
+            font-weight: 700;
         }
 
         .info-box.warning {
@@ -390,53 +391,54 @@
         <section id="welcome">
             <h1>The Deterministic Trust Layer</h1>
             <p>Cloudflare Turnstile is for browsers. <strong>Sentinel is for APIs.</strong></p>
-            <p>Sentinel is a high-velocity decision engine designed to render sub-50ms trust decisions for API traffic.
+            <p>Sentinel is a high-velocity decision engine designed to render sub-50ms trust decisions for API traffic
+                at the network edge.
                 It replaces user-hostile CAPTCHAs with infrastructure forensics and cryptographic Proof-of-Work,
-                blocking 92% of automated attacks without ever interrupting a legitimate user.</p>
+                blocking automated attacks without ever interrupting a legitimate user.</p>
 
             <div class="info-box">
                 <strong>Outcome-Based Security</strong>
-                We measure success in blocked automation and reduced fraud, not just traffic volume. Our "PRO" tier
-                includes deep-forensic analysis for high-risk vectors.
+                We measure success in blocked automation and reduced fraud, not just traffic volume. Sentinel is built
+                to protect your bottom line by reducing infrastructure costs and preventing revenue loss from fraud.
             </div>
         </section>
 
         <section id="architecture">
             <h2>Core Architecture</h2>
-            <p>Sentinel operates on a "Zero-Friction, Zero-Trust" philosophy using three distinct layers of defense:</p>
+            <p>Sentinel operates on a Zero-Friction, Zero-Trust philosophy using three distinct layers of defense:</p>
 
             <div class="method-item" style="margin-bottom: 2rem;">
-                <h3 style="margin-top:0;">1. Fast-Path Matrix (< 50ms)</h3>
-                        <p>Incoming requests are checked against an in-memory ASN matrix of over 100 known-bad hosting
-                            providers (OVH, Hetzner, DigitalOcean) and known proxy networks. This handles 92% of bot
-                            traffic instantly without database lookups.</p>
+                <h3 style="margin-top:0;">1. Fast-Path Matrix (&lt; 20ms)</h3>
+                <p>Incoming requests are instantly vetted against a globally distributed in-memory matrix of over 100
+                    known-bad hosting
+                    providers, known proxy networks, and datacenter IP blocks. This handles the majority of bot
+                    traffic instantly.</p>
             </div>
 
             <div class="method-item" style="margin-bottom: 2rem;">
                 <h3 style="margin-top:0;">2. Behavioral Work Tokens (BWT)</h3>
-                <p>When an IP is "Unstable" (suspicious but not explicitly blacklisted), Sentinel issues a cryptographic
-                    challenge. Legitimate clients (browsers) solve this in milliseconds via the frontend widget, while
-                    simplistic bot scripts (Python, Curl) fail or time out.</p>
+                <p>When an IP is identified as "Unstable" (suspicious signals found), Sentinel issues a cryptographic
+                    challenge. Legitimate clients solve this in milliseconds via the background SDK engine, while
+                    primitive scripts and automated tools fail to generate a valid solution.</p>
             </div>
 
             <div class="method-item">
-                <h3 style="margin-top:0;">3. Deep Forensics (Async/Sync)</h3>
-                <p>For high-value targets (Login, Payments), Sentinel performs real-time cold enrichment, querying
-                    Shodan and WhoIs data to identify residential proxies and VPNs even if they are clean on standard
-                    blocklists.</p>
+                <h3 style="margin-top:0;">3. Infrastructure Forensics</h3>
+                <p>For high-sensitivity endpoints, Sentinel performs real-time forensic signatures on the request
+                    environment. We detect headless browsers (Puppeteer, Playwright), automated runtimes, and masking
+                    attempts (VPN/Tor) with high confidence.</p>
             </div>
         </section>
 
         <section id="quickstart">
-            <h2>Quick Start (Express)</h2>
-            <p>The easiest way to integrate Sentinel is via our official package, <code>api-turnstile</code>.</p>
+            <h2>Quick Start</h2>
+            <p>Integrate Sentinel in minutes using our official adapter for Express, Fastify, or Next.js.</p>
 
             <div class="code-block">
                 <pre>npm install api-turnstile</pre>
             </div>
 
-            <p>Wrap your Express app or specific routes with the Sentinel middleware. This ensures every request is
-                vetted before reaching your business logic.</p>
+            <p>Initialize the middleware with your Vector API key and specify the routes you want to protect.</p>
 
             <div class="code-block">
                 <pre>import { sentinel } from 'api-turnstile';
@@ -444,18 +446,18 @@ import express from 'express';
 
 const app = express();
 
-// Protect specific routes with standard configuration
 app.use(sentinel({
   apiKey: process.env.SENTINEL_KEY,
-  protect: ['/api/auth/*', '/api/payments'], // Wildcard support
-  profile: 'strict'
+  protect: ['/api/auth/*', '/v1/payments'],
+  profile: 'api'
 }));</pre>
             </div>
         </section>
 
         <section id="configuration">
-            <h2>Configuration</h2>
-            <p>Customize the middleware behavior to match your operational requirements.</p>
+            <h2>Configuration Deep Dive</h2>
+            <p>The <code>SentinelConfig</code> object allows for granular control over enforcement and fallback
+                strategies.</p>
 
             <table>
                 <thead>
@@ -471,193 +473,132 @@ app.use(sentinel({
                         <td><code>apiKey</code></td>
                         <td>String</td>
                         <td>Required</td>
-                        <td>Your Sentinel Vector Key from the dashboard.</td>
+                        <td>Your unique API key from the Sentinel dashboard.</td>
                     </tr>
                     <tr>
                         <td><code>protect</code></td>
                         <td>Array | Obj</td>
                         <td>Required</td>
-                        <td>Paths to secure. Can be an array `['/a', '/b']` or object `{'/path': 'mode'}` map.</td>
+                        <td>Paths to secure. Can be an array of patterns or a mapping of patterns to
+                            <code>ProtectionMode</code>.</td>
                     </tr>
                     <tr>
                         <td><code>profile</code></td>
                         <td>String</td>
                         <td>'api'</td>
-                        <td>Security profile to apply (see below).</td>
+                        <td>The security profile to apply (api, signup, payments, crypto).</td>
                     </tr>
                     <tr>
                         <td><code>fail</code></td>
                         <td>String</td>
                         <td>'closed'</td>
-                        <td>Strategy if Sentinel is unreachable. `open` (allow) or `closed` (block).</td>
+                        <td>Failure strategy: <code>open</code> (allow on error) or <code>closed</code> (block on
+                            error).</td>
                     </tr>
                     <tr>
                         <td><code>onBlock</code></td>
                         <td>Function</td>
                         <td>Default 403</td>
-                        <td>Custom callback when a request is blocked. `(req, res, decision) => void`.</td>
+                        <td>Custom callback for blocked requests: <code>(req, res, decision) => void</code>.</td>
                     </tr>
                 </tbody>
             </table>
 
-            <h3>Custom Blocking Logic</h3>
-            <p>You can override the default 403 JSON response to serve custom pages or proprietary error codes.</p>
-            <div class="code-block">
-                <pre>app.use(sentinel({
-  apiKey: '...',
-  protect: ['/login'],
-  onBlock: (req, res, decision) => {
-    // Log the event to your own SIEM
-    console.warn(`Blocked ${req.ip}. Reason: ${decision.reason}`);
-    
-    // Redirect to a challenge page or return custom error
-    res.status(403).render('access_denied', { risk: decision.risk });
-  }
-}));</pre>
-            </div>
+            <h3>Protection Modes</h3>
+            <p>Each protected path can run in one of three modes:</p>
+            <ul>
+                <li><strong>monitor</strong>: Passively logs traffic. Useful for profiling before enforcement.</li>
+                <li><strong>balanced</strong>: Standard protection. Blocks high-confidence automated threats.</li>
+                <li><strong>strict</strong>: Zero tolerance. Blocks any suspicious signal including VPNs and
+                    datacenters.</li>
+            </ul>
         </section>
 
         <section id="profiles">
             <h2>Security Profiles</h2>
-            <p>Different parts of your API require different risk tolerances. A crypto faucet needs zero-trust, while a
-                public news feed might only need basic rate limiting.</p>
+            <p>Profiles allow you to tune the engine sensitivity based on the business value of the endpoint.</p>
 
             <table>
                 <thead>
                     <tr>
                         <th>Profile</th>
-                        <th>Use Case</th>
-                        <th>Tolerance</th>
-                        <th>Key Signals Checked</th>
+                        <th>Sensitivity</th>
+                        <th>Typical Targets</th>
+                        <th>Key Checks</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr>
                         <td style="color: var(--accent);">api</td>
-                        <td>General Feed</td>
-                        <td>High</td>
-                        <td>Rate Limiting, Global Blocklist</td>
+                        <td>Balanced</td>
+                        <td>Public Data, Search</td>
+                        <td>ASN, Velocity, Runtimes</td>
                     </tr>
                     <tr>
                         <td style="color: var(--accent);">signup</td>
-                        <td>Registration</td>
-                        <td>Medium</td>
-                        <td>Disposable Email, VPN, ASN, Velocity</td>
+                        <td>High</td>
+                        <td>User Registration</td>
+                        <td>Disposable Email, Identity Velocity</td>
                     </tr>
                     <tr>
                         <td style="color: var(--accent);">payments</td>
-                        <td>Checkout</td>
                         <td>Strict</td>
-                        <td>Geo-Mismatch, Res Proxy, Bin Attack Patterns <span class="badge-pro">PRO</span></td>
+                        <td>Checkout, Wallet</td>
+                        <td>Geo-Mismatch, VPN/Proxy Detection</td>
                     </tr>
                     <tr>
                         <td style="color: #ff4444;">crypto</td>
-                        <td>Web3 / Faucets</td>
                         <td>Zero-Trust</td>
-                        <td>Tor Nodes, Wallet Clustering, Prior Blocks</td>
+                        <td>Faucets, Withdrawals</td>
+                        <td>Tor, Known Clusterings, Prior Blocks</td>
                     </tr>
                 </tbody>
             </table>
-        </section>
-
-        <section id="frameworks">
-            <h2>Supported Frameworks</h2>
-            <p>Sentinel is platform-agnostic but includes first-class adapters for major Node environments.</p>
-
-            <div class="method-item">
-                <h3 style="margin-top: 0;">Next.js (Edge Middleware)</h3>
-                <p>Run Sentinel at the edge on Vercel or Cloudflare Workers.</p>
-                <div class="code-block">
-                    <pre>import { sentinelEdge } from 'api-turnstile/middleware/next';
-
-export default sentinelEdge({
-  apiKey: process.env.SENTINEL_KEY,
-  protect: {
-    '/api/auth/*': 'strict',  // Per-path mode definition
-    '/api/public/*': 'monitor'
-  }
-});
-
-export const config = { matcher: '/api/:path*' };</pre>
-                </div>
-            </div>
-
-            <div class="method-item">
-                <h3 style="margin-top: 0;">Fastify</h3>
-                <div class="code-block">
-                    <pre>import { sentinelFastify } from 'api-turnstile';
-
-fastify.register(sentinelFastify, {
-  apiKey: '...',
-  protect: ['/v1/secure']
-});</pre>
-                </div>
-            </div>
         </section>
 
         <section id="cli">
             <h2>CLI & Forensics</h2>
-            <p>Sentinel provides a powerful CLI for real-time traffic monitoring and IP investigation directly from your
-                terminal.</p>
+            <p>Analyze your traffic and investigate suspicious IPs directly from your terminal.</p>
 
             <div class="code-block">
-                <pre># Install Globally
-npm install -g api-turnstile</pre>
-            </div>
+                <pre># Install the CLI
+npm install -g api-turnstile
 
-            <h3>Common Commands</h3>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Command</th>
-                        <th>Description</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td><code>sentinel tail</code></td>
-                        <td>Stream live PASS/BLOCK decisions in real-time.</td>
-                    </tr>
-                    <tr>
-                        <td><code>sentinel check &lt;ip&gt;</code></td>
-                        <td>Perform a manual forensic audit on an IP.</td>
-                    </tr>
-                    <tr>
-                        <td><code>sentinel stats</code></td>
-                        <td>View outcome metrics (Capital Saved, Bots Blocked).</td>
-                    </tr>
-                </tbody>
-            </table>
+# Tail live traffic decisions
+sentinel tail --key YOUR_API_KEY
+
+# Forensic audit of an IP
+sentinel check 1.2.3.4</pre>
+            </div>
         </section>
 
         <section id="api-check">
-            <h2>API Reference: Decision Gate</h2>
+            <h2>API Reference</h2>
             <div class="method-item">
                 <div class="endpoint-badge post">POST</div>
                 <code style="color: #fff; font-size: 1.1rem;">/v1/check</code>
-                <p>The core endpoint for rendering trust decisions. Used by the SDKs or for manual integration in non-JS
-                    languages.</p>
+                <p>Render a trust decision for an IP address. Used internally by SDKs.</p>
 
                 <h3>Request Body</h3>
                 <div class="code-block">
                     <pre>{
-  "target": "104.28.1.1",       // The IP to investigate
-  "profile": "signup",          // api | signup | payments | crypto
-  "privacy_mode": "full"        // strict | full
+  "target": "185.123.45.6",    // Target IP
+  "profile": "signup",         // Security profile
+  "privacy_mode": "full"       // strict | full
 }</pre>
                 </div>
 
                 <h3>Response Object</h3>
                 <div class="code-block">
                     <pre>{
-  "allow": true,                // Boolean decision (PASS/BLOCK)
-  "action": "allow",            // Explicit action
-  "risk": "neutral",            // trusted | neutral | untrusted
-  "reason": "residential_isp_verified", // Forensic explanation
-  "confidence": 0.98,           // AI Confidence Score (0-1)
-  "latency_ms": 14,             // Processing time
+  "allow": false,
+  "action": "block",
+  "risk": "untrusted",
+  "reason": "vpn_detection_confirmed",
+  "confidence": 0.99,
+  "latency_ms": 14,
   "remediation": {
-     "widget_required": false   // Whether BWT challenge is needed
+     "widget_required": false
   }
 }</pre>
                 </div>
