@@ -4,20 +4,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Documentation | Turnstile for APIs Integration</title>
+    <title>Documentation | Sentinel Engine</title>
     <meta name="description"
         content="Technical documentation for Sentinel: implementing Turnstile-grade protection for APIs. Block 92% of bots in under 50ms.">
-    <meta name="keywords"
-        content="Turnstile for APIs docs, bot reduction integration, CAPTCHA alternative, API security outcomes">
     <link rel="canonical" href="https://sentinel.risksignal.name.ng/docs.html" />
     <meta name="robots" content="index, follow">
 
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://sentinel.risksignal.name.ng/docs">
-    <meta property="og:title" content="Documentation | Implementing the Sentinel Trust API">
-    <meta property="og:description"
-        content="Comprehensive guides for integrating Sentinel's bot protection and Zero Trust API vectors.">
+    <meta property="og:title" content="Sentinel Documentation">
+    <meta property="og:description" content="The Deterministic Trust Layer for Modern APIs.">
     <meta property="og:image" content="https://sentinel.risksignal.name.ng/og-image.png">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -232,6 +229,44 @@
             margin-top: 2rem;
         }
 
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 2rem 0;
+            border: 1px solid #222;
+            font-size: 14px;
+        }
+
+        th,
+        td {
+            text-align: left;
+            padding: 1rem;
+            border-bottom: 1px solid #222;
+            color: #aaa;
+        }
+
+        th {
+            background: #111;
+            color: #fff;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.1em;
+        }
+
+        strong {
+            color: #fff;
+        }
+
+        .badge-pro {
+            background: rgba(0, 170, 255, 0.15);
+            color: #0af;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-left: 8px;
+            vertical-align: middle;
+        }
+
         @media (max-width: 1024px) {
             .docs-main {
                 padding: 4rem 3rem;
@@ -286,27 +321,6 @@
             p {
                 font-size: 15px;
             }
-
-            .info-box {
-                padding: 1.25rem;
-                width: auto;
-            }
-
-            .sidebar-overlay {
-                display: none;
-                position: fixed;
-                top: 0;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                background: rgba(0, 0, 0, 0.9);
-                backdrop-filter: blur(10px);
-                z-index: 1000;
-            }
-
-            .sidebar-overlay.active {
-                display: block;
-            }
         }
     </style>
 </head>
@@ -338,203 +352,328 @@
         </div>
 
         <div class="nav-group">
-            <div class="nav-group-title">Introduction</div>
-            <a href="#welcome" class="nav-link active">Welcome</a>
-            <a href="#core-concepts" class="nav-link">Core Concepts</a>
-            <a href="#auth" class="nav-link">Authentication</a>
+            <div class="nav-group-title">Platform</div>
+            <a href="#welcome" class="nav-link active">Introduction</a>
+            <a href="#architecture" class="nav-link">Architecture</a>
+            <a href="#bwt" class="nav-link">Behavioral Work (BWT)</a>
         </div>
 
         <div class="nav-group">
-            <div class="nav-group-title">Remediation</div>
-            <a href="#widget" class="nav-link">Sentinel Widget</a>
-            <a href="#challenges" class="nav-link">Manual Challenges</a>
+            <div class="nav-group-title">Integration (Node.js)</div>
+            <a href="#quickstart" class="nav-link">Quick Start</a>
+            <a href="#configuration" class="nav-link">Configuration</a>
+            <a href="#profiles" class="nav-link">Security Profiles</a>
+            <a href="#frameworks" class="nav-link">Frameworks</a>
+        </div>
+
+        <div class="nav-group">
+            <div class="nav-group-title">Tooling</div>
+            <a href="#cli" class="nav-link">CLI & Forensics</a>
+            <a href="#widget" class="nav-link">Frontend Widget</a>
         </div>
 
         <div class="nav-group">
             <div class="nav-group-title">API Reference</div>
-            <a href="#check" class="nav-link">POST /v1/check</a>
-            <a href="#issue" class="nav-link">POST /v1/challenge/issue</a>
-            <a href="#verify" class="nav-link">POST /v1/challenge/verify</a>
-            <a href="#tiers" class="nav-link">Pricing & Tiers</a>
+            <a href="#api-check" class="nav-link">POST /v1/check</a>
+            <a href="#api-challenge" class="nav-link">POST /v1/challenge/*</a>
         </div>
 
         <div class="nav-group">
             <div class="nav-group-title">Resources</div>
             <a href="./blog.html" class="nav-link">Blog</a>
             <a href="./dashboard.html" class="nav-link">Dashboard</a>
-            <a href="./about.html" class="nav-link">About Sentinel</a>
             <a href="./demo.html" class="nav-link">Live Demo</a>
         </div>
     </aside>
 
     <main class="docs-main">
         <section id="welcome">
-            <h1>Introduction</h1>
-            <p>Sentinel is Turnstile for APIs. It blocks 92% of bot signups without CAPTCHAs by rendering sub-50ms trust
-                decisions using infrastructure and behavioral signals. Replace brittle security logic with a single
-                outcome-focused check.</p>
+            <h1>The Deterministic Trust Layer</h1>
+            <p>Cloudflare Turnstile is for browsers. <strong>Sentinel is for APIs.</strong></p>
+            <p>Sentinel is a high-velocity decision engine designed to render sub-50ms trust decisions for API traffic.
+                It replaces user-hostile CAPTCHAs with infrastructure forensics and cryptographic Proof-of-Work,
+                blocking 92% of automated attacks without ever interrupting a legitimate user.</p>
 
             <div class="info-box">
-                <strong>Pricing Philosophy:</strong> Sentinel charges for <strong>Authority</strong>, not friction.
-                Challenges and Widgets are free for all tiers. We charge for deep forensic decisions.
+                <strong>Outcome-Based Security</strong>
+                We measure success in blocked automation and reduced fraud, not just traffic volume. Our "PRO" tier
+                includes deep-forensic analysis for high-risk vectors.
             </div>
         </section>
 
-        <section id="tiers">
-            <h2>Pricing & Tiers</h2>
-            <p>Sentinel is designed to scale with your platform. Choose the tier that matches your intelligence
-                requirements.</p>
+        <section id="architecture">
+            <h2>Core Architecture</h2>
+            <p>Sentinel operates on a "Zero-Friction, Zero-Trust" philosophy using three distinct layers of defense:</p>
 
-            <div class="pricing-grid">
-                <div style="background: #070707; border: 1px solid #111; padding: 1.5rem; border-radius: 8px;">
-                    <h3 style="color: #fff; margin-top: 0;">🟢 EDGE (Free)</h3>
-                    <p style="font-size: 13px;">Protect your infrastructure at no cost.</p>
-                    <ul style="color: #666; font-size: 13px; padding-left: 1.2rem; line-height: 1.8;">
-                        <li>2,500 Decisions / Mo</li>
-                        <li>5 API Vectors (500 / ea)</li>
-                        <li>Unlimited Widget Verification</li>
-                        <li>Basic ASN Mitigation</li>
-                        <li>Stateless Trust Tokens</li>
-                    </ul>
+            <div class="method-item" style="margin-bottom: 2rem;">
+                <h3 style="margin-top:0;">1. Fast-Path Matrix (< 50ms)</h3>
+                        <p>Incoming requests are checked against an in-memory ASN matrix of over 100 known-bad hosting
+                            providers (OVH, Hetzner, DigitalOcean) and known proxy networks. This handles 92% of bot
+                            traffic instantly without database lookups.</p>
+            </div>
+
+            <div class="method-item" style="margin-bottom: 2rem;">
+                <h3 style="margin-top:0;">2. Behavioral Work Tokens (BWT)</h3>
+                <p>When an IP is "Unstable" (suspicious but not explicitly blacklisted), Sentinel issues a cryptographic
+                    challenge. Legitimate clients (browsers) solve this in milliseconds via the frontend widget, while
+                    simplistic bot scripts (Python, Curl) fail or time out.</p>
+            </div>
+
+            <div class="method-item">
+                <h3 style="margin-top:0;">3. Deep Forensics (Async/Sync)</h3>
+                <p>For high-value targets (Login, Payments), Sentinel performs real-time cold enrichment, querying
+                    Shodan and WhoIs data to identify residential proxies and VPNs even if they are clean on standard
+                    blocklists.</p>
+            </div>
+        </section>
+
+        <section id="quickstart">
+            <h2>Quick Start (Express)</h2>
+            <p>The easiest way to integrate Sentinel is via our official package, <code>api-turnstile</code>.</p>
+
+            <div class="code-block">
+                <pre>npm install api-turnstile</pre>
+            </div>
+
+            <p>Wrap your Express app or specific routes with the Sentinel middleware. This ensures every request is
+                vetted before reaching your business logic.</p>
+
+            <div class="code-block">
+                <pre>import { sentinel } from 'api-turnstile';
+import express from 'express';
+
+const app = express();
+
+// Protect specific routes with standard configuration
+app.use(sentinel({
+  apiKey: process.env.SENTINEL_KEY,
+  protect: ['/api/auth/*', '/api/payments'], // Wildcard support
+  profile: 'strict'
+}));</pre>
+            </div>
+        </section>
+
+        <section id="configuration">
+            <h2>Configuration</h2>
+            <p>Customize the middleware behavior to match your operational requirements.</p>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 20%;">Option</th>
+                        <th style="width: 15%;">Type</th>
+                        <th style="width: 15%;">Default</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>apiKey</code></td>
+                        <td>String</td>
+                        <td>Required</td>
+                        <td>Your Sentinel Vector Key from the dashboard.</td>
+                    </tr>
+                    <tr>
+                        <td><code>protect</code></td>
+                        <td>Array | Obj</td>
+                        <td>Required</td>
+                        <td>Paths to secure. Can be an array `['/a', '/b']` or object `{'/path': 'mode'}` map.</td>
+                    </tr>
+                    <tr>
+                        <td><code>profile</code></td>
+                        <td>String</td>
+                        <td>'api'</td>
+                        <td>Security profile to apply (see below).</td>
+                    </tr>
+                    <tr>
+                        <td><code>fail</code></td>
+                        <td>String</td>
+                        <td>'closed'</td>
+                        <td>Strategy if Sentinel is unreachable. `open` (allow) or `closed` (block).</td>
+                    </tr>
+                    <tr>
+                        <td><code>onBlock</code></td>
+                        <td>Function</td>
+                        <td>Default 403</td>
+                        <td>Custom callback when a request is blocked. `(req, res, decision) => void`.</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>Custom Blocking Logic</h3>
+            <p>You can override the default 403 JSON response to serve custom pages or proprietary error codes.</p>
+            <div class="code-block">
+                <pre>app.use(sentinel({
+  apiKey: '...',
+  protect: ['/login'],
+  onBlock: (req, res, decision) => {
+    // Log the event to your own SIEM
+    console.warn(`Blocked ${req.ip}. Reason: ${decision.reason}`);
+    
+    // Redirect to a challenge page or return custom error
+    res.status(403).render('access_denied', { risk: decision.risk });
+  }
+}));</pre>
+            </div>
+        </section>
+
+        <section id="profiles">
+            <h2>Security Profiles</h2>
+            <p>Different parts of your API require different risk tolerances. A crypto faucet needs zero-trust, while a
+                public news feed might only need basic rate limiting.</p>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Profile</th>
+                        <th>Use Case</th>
+                        <th>Tolerance</th>
+                        <th>Key Signals Checked</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="color: var(--accent);">api</td>
+                        <td>General Feed</td>
+                        <td>High</td>
+                        <td>Rate Limiting, Global Blocklist</td>
+                    </tr>
+                    <tr>
+                        <td style="color: var(--accent);">signup</td>
+                        <td>Registration</td>
+                        <td>Medium</td>
+                        <td>Disposable Email, VPN, ASN, Velocity</td>
+                    </tr>
+                    <tr>
+                        <td style="color: var(--accent);">payments</td>
+                        <td>Checkout</td>
+                        <td>Strict</td>
+                        <td>Geo-Mismatch, Res Proxy, Bin Attack Patterns <span class="badge-pro">PRO</span></td>
+                    </tr>
+                    <tr>
+                        <td style="color: #ff4444;">crypto</td>
+                        <td>Web3 / Faucets</td>
+                        <td>Zero-Trust</td>
+                        <td>Tor Nodes, Wallet Clustering, Prior Blocks</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <section id="frameworks">
+            <h2>Supported Frameworks</h2>
+            <p>Sentinel is platform-agnostic but includes first-class adapters for major Node environments.</p>
+
+            <div class="method-item">
+                <h3 style="margin-top: 0;">Next.js (Edge Middleware)</h3>
+                <p>Run Sentinel at the edge on Vercel or Cloudflare Workers.</p>
+                <div class="code-block">
+                    <pre>import { sentinelEdge } from 'api-turnstile/middleware/next';
+
+export default sentinelEdge({
+  apiKey: process.env.SENTINEL_KEY,
+  protect: {
+    '/api/auth/*': 'strict',  // Per-path mode definition
+    '/api/public/*': 'monitor'
+  }
+});
+
+export const config = { matcher: '/api/:path*' };</pre>
                 </div>
-                <div
-                    style="background: rgba(0, 255, 136, 0.05); border: 1px solid rgba(0, 255, 136, 0.1); padding: 1.5rem; border-radius: 8px;">
-                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                        <h3 style="color: var(--accent); margin-top: 0;">🔵 PRO (Authority)</h3>
-                        <div style="text-align: right; font-family: 'JetBrains Mono'; font-size: 0.8rem;">
-                            <span style="color: #fff;">$8 / mo</span><br>
-                            <span style="color: #444; font-size: 0.7rem;">or $39 / year</span>
-                        </div>
-                    </div>
-                    <p style="font-size: 13px;">Deep forensics for signups & payments.</p>
-                    <ul style="color: #888; font-size: 13px; padding-left: 1.2rem; line-height: 1.8;">
-                        <li>500,000 Decisions / Mo</li>
-                        <li><b>Cold Enrichment</b> (Shodan/WhoIs)</li>
-                        <li>Velocity Tracking Matrix</li>
-                        <li>Mobile Carrier Identification</li>
-                        <li>Full Risk Analytics</li>
-                    </ul>
-                </div>
-            </div>
-        </section>
-
-        <section id="auth">
-            <h2>Authentication</h2>
-            <p>Sentinel uses your Dashboard API keys (Sentinel Vectors) to authenticate requests. We support two primary
-                methods:</p>
-
-            <h3>1. Standard Header</h3>
-            <p>Used for internal server-to-server communication.</p>
-            <div class="code-block">
-                <pre>x-api-key: sl_8b31a5c2f019...</pre>
             </div>
 
-            <h3>2. Bearer Token</h3>
-            <p>Standardized for web widgets and mobile integrations.</p>
-            <div class="code-block">
-                <pre>Authorization: Bearer sl_8b31a5c2f019...</pre>
-            </div>
+            <div class="method-item">
+                <h3 style="margin-top: 0;">Fastify</h3>
+                <div class="code-block">
+                    <pre>import { sentinelFastify } from 'api-turnstile';
 
-            <h3 style="color: #ffaa00;">🧪 Labs / Engineering Headers</h3>
-            <p>For CI/CD pipelines and local simulation. Only active when <code>NODE_ENV=development</code>.</p>
-            <div class="code-block">
-                <pre>x-sentinel-bypass: true      // Bypasses all risk checks
-x-sentinel-mock-ip: 1.2.3.4  // Overrides request origin IP</pre>
-            </div>
-        </section>
-
-        <section id="widget">
-            <h2>Sentinel Widget</h2>
-            <p>The fastest way to protect your frontend is our self-bootstrapping widget. It handles UI, animations, and
-                cryptographic Proof-of-Work (PoW) automatically.</p>
-
-            <h3>Implementation</h3>
-            <p>Place the target `div` and the script tag in your HTML. The widget will automatically find the element
-                and initialize.</p>
-
-            <div class="code-block">
-                <pre>&lt;!-- 1. The Placeholder --&gt;
-&lt;div id="sentinel-widget" data-sitekey="YOUR_API_KEY"&gt;&lt;/div&gt;
-
-&lt;!-- 2. The Native Library --&gt;
-&lt;script src="https://sentinel.risksignal.name.ng/widget.js" async defer&gt;&lt;/script&gt;</pre>
-            </div>
-
-            <div class="info-box">
-                <strong>Live Example:</strong> View the <a href="./widget-test.html" target="_blank"
-                    style="color: var(--accent);">Interactive Widget Demo</a> to see the PoW and Behavioral flow in
-                action.
-            </div>
-
-            <h3>Success Handoff</h3>
-            <p>Upon successful verification, the widget automatically injects a hidden input into the nearest form and
-                fires a custom event.</p>
-            <div class="code-block">
-                <pre>document.addEventListener('sentinelSuccess', (e) => {
-    const token = e.detail.trust_token;
-    console.log("Trust Established:", token);
+fastify.register(sentinelFastify, {
+  apiKey: '...',
+  protect: ['/v1/secure']
 });</pre>
+                </div>
             </div>
         </section>
 
-        <section id="check">
-            <h2>API: Core Analysis</h2>
+        <section id="cli">
+            <h2>CLI & Forensics</h2>
+            <p>Sentinel provides a powerful CLI for real-time traffic monitoring and IP investigation directly from your
+                terminal.</p>
+
+            <div class="code-block">
+                <pre># Install Globally
+npm install -g api-turnstile</pre>
+            </div>
+
+            <h3>Common Commands</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Command</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>sentinel tail</code></td>
+                        <td>Stream live PASS/BLOCK decisions in real-time.</td>
+                    </tr>
+                    <tr>
+                        <td><code>sentinel check &lt;ip&gt;</code></td>
+                        <td>Perform a manual forensic audit on an IP.</td>
+                    </tr>
+                    <tr>
+                        <td><code>sentinel stats</code></td>
+                        <td>View outcome metrics (Capital Saved, Bots Blocked).</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <section id="api-check">
+            <h2>API Reference: Decision Gate</h2>
             <div class="method-item">
                 <div class="endpoint-badge post">POST</div>
                 <code style="color: #fff; font-size: 1.1rem;">/v1/check</code>
-                <p style="margin-top: 1rem;">Performs a deep forensic analysis on a target IP or domain.</p>
+                <p>The core endpoint for rendering trust decisions. Used by the SDKs or for manual integration in non-JS
+                    languages.</p>
 
-                <h3>Request Parameters</h3>
+                <h3>Request Body</h3>
                 <div class="code-block">
                     <pre>{
-  "target": "8.8.8.8",
-  "profile": "api | signup | payments",
-  "privacy_mode": "strict | full"
+  "target": "104.28.1.1",       // The IP to investigate
+  "profile": "signup",          // api | signup | payments | crypto
+  "privacy_mode": "full"        // strict | full
 }</pre>
                 </div>
 
-                <h3>Response Decision</h3>
+                <h3>Response Object</h3>
                 <div class="code-block">
                     <pre>{
-  "allow": false,
-  "risk": "untrusted",
+  "allow": true,                // Boolean decision (PASS/BLOCK)
+  "action": "allow",            // Explicit action
+  "risk": "neutral",            // trusted | neutral | untrusted
+  "reason": "residential_isp_verified", // Forensic explanation
+  "confidence": 0.98,           // AI Confidence Score (0-1)
+  "latency_ms": 14,             // Processing time
   "remediation": {
-    "type": "challenge",
-    "recommended": true,
-    "behavioral_duration": 3.0
+     "widget_required": false   // Whether BWT challenge is needed
   }
 }</pre>
                 </div>
             </div>
         </section>
 
-        <section id="challenges">
-            <h2>Manual Challenge Architecture</h2>
-            <p>For custom UI implementations, use our decoupled challenge endpoints. These requests do not burn your
-                analysis quota.</p>
-
-            <div class="method-item">
-                <div class="endpoint-badge post">POST</div>
-                <code>/v1/challenge/issue</code>
-                <p>Generates a stateless challenge for a specific IP.</p>
-            </div>
-
-            <div class="method-item">
-                <div class="endpoint-badge post">POST</div>
-                <code>/v1/challenge/verify</code>
-                <p>Validates the Proof-of-Work and issues a Trust Token.</p>
-            </div>
-        </section>
-
         <footer
             style="margin-top: 10rem; border-top: 1px solid #111; padding-top: 2rem; color: #444; font-size: 12px; font-family: 'JetBrains Mono';">
-            SENTINEL INTELLIGENCE SYSTEM // v1.6.0-ALPHA // POWERED BY RISKSIGNAL<br>
+            SENTINEL INTELLIGENCE SYSTEM // v1.6.0 // POWERED BY RISKSIGNAL<br>
             <a href="./privacy.html"
                 style="color: inherit; text-decoration: none; margin-top: 10px; display: inline-block;">PRIVACY</a> //
             <a href="./terms.html"
                 style="color: inherit; text-decoration: none; margin-top: 10px; display: inline-block;">TERMS</a>
         </footer>
     </main>
+
     <script>
         const menuToggle = document.getElementById('menuToggle');
         const sidebar = document.getElementById('sidebar');
@@ -555,36 +694,9 @@ x-sentinel-mock-ip: 1.2.3.4  // Overrides request origin IP</pre>
                 if (window.innerWidth <= 900) {
                     toggleMenu();
                 }
-
-                // Active link management
                 navLinks.forEach(l => l.classList.remove('active'));
                 link.classList.add('active');
             });
-        });
-
-        // Intersection Observer for scroll-spy
-        const observerOptions = {
-            root: null,
-            rootMargin: '0px',
-            threshold: 0.5
-        };
-
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    const id = entry.target.getAttribute('id');
-                    navLinks.forEach(link => {
-                        link.classList.remove('active');
-                        if (link.getAttribute('href') === `#${id}`) {
-                            link.classList.add('active');
-                        }
-                    });
-                }
-            });
-        }, observerOptions);
-
-        document.querySelectorAll('section[id]').forEach((section) => {
-            observer.observe(section);
         });
     </script>
 </body>
