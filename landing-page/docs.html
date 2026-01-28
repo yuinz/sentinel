@@ -391,6 +391,39 @@
         <section id="welcome">
             <h1>The Deterministic Trust Layer</h1>
             <p>Cloudflare Turnstile is for browsers. <strong>Sentinel is for APIs.</strong></p>
+
+            <div
+                style="background: var(--bg-card); border: 1px solid var(--accent); padding: 2.5rem; border-radius: 12px; margin-bottom: 4rem;">
+                <div class="mono" style="color: var(--accent); font-size: 0.7rem; margin-bottom: 15px;">INITIALIZATION
+                    // QUICK_START</div>
+                <h2 style="margin-top: 0; border: none; font-size: 1.5rem;">5-Minute Deployment</h2>
+                <p style="font-size: 0.9rem;">Protect any Node.js endpoint in three steps:</p>
+
+                <div style="margin-bottom: 2rem;">
+                    <strong style="font-size: 0.8rem; color: var(--accent);">1. INSTALL</strong>
+                    <pre
+                        style="background: #000; padding: 15px; border-radius: 4px; margin-top: 10px;"><code>npm install api-turnstile</code></pre>
+                </div>
+
+                <div style="margin-bottom: 2rem;">
+                    <strong style="font-size: 0.8rem; color: var(--accent);">2. INITIALIZE</strong>
+                    <pre style="background: #000; padding: 15px; border-radius: 4px; margin-top: 10px;"><code>import { sentinel } from 'api-turnstile';
+
+app.use(sentinel({
+  apiKey: 'sz_live_...',
+  protect: ['/auth/*', '/payments'],
+  profile: 'strict'
+}));</code></pre>
+                </div>
+
+                <div>
+                    <strong style="font-size: 0.8rem; color: var(--accent);">3. WHERE TO GET KEYS?</strong>
+                    <p style="font-size: 0.85rem; margin-top: 10px;">Sign in to the <a href="./login.html"
+                            style="color: var(--accent);">Sentinel Dashboard</a> to provision your <code>sz_live_</code>
+                        project key instantly.</p>
+                </div>
+            </div>
+
             <p>Sentinel is a high-velocity decision engine designed to render sub-50ms trust decisions for API traffic
                 at the network edge.
                 It replaces user-hostile CAPTCHAs with infrastructure forensics and cryptographic Proof-of-Work,
@@ -480,7 +513,8 @@ app.use(sentinel({
                         <td>Array | Obj</td>
                         <td>Required</td>
                         <td>Paths to secure. Can be an array of patterns or a mapping of patterns to
-                            <code>ProtectionMode</code>.</td>
+                            <code>ProtectionMode</code>.
+                        </td>
                     </tr>
                     <tr>
                         <td><code>profile</code></td>

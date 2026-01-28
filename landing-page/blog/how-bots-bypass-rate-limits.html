@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How Bots Bypass Rate Limits in Real-World APIs | Sentinel Blog</title>
+    <meta name="description"
+        content="Rate limiting alone is not security. Learn the advanced techniques bots use to bypass Nginx and API Gateway limits, and how to implement true defense-in-depth.">
+    <link rel="stylesheet" href="../styles.css">
+    <link rel="icon" type="image/png" href="../logo.png">
+</head>
+
+<body>
+    <header class="main-header">
+        <div class="container header-container">
+            <div class="logo">
+                <a href="../index.html"
+                    style="text-decoration: none; color: inherit; display: flex; align-items: center;">
+                    <img src="../logo.png" alt="Sentinel Logo" height="24" style="margin-right: 8px;">
+                    SENTINEL
+                </a>
+            </div>
+            <nav class="nav-menu">
+                <a href="../index.html">Home</a>
+                <a href="../docs.html">Docs</a>
+                <a href="../blog.html">Blog</a>
+            </nav>
+        </div>
+    </header>
+
+    <article class="blog-post"
+        style="padding-top: 160px; max-width: 800px; margin: 0 auto; padding-left: 20px; padding-right: 20px;">
+        <div class="mono" style="color: var(--accent); margin-bottom: 20px;">SECURITY // FORENSICS</div>
+        <h1 style="font-size: 3rem; line-height: 1.1; margin-bottom: 30px;">How Bots Bypass Rate Limits <br /><span
+                style="color: var(--text-secondary)">in Real-World APIs</span></h1>
+
+        <p class="lead" style="font-size: 1.4rem; color: var(--text-secondary); line-height: 1.6; margin-bottom: 40px;">
+            If you're relying on `rate_limit_per_ip` to keep your API safe, you're leaving the door wide open. Here's
+            how attackers circumvent your limits and what you can do about it.
+        </p>
+
+        <section style="margin-bottom: 60px;">
+            <h2 style="color: var(--accent); margin-bottom: 20px;">1. IP Rotation (Low and Slow)</h2>
+            <p>The most common technique is using a massive pool of residential proxies. By rotating through thousands
+                of IPs, a bot can hit your endpoint 100,000 times while each individual IP only sends 2-3
+                requests—staying well below any standard rate limit threshold.</p>
+        </section>
+
+        <section style="margin-bottom: 60px;">
+            <h2 style="color: var(--accent); margin-bottom: 20px;">2. Header Spoofing</h2>
+            <p>Bots often spoof `X-Forwarded-For` or `CF-Connecting-IP` headers to trick poorly configured load
+                balancers into rate limiting the wrong IP, or worse, the load balancer's own internal IP.</p>
+        </section>
+
+        <section style="margin-bottom: 60px;">
+            <h2 style="color: var(--accent); margin-bottom: 20px;">3. Distributed State Attacks</h2>
+            <p>Attackers now coordinate across different providers. Some traffic comes from AWS (the "recon" bots),
+                while the "attack" bots use residential networks. They spread the load so perfectly that your logs look
+                like a spike in organic traffic.</p>
+        </section>
+
+        <section
+            style="margin-bottom: 60px; padding: 40px; background: var(--bg-card); border-radius: 12px; border: 1px solid var(--border);">
+            <h2 style="margin-top: 0;">Beyond the IP: Use Signal Multi-Tenancy</h2>
+            <p>To stop these attacks, you need to look beyond the IP address. You need to analyze the **ASN
+                Governance**, the **Connection Type**, and the **Behavioral Intent** of the request.</p>
+            <p>Sentinel tracks "Global Velocity" across our entire network. If an IP rotated out of an attack on one
+                platform and hits your API 30 seconds later, we already know it's Untrusted.</p>
+            <a href="../login.html" class="btn btn-primary" style="margin-top: 20px;">Secure Your API</a>
+        </section>
+    </article>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-bottom"
+                style="border-top: 1px solid #111; padding-top: 40px; text-align: center; margin-top: 100px;">
+                <p>&copy; 2026 Sentinel. <a href="../blog.html" style="color: inherit; text-decoration: none;">All
+                        Articles</a></p>
+            </div>
+        </div>
+    </footer>
+</body>
+
+</html>

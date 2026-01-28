@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Why CAPTCHAs Fail on APIs (and what to do instead) | Sentinel Blog</title>
+    <meta name="description"
+        content="CAPTCHAs are designed for browsers, not backend APIs. Learn why legacy bot protection fails on API endpoints and how to use behavioral signals instead.">
+    <link rel="stylesheet" href="../styles.css">
+    <link rel="icon" type="image/png" href="../logo.png">
+</head>
+
+<body>
+    <header class="main-header">
+        <div class="container header-container">
+            <div class="logo">
+                <a href="../index.html"
+                    style="text-decoration: none; color: inherit; display: flex; align-items: center;">
+                    <img src="../logo.png" alt="Sentinel Logo" height="24" style="margin-right: 8px;">
+                    SENTINEL
+                </a>
+            </div>
+            <nav class="nav-menu">
+                <a href="../index.html">Home</a>
+                <a href="../docs.html">Docs</a>
+                <a href="../blog.html" class="active">Blog</a>
+            </nav>
+        </div>
+    </header>
+
+    <article class="blog-post"
+        style="padding-top: 160px; max-width: 800px; margin: 0 auto; padding-left: 20px; padding-right: 20px;">
+        <div class="mono" style="color: var(--accent); margin-bottom: 20px;">ENGINEERING // STRATEGY</div>
+        <h1 style="font-size: 3rem; line-height: 1.1; margin-bottom: 30px;">Why CAPTCHAs Fail on APIs <br /><span
+                style="color: var(--text-secondary)">(and what to do instead)</span></h1>
+
+        <p class="lead" style="font-size: 1.4rem; color: var(--text-secondary); line-height: 1.6; margin-bottom: 40px;">
+            If you're trying to protect a REST API or a GraphQL endpoint using a traditional "click-the-bus" CAPTCHA,
+            you've already lost. Here's why legacy bot protection is a liability for backend systems.
+        </p>
+
+        <section style="margin-bottom: 60px;">
+            <h2 style="color: var(--accent); margin-bottom: 20px;">The Browser Bias</h2>
+            <p>Traditional CAPTCHAs (reCAPTCHA, hCaptcha) rely on browser-level signals: mouse movement, canvas
+                rendering, and cookie history. In a pure API environment—where a client might be a mobile app, a smart
+                device, or a legitimate third-party service—these signals don't exist.</p>
+            <p>When you force a CAPTCHA on an API, you create a "dead-end" for non-browser clients, or worse, you force
+                developers to build insecure bypasses that bots eventually find.</p>
+        </section>
+
+        <section style="margin-bottom: 60px;">
+            <h2 style="color: var(--accent); margin-bottom: 20px;">How Bots Bypass It</h2>
+            <p>Modern bot frameworks don't even try to "solve" the puzzle. They use:</p>
+            <ul>
+                <li><strong>Poisoned Tokens:</strong> Reusing valid tokens harvested from real users.</li>
+                <li><strong>Solving Farms:</strong> Outsourcing the puzzle to low-cost human labor via APIs.</li>
+                <li><strong>AI Vision:</strong> Using lightweight neural networks to solve image challenges in
+                    milliseconds.</li>
+            </ul>
+        </section>
+
+        <section
+            style="margin-bottom: 60px; padding: 40px; background: var(--bg-card); border-radius: 12px; border: 1px solid var(--border);">
+            <h2 style="margin-top: 0;">The Solution: Infrastructure Forensics</h2>
+            <p>Instead of asking a user to prove they are human, your backend should analyze the
+                <strong>infrastructure</strong> of the request. Legit humans use residential ISPs, mobile carriers, and
+                have stable velocity patterns. Bots use AWS, DigitalOcean, and rotate IPs every 15 seconds.</p>
+            <p><strong>This is why Sentinel exists.</strong> We render a trust decision in &lt;50ms by analyzing the
+                network DNA of the request, not by making the user jump through hoops.</p>
+            <a href="../login.html" class="btn btn-primary" style="margin-top: 20px;">Try Sentinel Free</a>
+        </section>
+    </article>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-bottom"
+                style="border-top: 1px solid #111; padding-top: 40px; text-align: center; margin-top: 100px;">
+                <p>&copy; 2026 Sentinel. <a href="../blog.html" style="color: inherit; text-decoration: none;">All
+                        Articles</a></p>
+            </div>
+        </div>
+    </footer>
+</body>
+
+</html>

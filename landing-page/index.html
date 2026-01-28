@@ -4,11 +4,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sentinel | Turnstile for APIs</title>
+    <title>Sentinel | Turnstile for APIs & Bot Protection</title>
     <meta name="description"
-        content="Stop 92% of bot signups without CAPTCHAs. Sentinel is Turnstile for APIs: sub-50ms trust decisions using infrastructure and behavior signals.">
+        content="Stop 92% of bot signups without CAPTCHAs. Sentinel is the CAPTCHA alternative for APIs: sub-50ms trust decisions using infrastructure forensic signals.">
     <meta name="keywords"
-        content="Turnstile for APIs, bot protection, CAPTCHA alternative, API security, sub-50ms security, bot mitigation, firewall">
+        content="API bot protection, CAPTCHA alternative for APIs, Turnstile for APIs, bot mitigation, signup fraud prevention, credential stuffing protection">
     <meta name="google-site-verification" content="2mm0-A_FOgfgdi0g8R4Taaf9RBcMtdSZZKFYtHro_QM" />
     <link rel="canonical" href="https://sentinel.risksignal.name.ng/" />
     <meta name="robots" content="index, follow">
@@ -68,9 +68,12 @@
         <div class="container">
             <a href="https://app.risksignal.name.ng" class="hero-badge"
                 style="text-decoration: none; cursor: pointer;">Powered by RiskSignal Intelligence</a>
-            <h1 class="hero-title">Bots Pay. <span style="color: var(--accent)">Human Pass.</span></h1>
-            <p class="hero-subtitle">Blocked 92% of bot signups without CAPTCHAs. Render <br />sub-50ms trust decisions
-                using infrastructure and behavioral signals. <br />One endpoint. One decision.</p>
+            <h1 class="hero-title">Your APIs are being abused. <br /><span style="color: var(--accent)">You just don’t
+                    see it yet.</span></h1>
+            <p class="hero-subtitle">Sentinel is Turnstile for APIs. Block 92% of automated attacks in
+                <50ms without CAPTCHAs. <br />Designed by security engineers to protect your auth, signup, and payment
+                endpoints.
+            </p>
 
             <div class="hero-cta">
                 <a href="#integration" class="btn btn-primary">Start Integrating – 5 Minutes</a>
@@ -104,6 +107,42 @@
                         <span class="mono">DECISION_PROCESSED</span>
                     </div>
                 </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="problems-stopped" style="padding: 100px 0; background: #050505; border-top: 1px solid #111;">
+        <div class="container">
+            <h2 style="text-align: center; margin-bottom: 20px;">Problems Sentinel Stops</h2>
+            <p
+                style="text-align: center; color: var(--text-secondary); margin-bottom: 60px; max-width: 600px; margin-left: auto; margin-right: auto;">
+                Bots are cheaper to run than your infrastructure. Sentinel reverses the economics of API abuse.
+            </p>
+            <div class="features-grid" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));">
+                <div class="feature-card" style="border-color: rgba(255,0,0,0.1);">
+                    <h3 style="font-size: 1.2rem; color: #fff;">Signup & Auth Flooding</h3>
+                    <p style="font-size: 0.9rem; color: var(--text-secondary);">Stop 100k+ fake accounts from being
+                        created using automated email rotators.</p>
+                </div>
+                <div class="feature-card" style="border-color: rgba(255,0,0,0.1);">
+                    <h3 style="font-size: 1.2rem; color: #fff;">Credential Stuffing</h3>
+                    <p style="font-size: 0.9rem; color: var(--text-secondary);">Identify automated login attempts using
+                        behavioral mismatch signals before they hit your DB.</p>
+                </div>
+                <div class="feature-card" style="border-color: rgba(255,0,0,0.1);">
+                    <h3 style="font-size: 1.2rem; color: #fff;">API Scraping</h3>
+                    <p style="font-size: 0.9rem; color: var(--text-secondary);">Block bots disguised as users trying to
+                        scrape your proprietary data and pricing.</p>
+                </div>
+                <div class="feature-card" style="border-color: rgba(255,0,0,0.1);">
+                    <h3 style="font-size: 1.2rem; color: #fff;">Token Brute Force</h3>
+                    <p style="font-size: 0.9rem; color: var(--text-secondary);">Prevent attackers from enumerating API
+                        keys or password reset tokens with high-velocity detection.</p>
+                </div>
+            </div>
+            <div
+                style="text-align: center; margin-top: 40px; color: var(--text-dim); font-family: var(--font-mono); font-size: 0.8rem;">
+                TRUSTED BY BACKEND TEAMS // "Informed by real-world production bot traffic patterns"
             </div>
         </div>
     </section>
@@ -429,6 +468,16 @@ if (!res.allow) {
         <div class="container">
             <h2 style="text-align: center; margin-bottom: 50px;">Engineering Insights</h2>
             <div class="features-grid" style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));">
+                <a href="./blog/ghost-traffic-tax.html" class="feature-card"
+                    style="text-decoration: none; transition: transform 0.3s ease; border-color: rgba(255,170,0,0.2); background: rgba(255,170,0,0.02);">
+                    <div style="color: #ffaa00; font-family: var(--font-mono); font-size: 10px; margin-bottom: 20px;">
+                        ECONOMICS // MANIFESTO</div>
+                    <h3 style="font-size: 1.4rem; margin-bottom: 15px;">The Ghost Traffic Tax</h3>
+                    <p style="color: #888; margin-bottom: 25px; line-height: 1.6;">How automated abuse is silently
+                        inflating your AWS bill and draining your SaaS runway.</p>
+                    <span style="color: #ffaa00; font-family: var(--font-mono); font-size: 11px;">READ_MANIFESTO
+                        →</span>
+                </a>
                 <a href="./blog/why-is-captcha-dead.html" class="feature-card"
                     style="text-decoration: none; transition: transform 0.3s ease; border-color: rgba(255,0,0,0.1);">
                     <div
@@ -677,6 +726,12 @@ if (!res.allow) {
                         <a href="./docs.html">Documentation</a>
                         <a href="./index.html#pricing">Pricing</a>
                         <a href="./index.html#integration">Integration</a>
+                    </div>
+                    <div class="footer-column">
+                        <h4>Use Cases</h4>
+                        <a href="./use-cases/signup-abuse.html">Signup Abuse</a>
+                        <a href="./use-cases/api-bot-protection.html">API Bot Protection</a>
+                        <a href="./blog/stopping-ato.html">Credential Stuffing</a>
                     </div>
                     <div class="footer-column">
                         <h4>Compare</h4>
