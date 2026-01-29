@@ -29,6 +29,11 @@
             --sidebar-width: 280px;
         }
 
+        html {
+            scroll-behavior: smooth;
+            scroll-padding-top: 100px;
+        }
+
         body {
             background: #000;
             display: flex;
@@ -38,14 +43,34 @@
 
         .docs-sidebar {
             width: var(--sidebar-width);
-            background: #070707;
+            background: #050505;
             border-right: 1px solid #111;
-            padding: 2rem 1.5rem;
+            padding: 2.5rem 1.5rem;
             position: fixed;
             height: 100vh;
             overflow-y: auto;
             z-index: 1001;
             transition: transform 0.3s ease;
+        }
+
+        .docs-sidebar .nav-link {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            border-left: 2px solid transparent;
+            padding-left: 12px;
+            margin-left: -12px;
+        }
+
+        .docs-sidebar .nav-link:hover {
+            color: var(--accent);
+            background: rgba(0, 255, 136, 0.03);
+            border-left-color: rgba(0, 255, 136, 0.2);
+        }
+
+        .docs-sidebar .nav-link.active {
+            color: var(--accent);
+            border-left-color: var(--accent);
+            font-weight: 600;
+            background: rgba(0, 255, 136, 0.05);
         }
 
         .docs-sidebar::-webkit-scrollbar {
@@ -379,12 +404,15 @@
             <div class="nav-group-title">Tooling</div>
             <a href="#cli" class="nav-link">CLI & Forensics</a>
             <a href="#widget" class="nav-link">Frontend Widget</a>
+            <a href="#backend-enforcement" class="nav-link" style="font-size: 12px; margin-left: 10px;">↳ Backend
+                Enforcement</a>
         </div>
 
         <div class="nav-group">
             <div class="nav-group-title">API Reference</div>
             <a href="#api-check" class="nav-link">POST /v1/check</a>
             <a href="#api-challenge" class="nav-link">POST /v1/challenge/*</a>
+            <a href="#verification-lifecycle" class="nav-link">Implementation Flow</a>
         </div>
 
         <div class="nav-group">
@@ -637,6 +665,57 @@ app.use(sentinel({
             </ul>
         </section>
 
+        <section id="bwt">
+            <h2>Behavioral Work Tokens (BWT)</h2>
+            <p>BWT is our proprietary extension of Proof-of-Work (PoW) that couples cryptographic difficulty with
+                physical
+                human interaction. This ensures that even "smart" bots with GPU clusters cannot scale their attacks
+                because the cost of simulation exceeds the value of the target.</p>
+
+            <div class="info-box">
+                <strong>How it works:</strong>
+                1. Client requests a challenge. <br>
+                2. Server issues a nonce with a specific difficulty. <br>
+                3. Client must hold interaction for <code>N</code> seconds while solving the PoW. <br>
+                4. Server validates both the PoW solution and the interaction baseline.
+            </div>
+        </section>
+
+        <section id="verification-lifecycle">
+            <h2>Verification Lifecycle</h2>
+            <p>Implementing Sentinel's behavioral gate follows a deterministic three-stage lifecycle. This is standard
+                for all high-security integrations.</p>
+
+            <div class="method-item">
+                <h3 style="margin-top:0;">Phase 1: Challenge Issuance</h3>
+                <p>The client requests a new challenge from the Sentinel infrastructure. This challenge is unique to the
+                    user's IP and session.</p>
+                <div class="code-block">
+                    <pre>POST /v1/challenge/issue
+{ "target": "client_ip", "duration": 2.0 }</pre>
+                </div>
+            </div>
+
+            <div class="method-item">
+                <h3 style="margin-top:0;">Phase 2: Intent Demonstration</h3>
+                <p>The client demonstration "Proof of Intent" (via the Widget) while computing the PoW solution in the
+                    background. This typically takes 2-4 seconds depending on server requirements.</p>
+            </div>
+
+            <div class="method-item">
+                <h3 style="margin-top:0;">Phase 3: Verification & Token</h3>
+                <p>The client submits the solved nonce. If valid, Sentinel issues a base64 <strong>Trust Token</strong>.
+                    This token is your cryptographic "passport" for subsequent high-value requests.</p>
+                <div class="code-block">
+                    <pre>POST /v1/challenge/verify
+{ "target": "client_ip", "nonce": "SOLVED_NONCE" }
+
+// RESPONSE
+{ "success": true, "trust_token": "..." }</pre>
+                </div>
+            </div>
+        </section>
+
         <section id="profiles">
             <h2>Security Profiles</h2>
             <p>Profiles allow you to tune the engine sensitivity based on the business value of the endpoint.</p>
@@ -743,10 +822,52 @@ sentinel check 1.2.3.4</pre>
 });</pre>
             </div>
 
-            <div class="method-item">
-                <h4 style="color: var(--accent); margin-top: 0;">Server-Side Validation</h4>
-                <p>On your backend, verify the token using the SDK or the <code>/v1/challenge/verify</code> endpoint.
-                    Validating this token ensures that the request originated from a verified interactive session.</p>
+            <div class="method-item" id="backend-enforcement">
+                <h3 style="color: var(--accent);">3. Backend Enforcement</h3>
+                <p>Once the widget generates a <code>sentinel-token</code>, your server must validate it to ensure the
+                    request is legitimate. There are two ways to do this:</p>
+
+                <h4 style="margin-top: 1.5rem; color: #fff;">Wait, How does it get to the server?</h4>
+                <p>The Sentinel Widget is designed to be zero-config. It will automatically:</p>
+                <ul>
+                    <li><strong>Forms</strong>: Search for the nearest <code>&lt;form&gt;</code> and inject a hidden
+                        <code>&lt;input name="sentinel-token"&gt;</code> upon success.
+                    </li>
+                    <li><strong>AJAX/Fetch</strong>: Fire the <code>sentinelSuccess</code> event so you can manually add
+                        the <code>X-Sentinel-Trust</code> header to your API calls.</li>
+                </ul>
+
+                <h4 style="margin-top: 2rem; color: #fff;">Option A: Express/Node.js Middleware (Pre-built)</h4>
+                <p>If you are using the <code>api-turnstile</code> SDK, simply enable trust token validation in your
+                    middleware config. It will automatically look for the <code>x-sentinel-trust</code> header or the
+                    <code>sentinel-token</code> form field.
+                </p>
+                <div class="code-block">
+                    <pre>app.use(sentinel({
+  apiKey: process.env.SENTINEL_KEY,
+  verifyToken: true,             // Enable automatic widget token detection
+  trustTokenField: 'sentinel-token', // Custom field name (Optional)
+  onBlock: (req, res, decision) => {
+    return res.status(403).json({ error: "High-risk session. Please complete verification." });
+  }
+}));</pre>
+                </div>
+
+                <h4 style="margin-top: 2rem; color: #fff;">Option B: Manual API Validation (Any Language)</h4>
+                <p>If you aren't using the Node.js middleware, you can manually verify the token by calling our
+                    verification endpoint from your backend.</p>
+                <div class="code-block">
+                    <pre># Example: Python / Flask
+import requests
+
+def verify_sentinel(token, ip):
+    res = requests.post(
+        "https://sentinel.risksignal.name.ng/v1/challenge/verify",
+        headers={"Authorization": f"Bearer {API_KEY}"},
+        json={"target": ip, "nonce": token} # Use 'nonce' for token check
+    )
+    return res.json().get("success")</pre>
+                </div>
             </div>
         </section>
 
@@ -755,7 +876,8 @@ sentinel check 1.2.3.4</pre>
             <div class="method-item">
                 <div class="endpoint-badge post">POST</div>
                 <code style="color: #fff; font-size: 1.1rem;">/v1/check</code>
-                <p>Render a trust decision for an IP address. Used internally by SDKs.</p>
+                <p>Render a trust decision for an IP address. This is the primary endpoint used by the Node.js
+                    middleware to vet traffic in real-time.</p>
 
                 <h3>Request Body</h3>
                 <div class="code-block">
@@ -776,9 +898,86 @@ sentinel check 1.2.3.4</pre>
   "confidence": 0.99,
   "latency_ms": 14,
   "remediation": {
-     "widget_required": false
+     "widget_required": true
   }
 }</pre>
+                </div>
+            </div>
+        </section>
+
+        <section id="api-challenge">
+            <h2>Challenge API Reference</h2>
+            <p>The Challenge API powers the interactive behavioral verification system.</p>
+
+            <div class="method-item">
+                <div class="endpoint-badge post">POST</div>
+                <code style="color: #fff; font-size: 1.1rem;">/v1/challenge/issue</code>
+                <p>Request a new behavioral challenge for a target IP.</p>
+
+                <h3>Request Parameters</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Field</th>
+                            <th>Type</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>target</code></td>
+                            <td>String</td>
+                            <td>Required. The IP address to bind the challenge to.</td>
+                        </tr>
+                        <tr>
+                            <td><code>duration</code></td>
+                            <td>Float</td>
+                            <td>Optional. Required hold duration in seconds (Default: 2.0).</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="method-item">
+                <div class="endpoint-badge post">POST</div>
+                <code style="color: #fff; font-size: 1.1rem;">/v1/challenge/verify</code>
+                <p>Submit a solved challenge and receive a deterministic Trust Token.</p>
+
+                <h3>Request Parameters</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Field</th>
+                            <th>Type</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>target</code></td>
+                            <td>String</td>
+                            <td>Required. The IP address the challenge was issued to.</td>
+                        </tr>
+                        <tr>
+                            <td><code>nonce</code></td>
+                            <td>String</td>
+                            <td>Required. The solved cryptographic string.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="method-item" id="backend-verification">
+                <h3 style="color: var(--accent);">Validating the Trust Token</h3>
+                <p>Once your frontend receives a <code>trust_token</code>, send it to your backend. You should verify it
+                    on every subsequent sensitive request using the <code>x-sentinel-trust</code> header.</p>
+                <div class="code-block">
+                    <pre>// Node.js Example
+const sentinelToken = req.headers['x-sentinel-trust'];
+
+// The middleware handles this automatically, but for manual validation:
+const isValid = await sentinel.verifyToken(sentinelToken, clientIp);
+if (!isValid) return res.status(403).send("Behavioral Proof Required");</pre>
                 </div>
             </div>
         </section>
