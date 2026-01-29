@@ -32,6 +32,19 @@ Sentinel builds a "Global Shield" using a decoupled intelligence model.
 
 [Read the Decision & Propagation Flow (engineflow.md) →](./engineflow.md)
 
+### 🌍 Edge-First Deployment
+Sentinel can be deployed as an **Edge Guard** to kill bots before they ever reach your origin.
+```typescript
+// Cloudflare Worker Example
+import { sentinelEdge } from 'api-turnstile';
+
+const shield = sentinelEdge({ 
+  apiKey: env.KEY, 
+  cache: env.KV, 
+  profile: 'agentic' 
+});
+```
+
 ---
 
 ## 🚀 Integration
