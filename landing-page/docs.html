@@ -356,7 +356,15 @@
             <div class="nav-group-title">Platform</div>
             <a href="#welcome" class="nav-link active">Introduction</a>
             <a href="#architecture" class="nav-link">Architecture</a>
+            <a href="#agentic" class="nav-link">Agentic Security <span class="badge-pro">NEW</span></a>
             <a href="#bwt" class="nav-link">Behavioral Work (BWT)</a>
+        </div>
+
+        <div class="nav-group">
+            <div class="nav-group-title">Edge Deployment</div>
+            <a href="#edge-adapter" class="nav-link">Global Edge Adapter <span class="badge-pro">PRO</span></a>
+            <a href="#cloudflare" class="nav-link">Cloudflare Workers</a>
+            <a href="#vercel" class="nav-link">Vercel Edge</a>
         </div>
 
         <div class="nav-group">
@@ -460,6 +468,64 @@ app.use(sentinel({
                 <p>For high-sensitivity endpoints, Sentinel performs real-time forensic signatures on the request
                     environment. We detect headless browsers (Puppeteer, Playwright), automated runtimes, and masking
                     attempts (VPN/Tor) with high confidence.</p>
+            </div>
+        </section>
+
+        <section id="agentic">
+            <h2>Agentic Security & AI Governance</h2>
+            <div class="info-box">
+                <strong>2026 META // AI AGENT PROTECTION</strong>
+                The web is no longer just for humans. AI Agents (AutoGPT, ChatGPT Browse, Perplexity) consume your
+                resources without buying subscriptions. Sentinel is the first engine built specifically to govern the
+                <strong>Agentic Web</strong>.
+            </div>
+            <p>Traditional "Human-only" filters are too binary. Sentinel's <code>agentic</code> profile allows you to
+                categorize traffic into three tiers:</p>
+            <ul>
+                <li><strong>Verified Human</strong>: Full access to high-compute resources.</li>
+                <li><strong>Verified Agent</strong>: Limited access (cached content, text-only responses, zero-DB
+                    access).</li>
+                <li><strong>Malicious Bot</strong>: Hard rejection.</li>
+            </ul>
+        </section>
+
+        <section id="edge-adapter">
+            <h2>Global Edge Enforcement</h2>
+            <p>For high-traffic applications, Sentinel offers a specialized <strong>Edge Adapter</strong> that moves
+                enforcement to the CDN layer. This reduces decision latency from >50ms to **under 5ms** by using local
+                Key-Value caches.</p>
+
+            <div class="code-block">
+                <pre>import { sentinelEdge } from 'api-turnstile';
+
+export default {
+  async fetch(request, env, ctx) {
+    const shield = sentinelEdge({
+      apiKey: env.SENTINEL_KEY,
+      cache: env.SENTINEL_KV, // Cloudflare KV Namespace
+      protect: ['/v1/*'],
+      cacheTtl: 300 // 5-minute local cache
+    });
+
+    const blockResponse = await shield(request, ctx);
+    if (blockResponse) return blockResponse;
+
+    return await fetch(request);
+  }
+};</pre>
+            </div>
+
+            <div class="pricing-grid">
+                <div class="feature-card" style="border: 1px solid #222; background: #070707; padding: 1.5rem;">
+                    <h4 style="color: var(--accent); margin-top: 0;">Cloudflare Workers</h4>
+                    <p style="font-size: 0.85rem;">Native support for Cloudflare KV. Blocks attacks at globally
+                        distributed edge nodes before they touch your origin.</p>
+                </div>
+                <div class="feature-card" style="border: 1px solid #222; background: #070707; padding: 1.5rem;">
+                    <h4 style="color: var(--accent); margin-top: 0;">Vercel Edge</h4>
+                    <p style="font-size: 0.85rem;">Leverages Vercel Edge Config for zero-latency lookups. Perfect for
+                        Next.js and serverless environments.</p>
+                </div>
             </div>
         </section>
 
