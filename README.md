@@ -1,36 +1,36 @@
-# Sentinel Engine | The Deterministic Trust Layer
+# Sentinel | The Deterministic Trust Layer for APIs
 
 <div align="center">
   <img src="https://sentinel.risksignal.name.ng/sentinel-logo.png" alt="Sentinel Logo" width="120" />
-  <h3>Turnstile for APIs</h3>
+  <h3>"Your APIs are being abused. You just don't see it yet."</h3>
   <p><b>Block 92% of automated attacks in <50ms without CAPTCHAs.</b></p>
   <p>
     <a href="https://sentinel.risksignal.name.ng"><img src="https://img.shields.io/badge/status-online-green?style=flat-square" alt="Status" /></a>
     <a href="https://www.npmjs.com/package/api-turnstile"><img src="https://img.shields.io/npm/v/api-turnstile?color=orange&style=flat-square" alt="npm package" /></a>
-    <a href="https://sentinel.risksignal.name.ng/docs"><img src="https://img.shields.io/badge/api-docs-blue?style=flat-square" alt="Documentation" /></a>
   </p>
 </div>
 
 ---
 
-**Sentinel** is a high-velocity decision engine designed to secure modern APIs against automation, fraud, and abuse. Unlike traditional CAPTCHAs that punish humans, Sentinel uses **infrastructure forensics** and **cryptographic work tokens** to deterministicly block bots while letting humans pass instantly.
+**Sentinel** is a high-velocity decision engine designed to secure modern APIs against automation, fraud, and abuse. It replaces user-hostile CAPTCHAs with infrastructure forensics and cryptographic work tokens, blocking bots while letting humans pass instantly.
+
+## 🚫 Problems Sentinel Stops
+- **Signup & Auth Flooding**: Prevent fake account creation and form abuse.
+- **Credential Stuffing**: Stop automated login attempts at the front door.
+- **API Scraping**: Protect proprietary data from unauthorized crawlers.
+- **AI Agent Governance**: Identify and throttle LLM agents vs. legitimate users.
+
+## 💸 The Ghost Traffic Tax
+Every bot request costs you money in AWS cycles, database queries, and bandwidth. Sentinel eliminates the "Ghost Traffic Tax" by identifying non-human infrastructure (AWS/Hetzner/DigitalOcean) in under 5ms and rejecting it at the edge.
 
 ## ⚡ Core Architecture
+Sentinel builds a "Global Shield" using a decoupled intelligence model.
 
-Sentinel operates on a "Zero-Trust, Zero-Friction" philosophy.
+1.  **Fast-Path Decision Engine (<50ms)**: Eval against in-memory ASN Matrix + local Velocity tracking.
+2.  **Behavioral Work Tokens (BWT)**: Cryptographic PoW challenges for "Unstable" signals.
+3.  **Global Edge Propagation**: Blocked IPs are broadcast to Global KV stores for sub-2ms rejection at the internet's edge.
 
-1.  **Fast-Path Decision Engine (<50ms)**:
-    *   Requests are evaluated against an in-memory **ASN Matrix** to instantly identify hosting providers (AWS, Hetzner, DigitalOcean) and known proxy networks.
-    *   **Local Velocity** tracking detects high-frequency IP churn and enumeration attacks.
-    *   **Stateless Design**: No database lookups in the critical path.
-
-2.  **Behavioral Work Tokens (BWT)**:
-    *   When an IP is "Unstable" (suspicious but not blacklisted), Sentinel issues a **cryptographic challenge** (Proof-of-Work).
-    *   Legitimate clients (browsers/mobile) solve this in milliseconds.
-    *   Bot frameworks (Puppeteer, Selenium, Curl) fail to solve the challenge or timeout, protecting your resources.
-
-3.  **Infrastructure Forensics**:
-    *   Deep analysis of IP metadata including **Connection Type** (Residential vs. Datacenter), **Carrier Identity** (Verizon, T-Mobile), and **Open Port Analysis** (identifies proxy servers).
+[Read the Decision & Propagation Flow (engineflow.md) →](./engineflow.md)
 
 ---
 
