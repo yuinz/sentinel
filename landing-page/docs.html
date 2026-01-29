@@ -456,7 +456,7 @@ app.use(sentinel({
                     traffic instantly.</p>
             </div>
 
-            <div class="method-item" style="margin-bottom: 2rem;">
+            <div class="method-item" id="bwt" style="margin-bottom: 2rem;">
                 <h3 style="margin-top:0;">2. Behavioral Work Tokens (BWT)</h3>
                 <p>When an IP is identified as "Unstable" (suspicious signals found), Sentinel issues a cryptographic
                     challenge. Legitimate clients solve this in milliseconds via the background SDK engine, while
@@ -516,12 +516,14 @@ export default {
             </div>
 
             <div class="pricing-grid">
-                <div class="feature-card" style="border: 1px solid #222; background: #070707; padding: 1.5rem;">
+                <div class="feature-card" id="cloudflare"
+                    style="border: 1px solid #222; background: #070707; padding: 1.5rem;">
                     <h4 style="color: var(--accent); margin-top: 0;">Cloudflare Workers</h4>
                     <p style="font-size: 0.85rem;">Native support for Cloudflare KV. Blocks attacks at globally
                         distributed edge nodes before they touch your origin.</p>
                 </div>
-                <div class="feature-card" style="border: 1px solid #222; background: #070707; padding: 1.5rem;">
+                <div class="feature-card" id="vercel"
+                    style="border: 1px solid #222; background: #070707; padding: 1.5rem;">
                     <h4 style="color: var(--accent); margin-top: 0;">Vercel Edge</h4>
                     <p style="font-size: 0.85rem;">Leverages Vercel Edge Config for zero-latency lookups. Perfect for
                         Next.js and serverless environments.</p>
@@ -550,6 +552,27 @@ app.use(sentinel({
   protect: ['/api/auth/*', '/v1/payments'],
   profile: 'api'
 }));</pre>
+            </div>
+        </section>
+
+        <section id="frameworks">
+            <h2>Framework Integration</h2>
+            <p>Sentinel provides first-class support for popular Node.js frameworks.</p>
+
+            <div class="pricing-grid">
+                <div class="feature-card" style="border: 1px solid #222; background: #070707; padding: 1.5rem;">
+                    <h4 style="color: var(--accent); margin-top: 0;">Express</h4>
+                    <p style="font-size: 0.85rem;">Standard middleware support with auto-detection of IP and headers.
+                    </p>
+                </div>
+                <div class="feature-card" style="border: 1px solid #222; background: #070707; padding: 1.5rem;">
+                    <h4 style="color: var(--accent); margin-top: 0;">Fastify</h4>
+                    <p style="font-size: 0.85rem;">Native plugin for Fastify's high-performance architecture.</p>
+                </div>
+                <div class="feature-card" style="border: 1px solid #222; background: #070707; padding: 1.5rem;">
+                    <h4 style="color: var(--accent); margin-top: 0;">Next.js</h4>
+                    <p style="font-size: 0.85rem;">Middleware support for both App and Pages router.</p>
+                </div>
             </div>
         </section>
 
@@ -672,6 +695,61 @@ sentinel check 1.2.3.4</pre>
             </div>
         </section>
 
+        <section id="widget">
+            <h2>Frontend Widget</h2>
+            <p>For high-risk interactions like signups or payments, you can add an interactive behavioral challenge to
+                your frontend. The Sentinel Widget requires users to demonstrate "Proof of Intent" through a controlled
+                interaction that bots cannot easily replicate.</p>
+
+            <div class="info-box">
+                <strong>Zero-IFRAME ARCHITECTURE</strong>
+                Unlike other solutions, our widget runs natively in your DOM via Shadow DOM, ensuring maximum
+                performance and a seamless visual integration without the overhead of heavy iframes.
+            </div>
+
+            <h3>1. Implementation</h3>
+            <p>Include the Sentinel client script and add the target element where you want the widget to appear.</p>
+
+            <div class="test-section"
+                style="background: #050505; border: 1px solid #111; padding: 2rem; border-radius: 8px; margin: 2rem 0; text-align: center;">
+                <div class="mono"
+                    style="color: var(--accent); font-size: 0.7rem; margin-bottom: 15px; text-transform: uppercase;">
+                    Live Interactive Preview</div>
+                <div id="sentinel-widget" data-sitekey="sl_fd037e1c88fc16b96e920a41dafe2b78b9bb2ba346e634d7"
+                    style="margin: 0 auto;"></div>
+                <p style="font-size: 11px; color: #444; margin-top: 15px;">Note: This demo uses a testing site-key.</p>
+            </div>
+
+            <div class="code-block">
+                <pre>&lt;!-- 1. Add the target element --&gt;
+&lt;div id="sentinel-widget" data-sitekey="YOUR_PROJECT_KEY"&gt;&lt;/div&gt;
+
+&lt;!-- 2. Include the widget script --&gt;
+&lt;script src="https://sentinel.risksignal.name.ng/widget.js" async defer&gt;&lt;/script&gt;</pre>
+            </div>
+
+            <h3>2. Handling Verification</h3>
+            <p>When the user successfully completes the challenge, the widget fires a <code>sentinelSuccess</code> event
+                and automatically injects a hidden input named <code>sentinel-token</code> if it resides within a form.
+            </p>
+
+            <div class="code-block">
+                <pre>document.addEventListener('sentinelSuccess', (event) => {
+  const { trust_token } = event.detail;
+  console.log('Verified!', trust_token);
+  
+  // Optional: Manually submit or enable your submit button
+  document.getElementById('submit-btn').disabled = false;
+});</pre>
+            </div>
+
+            <div class="method-item">
+                <h4 style="color: var(--accent); margin-top: 0;">Server-Side Validation</h4>
+                <p>On your backend, verify the token using the SDK or the <code>/v1/challenge/verify</code> endpoint.
+                    Validating this token ensures that the request originated from a verified interactive session.</p>
+            </div>
+        </section>
+
         <section id="api-check">
             <h2>API Reference</h2>
             <div class="method-item">
@@ -740,6 +818,8 @@ sentinel check 1.2.3.4</pre>
             });
         });
     </script>
+    <!-- Sentinel Widget Engine -->
+    <script src="./widget.js" async defer></script>
 </body>
 
 </html>
