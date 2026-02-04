@@ -36,6 +36,8 @@ app.use((0, helmet_1.default)({
             frameSrc: ["'self'", "https://*.supabase.co", "https://nowpayments.io"],
         },
     },
+    crossOriginResourcePolicy: { policy: "cross-origin" },
+    crossOriginEmbedderPolicy: false
 }));
 app.use((0, cors_1.default)());
 app.use(express_1.default.json());
@@ -54,14 +56,18 @@ const limiter = (0, express_rate_limit_1.default)({
 });
 app.use(limiter);
 // 3. Serve Landing Page (Static Files)
-app.use(express_1.default.static(path_1.default.join(__dirname, '..', 'landing-page')));
+app.use(express_1.default.static(path_1.default.join(__dirname, '..', 'landing-page'), {
+    setHeaders: (res) => {
+        res.set('Cross-Origin-Resource-Policy', 'cross-origin');
+    }
+}));
 // Root route serves landing page
 app.get('/', (req, res) => {
     res.sendFile(path_1.default.join(__dirname, '..', 'landing-page', 'index.html'));
 });
 // 4. Health Check
 app.get('/health', (req, res) => {
-    res.json({ status: 'UP', service: 'Sentinel-Engine', version: '1.0.0' });
+    res.json({ status: 'UP', service: 'Sentinel-Engine', version: '1.0.1' });
 });
 // 5. API Routes
 app.use('/v1', intelRoutes_1.default);
