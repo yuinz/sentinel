@@ -162,6 +162,20 @@
 
     <main class="container">
         <div class="blog-grid">
+            <a href="./blog/stop-supabase-bot-signups.html" class="blog-card reveal-on-scroll"
+                style="border-color: #00ff88; background: rgba(0,255,136,0.05);">
+                <div class="blog-image" id="img-supabase-bots"></div>
+                <div class="blog-content">
+                    <span class="blog-tag">SaaS Security</span>
+                    <h2 class="blog-title">How to Stop 500+ Fake Signups on Supabase & Next.js (No CAPTCHA)</h2>
+                    <p class="blog-excerpt">Developers on Supabase and Vercel are being hit by floods of fake accounts.
+                        Here is the technical guide to stopping them without ruining your UX.</p>
+                    <div class="blog-footer">
+                        <span>Feb 4, 2026</span>
+                        <span class="read-more">Read Guide</span>
+                    </div>
+                </div>
+            </a>
             <a href="./blog/ghost-traffic-tax.html" class="blog-card reveal-on-scroll"
                 style="border-color: #ffaa00; background: rgba(255,170,0,0.05);">
                 <div class="blog-image" id="img-ghost-tax"></div>
@@ -395,6 +409,7 @@
         updateAuthStatus();
 
         // Inject images from artifacts
+        document.getElementById('img-supabase-bots').style.backgroundImage = 'url("./blog-latency.png")';
         document.getElementById('img-ghost-tax').style.backgroundImage = 'url("./blog-infra.png")';
         document.getElementById('img-captcha-fail').style.backgroundImage = 'url("./blog-infra.png")';
         document.getElementById('img-rate-limit').style.backgroundImage = 'url("./blog-latency.png")';

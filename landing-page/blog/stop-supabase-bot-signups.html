@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How to Stop 500+ Fake Signups on Supabase & Next.js (No CAPTCHA) | Sentinel Blog</title>
+    <meta name="description"
+        content="Stop bot signups and fake users on Supabase and Next.js without using reCAPTCHA. A developer's guide to clean, invisible Auth protection for Vercel apps.">
+    <meta name="keywords"
+        content="Supabase bot signups, stop fake accounts nextjs, captcha alternative for vercel, stop automated registrations supabase, nextjs auth security, prevent bot signups supabase, vercel security best practices">
+    <link rel="canonical" href="https://sentinel.risksignal.name.ng/blog/stop-supabase-bot-signups.html" />
+    <meta name="robots" content="index, follow">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://sentinel.risksignal.name.ng/blog/stop-supabase-bot-signups.html">
+    <meta property="og:title" content="How to Stop 500+ Fake Signups on Supabase/Next.js (No CAPTCHA)">
+    <meta property="og:description"
+        content="Developers on Supabase and Vercel are being hit by bot signups. Here is how to stop them without ruining your UX with CAPTCHAs.">
+    <meta property="og:image" content="https://sentinel.risksignal.name.ng/blog-infra.png">
+
+    <!-- Schema.org JSON-LD -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BlogPosting",
+      "headline": "How to Stop 500+ Fake Signups on Supabase & Next.js (No CAPTCHA)",
+      "image": "https://sentinel.risksignal.name.ng/blog-infra.png",
+      "author": {
+        "@type": "Organization",
+        "name": "Sentinel Engineering"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Sentinel",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://sentinel.risksignal.name.ng/logo.png"
+        }
+      },
+      "datePublished": "2026-02-04",
+      "description": "A technical guide for Supabase and Next.js developers to eliminate bot signups without adding user-hostile CAPTCHAs."
+    }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="../styles.css">
+    <link rel="icon" type="image/png" href="../logo.png">
+    <style>
+        .article-header {
+            padding: 180px 0 100px;
+            background: linear-gradient(to bottom, rgba(0, 255, 136, 0.05) 0%, transparent 100%);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .article-meta {
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            margin-bottom: 1.5rem;
+            display: block;
+            text-align: center;
+        }
+
+        .article-title {
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            font-weight: 800;
+            line-height: 1.1;
+            text-align: center;
+            max-width: 900px;
+            margin: 0 auto 2rem;
+            letter-spacing: -0.04em;
+        }
+
+        .article-featured-image {
+            width: 100%;
+            height: 450px;
+            background-size: cover;
+            background-position: center;
+            border-radius: 20px;
+            margin: -60px auto 4rem;
+            border: 1px solid var(--border);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .article-body {
+            max-width: 800px;
+            margin: 0 auto 100px;
+            color: #ccc;
+            line-height: 1.8;
+            font-size: 1.15rem;
+        }
+
+        .article-body h2 {
+            color: #fff;
+            font-size: 2rem;
+            margin: 4rem 0 1.5rem;
+            letter-spacing: -0.02em;
+        }
+
+        .article-body h3 {
+            color: var(--accent);
+            font-size: 1.4rem;
+            margin: 2.5rem 0 1rem;
+        }
+
+        .article-body p {
+            margin-bottom: 2rem;
+        }
+
+        .article-body pre {
+            background: #080808;
+            border: 1px solid #1a1a1a;
+            padding: 1.5rem;
+            border-radius: 12px;
+            overflow-x: auto;
+            margin: 2rem 0;
+            font-size: 0.95rem;
+        }
+
+        .article-body code {
+            font-family: var(--font-mono);
+            color: var(--accent);
+        }
+
+        .author-box {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            padding: 3rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            margin-top: 6rem;
+        }
+
+        .author-avatar {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            color: #000;
+        }
+    </style>
+</head>
+
+<body>
+    <header class="main-header">
+        <div class="container header-container">
+            <div class="logo">
+                <img src="../logo.png" alt="Sentinel Logo" height="24" style="margin-right: 8px;">
+                SENTINEL
+            </div>
+            <nav class="nav-menu">
+                <a href="../index.html">Home</a>
+                <a href="../blog.html">Blog</a>
+                <a href="../docs.html">Docs</a>
+            </nav>
+        </div>
+    </header>
+
+    <article>
+        <header class="article-header">
+            <div class="container">
+                <span class="article-meta">SaaS Defense // Feb 4, 2026</span>
+                <h1 class="article-title">How to Stop 500+ Fake Signups on Supabase & Next.js (No CAPTCHA)</h1>
+            </div>
+        </header>
+
+        <div class="container">
+            <div class="article-featured-image" id="featured-img"></div>
+
+            <div class="article-body">
+                <p>You woke up this morning, checked your <strong>Supabase dashboard</strong>, and saw something
+                    terrifying: 500+ new users joined your app overnight. For a split second, you celebrated growth.
+                    Then you saw the emails: <code>bot823@temp-mail.com</code>, <code>xy_99@mailbox.org</code>,
+                    <code>admin_123@proton.me</code>.</p>
+
+                <p>You've been hit by <strong>automated bot signups</strong>. If you're building on <strong>Next.js and
+                        Vercel</strong>, this isn't just a database clutter problem; it's an infrastructure liability.
+                    These fake accounts can trigger expensive webhooks, drain your Auth quotas, and poison your email
+                    reputation.</p>
+
+                <p>But you hate CAPTCHAs. You don't want to force your real human users to identify fire hydrants just
+                    to try your SaaS. Here is how to stop the flood without damaging your conversion rate.</p>
+
+                <h2>The Vulnerability: Why Supabase is a Target</h2>
+                <p>Supabase makes Auth incredibly easy, but by default, its <code>signUp()</code> method is a
+                    public-facing endpoint. Bots use headless browsers (Puppeteer, Playwright) to hit your
+                    <code>/api/auth/signup</code> route or directly communicate with the Supabase GoTrue server.</p>
+
+                <p>Common solutions like "honey-pots" or simple rate limits are easily bypassed by modern rotated
+                    proxies. This is why you need <strong>deterministic trust analysis</strong>.</p>
+
+                <h2>Step 1: Move Auth to a Server Action or API Route</h2>
+                <p>Never call <code>supabase.auth.signUp()</code> directly from the client. To implement real security,
+                    you need to gate the request on the server (Next.js Server Actions or Route Handlers). This allows
+                    you to perform an <strong>invisible trust check</strong> before Supabase ever sees the request.</p>
+
+                <pre><code>// Example: Next.js Server Action with Sentinel
+"use server"
+
+import { sentinel } from "@/lib/sentinel";
+
+export async function handleSignup(formData: FormData) {
+  const ip = headers().get("x-forwarded-for");
+  
+  // 1. Silent Trust Check
+  const { allow, reason } = await sentinel.check(ip, { 
+    profile: "signup" 
+  });
+
+  if (!allow) {
+    console.warn(`Blocked bot signup attempt: ${reason}`);
+    throw new Error("Security verification failed.");
+  }
+
+  // 2. Proceed with Supabase Auth
+  const { data, error } = await supabase.auth.signUp({ ... });
+}</code></pre>
+
+                <h2>Step 2: Use "Turnstile for APIs" (The Sentinel Way)</h2>
+                <p>The best <strong>CAPTCHA alternative for Vercel</strong> apps is one that works silently. Instead of
+                    showing a puzzle, Sentinel analyzes the <strong>Infrastructure DNA</strong> of the request in under
+                    50ms.</p>
+
+                <p>By checking if the request is coming from a known residential ISP versus a suspicious datacenter
+                    (like AWS or DigitalOcean), Sentinel can block 92% of fake signups before they hit your database.
+                    This is how you maintain a clean <strong>Supabase Auth</strong> table without a single "Select all
+                    boats" puzzle.</p>
+
+                <h2>Why Legacy CAPTCHAs Fail on Next.js</h2>
+                <p>Legacy systems like reCAPTCHA add massive JavaScript bundles to your app, slowing down your LCP
+                    (Largest Contentful Paint) and hurting your SEO. More importantly, they often fail for VPN users or
+                    people on shared IPs in regions like India, leading to <strong>endless CAPTCHA loops</strong>.</p>
+
+                <p>Sentinel is designed to be decoupled. It doesn't rely on massive client-side scripts. It's a pure
+                    Intelligence API that fits perfectly into the <strong>Next.js Middleware</strong> or Server Action
+                    lifecycle.</p>
+
+                <h2>Conclusion: Reclaim Your SaaS Runway</h2>
+                <p>Every fake user is a "Ghost Traffic Tax" on your business. Stop paying for compute and storage that
+                    doesn't belong to real people. By switching to a <strong>behavioral trust layer</strong>, you can
+                    keep your Supabase metrics pure and your Next.js app blazing fast.</p>
+
+                <p>Ready to secure your Auth flow? <a href="../login.html"
+                        style="color: var(--accent); text-decoration: underline;">Get your Sentinel API key</a> and stop
+                    bot signups in under 5 minutes.</p>
+
+                <div class="author-box">
+                    <div class="author-avatar">SE</div>
+                    <div>
+                        <h4 style="margin: 0; font-size: 1.2rem;">The Sentinel Engineering Team</h4>
+                        <p style="margin: 0.5rem 0 0; font-size: 0.9rem; color: var(--text-secondary);">Building
+                            invisible security for the modern SaaS stack.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </article>
+
+    <footer class="footer">
+        <div class="container" style="text-align: center; padding: 4rem 0; border-top: 1px solid var(--border);">
+            <p>&copy; 2026 Sentinel. <a href="../blog.html" style="color: var(--accent); text-decoration: none;">Back to
+                    Blog</a></p>
+        </div>
+    </footer>
+
+    <script>
+        document.getElementById('featured-img').style.backgroundImage = 'url("../blog-infra.png")';
+    </script>
+</body>
+
+</html>
