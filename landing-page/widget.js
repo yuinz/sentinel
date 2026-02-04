@@ -1,6 +1,7 @@
 (function () {
     const WIDGET_ID = 'sentinel-widget';
-    const API_BASE = window.location.origin;
+    const scriptUrl = document.currentScript ? document.currentScript.src : 'https://sentinel.risksignal.name.ng/widget.js';
+    const API_BASE = new URL(scriptUrl).origin;
 
     class SentinelWidget {
         constructor(container) {

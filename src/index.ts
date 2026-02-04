@@ -35,6 +35,8 @@ app.use(helmet({
             frameSrc: ["'self'", "https://*.supabase.co", "https://nowpayments.io"],
         },
     },
+    crossOriginResourcePolicy: { policy: "cross-origin" },
+    crossOriginEmbedderPolicy: false
 }));
 app.use(cors());
 app.use(express.json());
