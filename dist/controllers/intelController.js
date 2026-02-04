@@ -54,6 +54,7 @@ const checkTarget = async (req, res) => {
                 api_access_id: req.apiRecordId,
                 target: target,
                 verdict: result.verdict,
+                trust_score: result.trust_score,
                 profile: profile,
                 latency_ms: result.latency_ms,
                 reason: result.verdict_reasons?.[0] || (result.verdict === 'UNTRUSTED' ? 'untrusted_infrastructure' : 'reputation_verified'),
@@ -64,7 +65,6 @@ const checkTarget = async (req, res) => {
             supabase_1.supabase.from('telemetry').insert(telemetryPayload).then(({ error }) => {
                 if (error) {
                     logger_1.default.error('Telemetry Log Error:', error);
-                    console.error('Telemetry Insert Error Details:', error);
                 }
             });
         }

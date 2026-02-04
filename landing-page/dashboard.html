@@ -749,8 +749,8 @@
             <span>Sentinel Engine Online</span>
         </div>
         <div style="display: flex; gap: 24px;">
-            <div class="metric-item">p95 Decision Latency: <span>21ms</span></div>
-            <div class="metric-item">Cache Hit Ratio: <span>97.4%</span></div>
+            <div class="metric-item">p95 Decision Latency: <span id="p95-latency">21ms</span></div>
+            <div class="metric-item">Cache Hit Ratio: <span id="cache-hit-ratio">97.4%</span></div>
         </div>
     </div>
 
@@ -1283,7 +1283,12 @@
                     }]);
                 }
 
-                // 2. Animate Vitals
+                // 2. Top Bar & Vitals
+                if (stats.p95) {
+                    const p95El = document.getElementById('p95-latency');
+                    if (p95El) p95El.innerText = stats.p95 + 'ms';
+                }
+
                 const total = stats.risk_distribution.stable + stats.risk_distribution.unstable + stats.risk_distribution.untrusted;
 
                 animateCounter('total-signals', stats.total_signals || total);
