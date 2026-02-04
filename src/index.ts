@@ -58,7 +58,11 @@ const limiter = rateLimit({
 app.use(limiter);
 
 // 3. Serve Landing Page (Static Files)
-app.use(express.static(path.join(__dirname, '..', 'landing-page')));
+app.use(express.static(path.join(__dirname, '..', 'landing-page'), {
+    setHeaders: (res) => {
+        res.set('Cross-Origin-Resource-Policy', 'cross-origin');
+    }
+}));
 
 // Root route serves landing page
 app.get('/', (req, res) => {
@@ -67,7 +71,7 @@ app.get('/', (req, res) => {
 
 // 4. Health Check
 app.get('/health', (req, res) => {
-    res.json({ status: 'UP', service: 'Sentinel-Engine', version: '1.0.0' });
+    res.json({ status: 'UP', service: 'Sentinel-Engine', version: '1.0.1' });
 });
 
 // 5. API Routes
