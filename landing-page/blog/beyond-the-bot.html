@@ -8,7 +8,7 @@
     <meta name="description"
         content="Exploring the shift from legacy blacklists to behavioral analytics and ASN-level mapping in modern API security. Learn how Sentinel provides sub-50ms trust decisions.">
     <meta name="keywords"
-        content="ASN mapping, behavioral analytics, bot mitigation, API security, infrastructure trust, cybersecurity">
+        content="ASN mapping, behavioral analytics, sentinel vs cloudflare, cloudflare vs sentinel, bots prevention, infrastructure trust, API security">
     <link rel="canonical" href="https://sentinel.risksignal.name.ng/blog/beyond-the-bot.html" />
     <meta name="robots" content="index, follow">
 
@@ -288,8 +288,11 @@
 
                 <h2>The Death of the CAPTCHA</h2>
                 <p>The biggest casualty of this shift is the CAPTCHA. By the time a user sees a "Click all the taxis"
-                    challenge,
-                    the security system has already failed. It has admitted it doesn't know if the user is human and is
+                    challenge, the security system has already failed. This is especially true for users facing <a
+                        href="why-is-captcha-dead.html" style="color: var(--accent); text-decoration: underline;">VPN
+                        CAPTCHA problems</a>, where they are often
+                    locked in endless loops purely due to their shared infrastructure. It has admitted it doesn't know
+                    if the user is human and is
                     externalizing that cost onto the user.</p>
 
                 <p>By moving the decision to the infrastructure and behavioral layer, we can achieve 99.9% verification

@@ -148,7 +148,9 @@
                 <p>Legacy WAFs are built on rules and regex. They look for specific characters or patterns that
                     indicate an attack. The problem? Real users often look like attacks to these blunt instruments.
                     A user with a VPN, a developer-friendly browser extension, or even a slow internet connection can
-                    be flagged as a "bot" by a static rule-set.</p>
+                    be flagged as a "bot" by a static rule-set. This is a primary reason <a
+                        href="why-is-captcha-dead.html" style="color: #bd00ff; text-decoration: underline;">why CAPTCHA
+                        fails with VPNs</a>, as the shared IP addresses overwhelm basic security heuristics. </p>
 
                 <p>Every time your WAF blocks a legitimate user, it's not just a technical error—it's a
                     <strong>conversion loss</strong>. If your false positive rate is even 0.5%, and you handle 10
