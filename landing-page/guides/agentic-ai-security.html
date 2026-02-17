@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Securing Agentic AI Workflows & Autonomous Systems | Sentinel</title>
+    <meta name="description"
+        content="Learn how to secure agentic AI and autonomous agents from prompt injection, resource exhaustion, and unauthorized API access using Sentinel Engine.">
+    <meta name="keywords"
+        content="agentic ai security, autonomous agents, ai safety, Grok AI, Claude AI security, secure ai orchestration">
+    <link rel="stylesheet" href="../styles.css">
+    <link rel="icon" type="image/png" href="../logo.png">
+    <style>
+        .guide-content {
+            padding: 120px 0;
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.8;
+        }
+
+        .guide-header {
+            margin-bottom: 60px;
+            text-align: center;
+        }
+
+        .guide-body h2 {
+            color: var(--accent);
+            margin-top: 40px;
+        }
+
+        .ai-sidebar {
+            position: fixed;
+            right: 20px;
+            bottom: 20px;
+            width: 300px;
+            background: var(--bg-elevated);
+            border: 1px solid var(--accent);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+
+        .ai-sidebar h4 {
+            color: var(--accent);
+            margin-top: 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .ai-message {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+    </style>
+</head>
+
+<body>
+    <header class="main-header">
+        <div class="container header-container">
+            <div class="logo"><a href="../index.html" style="color: inherit; text-decoration: none;">SENTINEL</a></div>
+            <nav class="nav-menu">
+                <a href="../docs.html">Documentation</a>
+                <a href="../blog.html">Blog</a>
+                <a href="../login.html" class="btn btn-secondary btn-sm">Sign In</a>
+            </nav>
+        </div>
+    </header>
+
+    <article class="guide-content container">
+        <header class="guide-header">
+            <span class="mono" style="color: var(--accent)">SECURITY_GUIDE // VOL_02</span>
+            <h1>The Agentic AI Security Frontier</h1>
+            <p class="hero-subtitle">Securing autonomous agents in an era of conversational exploitation and API-driven
+                attacks.</p>
+        </header>
+
+        <div class="guide-body">
+            <p>The rise of <strong>Agentic AI</strong> tools like AutoGPT, BabyAGI, and custom <strong>Grok AI</strong>
+                agents has introduced a new class of security risks. Unlike traditional bots, these agents can reason,
+                adapt, and retry attacks with refined strategies.</p>
+
+            <h2>Understanding the Agentic Threat Layer</h2>
+            <p>When an autonomous agent targets your API, it doesn't just "spam" requests. It probes for weaknesses,
+                attempts to bypass <strong>AI detectors</strong>, and uses LLM-powered reasoning to solve simple
+                CAPTCHAs. This is why <strong>Agentic AI</strong> requires a Zero-Trust approach at the infrastructure
+                level.</p>
+
+            <h2>Securing Your AI Orchestration</h2>
+            <p>Sentinel provides the deterministic guardrails needed to keep your agents safe:</p>
+            <ul>
+                <li><strong>Token Isolation:</strong> Ensure that <strong>Claude AI</strong> or <strong>OpenAI</strong>
+                    keys used by your agents aren't being exploited by third-party proxies.</li>
+                <li><strong>Regional Pinning:</strong> Restrict agent activity to specific ASN ranges to prevent "agent
+                    kidnapping" or redirection via malicious nodes.</li>
+                <li><strong>Interaction Proof:</strong> Use Sentinel's BWT (Behavioral Work Token) to ensure that the
+                    agent performing the action is indeed the authorized entity, not a spoofed script.</li>
+            </ul>
+
+            <h2>Targeting AI Safety</h2>
+            <p>For organizations focusing on <strong>AI safety</strong>, Sentinel acts as the "Air Gap" between the
+                reasoning engine and the public internet. We ensure that every outbound and inbound signal is verified
+                against our global threat matrix.</p>
+        </div>
+    </article>
+
+    <!-- Interactive AI Agent Component -->
+    <div class="ai-sidebar" id="sentinel-ai-agent">
+        <h4><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+            </svg> Sentinel Intelligence</h4>
+        <div class="ai-message" id="ai-dynamic-message">
+            I'm monitoring Agentic patterns globally. I've detected a 15% increase in "Prompt Injection" style API abuse
+            this week.
+        </div>
+        <hr style="border: 0; border-top: 1px solid #222; margin: 15px 0;">
+        <div style="font-size: 0.7rem; color: var(--text-dim);">Ask me about: <span
+                style="color: var(--accent); cursor: pointer;" onclick="askAI('adversarial agent behavior')">Adversarial
+                Agent Behavior</span></div>
+    </div>
+
+    <footer class="footer">
+        <div class="container" style="text-align: center;">
+            <p>&copy; 2026 Sentinel. <a href="../index.html">Back to Home</a></p>
+        </div>
+    </footer>
+
+    <script src="../script.js"></script>
+    <script>
+        function askAI(topic) {
+            const msg = document.getElementById('ai-dynamic-message');
+            msg.innerText = `Synthesizing report on ${topic.toUpperCase()}... I have identified 5 mitigation strategies for this specific agentic vector. Implementing Sentinel's Layer 2 velocity tracking is recommended.`;
+        }
+    </script>
+</body>
+
+</html>

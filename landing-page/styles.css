@@ -11,6 +11,7 @@
     --border: #111111;
     --border-light: #222222;
     --font-mono: 'JetBrains Mono', monospace;
+    --ai-bg: rgba(8, 8, 8, 0.95);
 }
 
 * {
@@ -1451,4 +1452,132 @@ body {
     .risk-input-group button {
         width: 100%;
     }
+}
+
+/* AI AGENT UI */
+.ai-sidebar {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    width: 320px;
+    background: var(--ai-bg);
+    border: 1px solid var(--border-light);
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
+    z-index: 1000;
+    backdrop-filter: blur(10px);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border-bottom: 2px solid var(--accent);
+}
+
+.ai-sidebar:hover {
+    border-color: var(--accent);
+    transform: translateY(-5px);
+}
+
+.ai-sidebar h4 {
+    margin: 0 0 15px 0;
+    color: var(--accent);
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.ai-message {
+    font-size: 0.85rem;
+    line-height: 1.6;
+    color: var(--text-secondary);
+    min-height: 60px;
+}
+
+.ai-status-dot {
+    width: 6px;
+    height: 6px;
+    background: var(--accent);
+    border-radius: 50%;
+    display: inline-block;
+    animation: blink 1s infinite;
+}
+
+@keyframes blink {
+    0% {
+        opacity: 0.2;
+    }
+
+    50% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0.2;
+    }
+}
+
+/* GUIDE PAGES */
+.guide-content {
+    padding: 160px 0 100px;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.guide-header {
+    text-align: center;
+    margin-bottom: 80px;
+}
+
+.guide-header h1 {
+    font-size: clamp(2.5rem, 6vw, 4rem);
+    margin: 1rem 0;
+    line-height: 1.1;
+    letter-spacing: -0.04em;
+}
+
+.guide-body {
+    font-size: 1.15rem;
+    line-height: 1.8;
+}
+
+.guide-body h2 {
+    font-size: 2rem;
+    margin: 3rem 0 1rem;
+    color: var(--text-primary);
+}
+
+.guide-body p {
+    margin-bottom: 1.5rem;
+    color: var(--text-secondary);
+}
+
+.guide-body ul {
+    margin: 2rem 0;
+    list-style: none;
+}
+
+.guide-body li {
+    padding: 0.8rem 0;
+    padding-left: 2rem;
+    position: relative;
+    border-bottom: 1px solid var(--border);
+}
+
+.guide-body li::before {
+    content: "//";
+    position: absolute;
+    left: 0;
+    color: var(--accent);
+    font-family: var(--font-mono);
+}
+
+blockquote {
+    border-left: 3px solid var(--accent);
+    padding: 2rem;
+    background: var(--bg-elevated);
+    font-style: italic;
+    margin: 3rem 0;
+    font-size: 1.25rem;
 }

@@ -256,6 +256,47 @@ const setupDynamicHero = () => {
     heroTitle.innerHTML = `${selected.main} <span style="color: ${selected.color}">${selected.accent}</span>`;
 };
 
+const setupAIAgent = () => {
+    const agent = document.getElementById('sentinel-ai-agent');
+    if (!agent) {
+        // Create it dynamically if not in HTML (for existing pages)
+        const div = document.createElement('div');
+        div.id = 'sentinel-ai-agent';
+        div.className = 'ai-sidebar';
+        div.innerHTML = `
+            <h4><span class="ai-status-dot"></span> Sentinel Intelligence</h4>
+            <div class="ai-message" id="ai-dynamic-message">Initializing security agent... Scanning page context.</div>
+            <hr style="border: 0; border-top: 1px solid #222; margin: 15px 0;">
+            <div id="ai-agent-tips" style="font-size: 0.7rem; color: var(--text-dim);"></div>
+        `;
+        document.body.appendChild(div);
+    }
+
+    const msg = document.getElementById('ai-dynamic-message');
+    const tips = document.getElementById('ai-agent-tips');
+
+    const path = window.location.pathname;
+    let contextMsg = "Monitoring global bot patterns. I've detected a significant rise in headless browser spoofing today.";
+    let tipHtml = 'Ask me about: <span style="color: var(--accent); cursor: pointer;" onclick="window.askAI(\'bot patterns\')">Bot Patterns</span>';
+
+    if (path.includes('stop-ai-bot-abuse')) {
+        contextMsg = "I'm analyzing the 'Stop AI Bot Abuse' context. 92% of these bots originate from specific ASN ranges I can identify.";
+        tipHtml = 'Ask me about: <span style="color: var(--accent); cursor: pointer;" onclick="window.askAI(\'ASN filtering\')">ASN Filtering</span>';
+    } else if (path.includes('agentic-ai')) {
+        contextMsg = "Agentic threats are evolving. I've logged 15 new 'Prompt Injection' signatures in the last hour.";
+        tipHtml = 'Ask me about: <span style="color: var(--accent); cursor: pointer;" onclick="window.askAI(\'injection defense\')">Injection Defense</span>';
+    }
+
+    setTimeout(() => {
+        if (msg) msg.innerText = contextMsg;
+        if (tips) tips.innerHTML = tipHtml;
+    }, 2000);
+
+    window.askAI = (topic) => {
+        if (msg) msg.innerText = `Synthesizing report on ${topic.toUpperCase()}... I have identified several mitigation layers in Sentinel's core that handle this automatically.`;
+    };
+};
+
 document.addEventListener('DOMContentLoaded', () => {
     setupDynamicHero();
     technicalInit();
@@ -263,4 +304,5 @@ document.addEventListener('DOMContentLoaded', () => {
     setupRiskDemo();
     setupUtils();
     setupScrollReveal();
+    setupAIAgent();
 });

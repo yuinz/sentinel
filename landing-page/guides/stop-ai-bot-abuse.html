@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stop AI Bot Abuse & Malicious Automated Traffic | Sentinel AI Guide</title>
+    <meta name="description" content="Discover how to stop AI bot abuse using Sentinel. Protect your infrastructure from high-velocity scans, credential stuffing, and automated signups with behavioral trust.">
+    <meta name="keywords" content="stop ai bot abuse, bot protection, agentic ai security, bypass ai detector, sentinel trust, api security">
+    <link rel="stylesheet" href="../styles.css">
+    <link rel="icon" type="image/png" href="../logo.png">
+    <style>
+        .guide-content { padding: 120px 0; max-width: 800px; margin: 0 auto; line-height: 1.8; }
+        .guide-header { margin-bottom: 60px; text-align: center; }
+        .guide-body h2 { color: var(--accent); margin-top: 40px; }
+        .ai-sidebar { position: fixed; right: 20px; bottom: 20px; width: 300px; background: var(--bg-elevated); border: 1px solid var(--accent); border-radius: 12px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 1000; }
+        .ai-sidebar h4 { color: var(--accent); margin-top: 0; display: flex; align-items: center; gap: 8px; }
+        .ai-message { font-size: 0.9rem; color: var(--text-secondary); }
+    </style>
+</head>
+<body>
+    <header class="main-header">
+        <div class="container header-container">
+            <div class="logo"><a href="../index.html" style="color: inherit; text-decoration: none;">SENTINEL</a></div>
+            <nav class="nav-menu">
+                <a href="../docs.html">Documentation</a>
+                <a href="../blog.html">Blog</a>
+                <a href="../login.html" class="btn btn-secondary btn-sm">Sign In</a>
+            </nav>
+        </div>
+    </header>
+
+    <article class="guide-content container">
+        <header class="guide-header">
+            <span class="mono" style="color: var(--accent)">SECURITY_GUIDE // VOL_01</span>
+            <h1>Stopping the Surge of AI Bot Abuse</h1>
+            <p class="hero-subtitle">How to defend your API endpoints against the next generation of automated threats like Agentic AI and high-velocity scrapers.</p>
+        </header>
+
+        <div class="guide-body">
+            <p>In 2026, the landscape of bot traffic has shifted. Traditional IP blacklisting is no longer enough to stop <strong>Agentic AI</strong> tools that can rotate through thousands of residential IPs in seconds. <strong>Stop AI bot abuse</strong> by moving from reactive blocking to proactive trust synthesis.</p>
+
+            <h2>Why Traditional AI Detectors Fail</h2>
+            <p>Most "AI detector" tools look for patterns in text or static request headers. Advanced bots now mimic <strong>Claude AI</strong> or <strong>Perplexity AI</strong> signatures to blend in with legitimate developer traffic. Sentinel bypasses this cat-and-mouse game by analyzing infrastructure forensics.</p>
+
+            <h2>The Sentinel Strategy: Behavioral Trust</h2>
+            <ul>
+                <li><strong>ASN Governance:</strong> Instantly identify if a request is coming from a datacenter range commonly used by malicious <strong>Gemini AI</strong> scrapers.</li>
+                <li><strong>Velocity Entropy:</strong> Track patterns that exceed human capability, even when spread across multiple IPs.</li>
+                <li><strong>BWT Puzzles:</strong> Force automated tools to solve cryptographic work, increasing their operational cost until they quit.</li>
+            </ul>
+
+            <blockquote>
+                "The goal isn't just to block; it's to make attacking your infrastructure economically impossible for the bot operator."
+            </blockquote>
+        </div>
+    </article>
+
+    <!-- Interactive AI Agent Component -->
+    <div class="ai-sidebar" id="sentinel-ai-agent">
+        <h4><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg> Sentinel Intelligence</h4>
+        <div class="ai-message" id="ai-dynamic-message">
+            Analyzing your current viewport... I noticed you're reading about AI Bot Abuse. Did you know 92% of bots targeting signups now use headless browsers?
+        </div>
+        <hr style="border: 0; border-top: 1px solid #222; margin: 15px 0;">
+        <div style="font-size: 0.7rem; color: var(--text-dim);">Ask me about: <span style="color: var(--accent); cursor: pointer;" onclick="askAI('stopping grok ai scrapers')">Stopping Grok AI Scrapers</span></div>
+    </div>
+
+    <footer class="footer">
+        <div class="container" style="text-align: center;">
+            <p>&copy; 2026 Sentinel. <a href="../index.html">Back to Home</a></p>
+        </div>
+    </footer>
+
+    <script src="../script.js"></script>
+    <script>
+        function askAI(topic) {
+            const msg = document.getElementById('ai-dynamic-message');
+            msg.innerText = `Searching intelligence matrix for ${topic.toUpperCase()}... I have identified 3 unique signatures for this bot type. Sentinel can block 99% of these hits out-of-the-box.`;
+        }
+    </script>
+</body>
+</html>

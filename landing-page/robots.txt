@@ -1,3 +1,8 @@
 User-agent: *
 Allow: /
 Sitemap: https://sentinel.risksignal.name.ng/sitemap.xml
+
+# LLM Context Files
+# For AI crawlers and LLM training
+Allow: /llm.txt
+Allow: /llm-full.txt

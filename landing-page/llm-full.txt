@@ -1,0 +1,31 @@
+# Sentinel - Autonomous Trust API
+
+Sentinel is the CAPTCHA alternative for APIs. Sub-50ms trust decisions using infrastructure forensics.
+
+## Quick Links
+- Home: https://sentinel.risksignal.name.ng/
+- Docs: https://sentinel.risksignal.name.ng/docs.html
+- Dashboard: https://sentinel.risksignal.name.ng/dashboard.html
+
+## AI Security Guides
+- Stop AI Bot Abuse: https://sentinel.risksignal.name.ng/guides/stop-ai-bot-abuse.html
+- Agentic AI Security: https://sentinel.risksignal.name.ng/guides/agentic-ai-security.html
+- AI Detector Bypass: https://sentinel.risksignal.name.ng/guides/ai-detector-bypass.html
+- AI Coding Security: https://sentinel.risksignal.name.ng/guides/ai-coding-security.html
+- Generative Media Defense: https://sentinel.risksignal.name.ng/guides/protecting-generative-media.html
+- Academic AI Security: https://sentinel.risksignal.name.ng/guides/securing-academic-ai.html
+- LLM Guardrails: https://sentinel.risksignal.name.ng/guides/deep-intelligence-guardrails.html
+
+## Technical Blog
+- Why CAPTCHA is Dead: https://sentinel.risksignal.name.ng/blog/why-is-captcha-dead.html
+- Turnstile for APIs: https://sentinel.risksignal.name.ng/blog/turnstile-for-apis.html
+- Ghost Traffic Tax: https://sentinel.risksignal.name.ng/blog/ghost-traffic-tax.html
+- Stopping ATO: https://sentinel.risksignal.name.ng/blog/stopping-ato.html
+
+## Core Technology
+Multi-layer intelligence: ASN forensics + Velocity tracking + Behavioral Work Tokens
+
+## Pricing
+Free: 1K decisions/mo | Pro: 500K decisions/mo | Enterprise: Custom
+
+Powered by RiskSignal Intelligence

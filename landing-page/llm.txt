@@ -1,0 +1,114 @@
+# Sentinel - Autonomous Trust API & Bot Protection
+
+> Sentinel is the CAPTCHA alternative for APIs. We provide sub-50ms trust decisions using infrastructure forensic signals to stop 92% of automated attacks without user friction.
+
+## Product Overview
+
+Sentinel is a deterministic trust layer for modern APIs. We replace legacy CAPTCHAs and blacklists with behavioral analytics and infrastructure forensics.
+
+### Core Features
+- **Sub-50ms Decision Latency**: In-memory ASN matrix and velocity tracking
+- **92% Bot Block Rate**: Multi-layer intelligence synthesis
+- **Zero User Friction**: Invisible to legitimate users
+- **GDPR Compliant**: Privacy-first architecture with optional strict mode
+
+## Key Documentation
+
+### Getting Started
+- [Quick Start Guide](https://sentinel.risksignal.name.ng/docs.html)
+- [API Reference](https://sentinel.risksignal.name.ng/docs.html#api-reference)
+- [Integration Examples](https://sentinel.risksignal.name.ng/index.html#integration)
+
+### Security Guides
+- [Stop AI Bot Abuse](https://sentinel.risksignal.name.ng/guides/stop-ai-bot-abuse.html) - Defending against agentic AI and high-velocity scrapers
+- [Agentic AI Security](https://sentinel.risksignal.name.ng/guides/agentic-ai-security.html) - Securing autonomous agents and AI orchestration
+- [AI Detector Bypass](https://sentinel.risksignal.name.ng/guides/ai-detector-bypass.html) - Why traditional detection fails and how infrastructure forensics work
+- [AI Coding Security](https://sentinel.risksignal.name.ng/guides/ai-coding-security.html) - Protecting Cursor AI, Replit, and Copilot environments
+- [Generative Media Defense](https://sentinel.risksignal.name.ng/guides/protecting-generative-media.html) - Securing Sora AI, HeyGen, and compute-intensive platforms
+- [Academic AI Security](https://sentinel.risksignal.name.ng/guides/securing-academic-ai.html) - Protecting research intelligence from data harvesting
+- [LLM Guardrails](https://sentinel.risksignal.name.ng/guides/deep-intelligence-guardrails.html) - Defending DeepSeek, Kimi, and next-gen LLM APIs
+
+### Use Cases
+- [Signup Abuse Prevention](https://sentinel.risksignal.name.ng/use-cases/signup-abuse.html)
+- [API Bot Protection](https://sentinel.risksignal.name.ng/use-cases/api-bot-protection.html)
+- [Credential Stuffing Defense](https://sentinel.risksignal.name.ng/blog/stopping-ato.html)
+
+### Technical Deep Dives
+- [Why CAPTCHA is Dead](https://sentinel.risksignal.name.ng/blog/why-is-captcha-dead.html)
+- [Turnstile for APIs](https://sentinel.risksignal.name.ng/blog/turnstile-for-apis.html)
+- [The Ghost Traffic Tax](https://sentinel.risksignal.name.ng/blog/ghost-traffic-tax.html)
+- [Beyond the Bot](https://sentinel.risksignal.name.ng/blog/beyond-the-bot.html)
+
+## How Sentinel Works
+
+### 1. Infrastructure Analysis (Layer 0)
+- ASN Governance Verification
+- Datacenter vs. Residential Partitioning
+- Mobile Carrier Identification Matrix
+
+### 2. Behavioral Synthesis (Layer 1)
+- Velocity Entropy Tracking
+- Sub-minute Scan Pattern Matching
+- Global Threat Node Integration
+
+### 3. Economic Resistance (Layer 2)
+- Behavioral Work Tokens (BWT)
+- Non-interactive Proof of Intent
+- Deterministic Hold Verifications
+
+## API Endpoints
+
+### Primary Decision Endpoint
+```
+POST /v1/check?mode=decision
+```
+Returns immediate PASS/BLOCK decision with confidence score and remediation recommendations.
+
+### Challenge System (SOCA)
+```
+POST /v1/challenge/issue
+POST /v1/challenge/verify
+```
+Optional behavioral work challenges for suspicious-but-uncertain traffic.
+
+## Integration Example
+
+```javascript
+const res = await sentinel.check(ip, { profile: 'signup' });
+
+if (!res.allow) {
+    if (res.remediation?.recommended) {
+        return res.status(res.http_status).json({
+            action: "challenge",
+            challenge_url: "/verify"
+        });
+    }
+    return res.status(res.http_status).send(res.reason);
+}
+```
+
+## Pricing
+
+- **Free Tier**: 1,000 decisions/month
+- **Pro Tier**: 500,000 decisions/month with deep forensics
+- **Enterprise**: Custom volume and SLA
+
+## Comparisons
+
+- [Sentinel vs. reCAPTCHA](https://sentinel.risksignal.name.ng/blog/why-is-captcha-dead.html)
+- [Sentinel vs. Cloudflare Turnstile](https://sentinel.risksignal.name.ng/blog/turnstile-for-apis.html)
+- [Sentinel vs. Legacy WAFs](https://sentinel.risksignal.name.ng/blog/beyond-the-bot.html)
+
+## Support & Contact
+
+- **Documentation**: https://sentinel.risksignal.name.ng/docs.html
+- **Dashboard**: https://sentinel.risksignal.name.ng/dashboard.html
+- **Sales**: https://wa.me/2347030767766
+
+## Powered By
+
+RiskSignal Intelligence - https://app.risksignal.name.ng
+
+---
+
+*Built for security engineers who refuse to compromise between protection and user experience.*

@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Detector Bypass: How Advanced Bots Evade Security | Sentinel</title>
+    <meta name="description"
+        content="Discover how modern bots bypass AI detectors and how the Sentinel Trust API provides the high-authority verification needed to stop them.">
+    <meta name="keywords"
+        content="ai detector checker, bypass ai detector, anthropic claude ai, gemini ai security, undetectable ai, stealth writer ai">
+    <link rel="stylesheet" href="../styles.css">
+    <link rel="icon" type="image/png" href="../logo.png">
+    <style>
+        .guide-content {
+            padding: 120px 0;
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.8;
+        }
+
+        .guide-header {
+            margin-bottom: 60px;
+            text-align: center;
+        }
+
+        .guide-body h2 {
+            color: var(--accent);
+            margin-top: 40px;
+        }
+
+        .ai-sidebar {
+            position: fixed;
+            right: 20px;
+            bottom: 20px;
+            width: 300px;
+            background: var(--bg-elevated);
+            border: 1px solid var(--accent);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+
+        .ai-sidebar h4 {
+            color: var(--accent);
+            margin-top: 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .ai-message {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+    </style>
+</head>
+
+<body>
+    <header class="main-header">
+        <div class="container header-container">
+            <div class="logo"><a href="../index.html" style="color: inherit; text-decoration: none;">SENTINEL</a></div>
+            <nav class="nav-menu">
+                <a href="../docs.html">Documentation</a>
+                <a href="../blog.html">Blog</a>
+                <a href="../login.html" class="btn btn-secondary btn-sm">Sign In</a>
+            </nav>
+        </div>
+    </header>
+
+    <article class="guide-content container">
+        <header class="guide-header">
+            <span class="mono" style="color: var(--accent)">SECURITY_GUIDE // VOL_03</span>
+            <h1>The Illusion of the AI Detector</h1>
+            <p class="hero-subtitle">Why standard detection methods are failing against undetectable AI and humanized
+                bot traffic.</p>
+        </header>
+
+        <div class="guide-body">
+            <p>The arms race between <strong>AI detectors</strong> and content generators has reached a breaking point.
+                With tools like <strong>Stealth Writer AI</strong> and various <strong>Humanizer AI</strong> platforms,
+                automated scripts can now produce traffic that is indistinguishable from human activity at the content
+                layer.</p>
+
+            <h2>How Bots Bypass Traditional Checkers</h2>
+            <p>Malicious actors using <strong>Anthropic Claude AI</strong> or <strong>Gemini AI</strong> profiles often
+                route their traffic through sophisticated <strong>undetectable AI</strong> wrappers. These wrappers fix
+                the perplexity and burstiness signatures that most <strong>AI detector checkers</strong> rely on, making
+                the traffic appear "Human."</p>
+
+            <h2>Sentinel: Shifting the Detection Vector</h2>
+            <p>Instead of trying to "guess" if a request is AI-generated based on its payload, Sentinel looks at the
+                <strong>Infrastructure Integrity</strong>. An "undetectable" bot still has to live somewhere. We track:
+            </p>
+            <ul>
+                <li><strong>TCP Head Fingerprinting:</strong> Identifying mismatched OS signatures that often accompany
+                    headless <strong>Claude AI</strong> automation.</li>
+                <li><strong>Network Jitter Analysis:</strong> Humans have natural timing variance; bots, even
+                    "humanized" ones, often exhibit mechanical precision in their request bursts.</li>
+                <li><strong>Canvas & WebGL Spoofing:</strong> Detecting the "silent" failures of browser spoofing tools
+                    used by advanced scrapers.</li>
+            </ul>
+
+            <h2>The Death of the Simple Checker</h2>
+            <p>If you are relying on a free <strong>AI checker</strong> to protect your signup flow, you are already
+                vulnerable. Real security requires a high-authority decision engine that synthesizes thousands of
+                signals in real-time. That's why industry leaders are moving to the Sentinel Trust API.</p>
+        </div>
+    </article>
+
+    <!-- Interactive AI Agent Component -->
+    <div class="ai-sidebar" id="sentinel-ai-agent">
+        <h4><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+            </svg> Sentinel Intelligence</h4>
+        <div class="ai-message" id="ai-dynamic-message">
+            I've identified a new "Undetectable" signature originating from a specific datacenter range. Applying a
+            global throttle now.
+        </div>
+        <hr style="border: 0; border-top: 1px solid #222; margin: 15px 0;">
+        <div style="font-size: 0.7rem; color: var(--text-dim);">Ask me about: <span
+                style="color: var(--accent); cursor: pointer;" onclick="askAI('stealth writer patterns')">Stealth Writer
+                Patterns</span></div>
+    </div>
+
+    <footer class="footer">
+        <div class="container" style="text-align: center;">
+            <p>&copy; 2026 Sentinel. <a href="../index.html">Back to Home</a></p>
+        </div>
+    </footer>
+
+    <script src="../script.js"></script>
+    <script>
+        function askAI(topic) {
+            const msg = document.getElementById('ai-dynamic-message');
+            msg.innerText = `Analyzing ${topic.toUpperCase()}... These tools often leave "residue" in the HTTP/2 frame headers. Sentinel captures this with 98% accuracy.`;
+        }
+    </script>
+</body>
+
+</html>
