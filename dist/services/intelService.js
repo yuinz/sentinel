@@ -20,7 +20,8 @@ class IntelService {
      * The Real Product: Decision Latency.
      * Rendering a trust decision in <50ms by prioritizing in-memory signals.
      */
-    static async analyze(target, privacyMode = 'full', profileName = 'api', trustToken, tier = 'FREE', forceEnrich = false, requestPath) {
+    static async analyze(rawTarget, privacyMode = 'full', profileName = 'api', trustToken, tier = 'FREE', forceEnrich = false, requestPath) {
+        const target = this.normalizeTarget(rawTarget);
         const start = Date.now();
         const profile = exports.SENTINEL_PROFILES[profileName];
         const signals = [];
@@ -218,7 +219,8 @@ class IntelService {
             return false;
         }
     }
-    static async issueBehavioralWork(target, context, duration, userAgent = 'unknown') {
+    static async issueBehavioralWork(rawTarget, context, duration, userAgent = 'unknown') {
+        const target = this.normalizeTarget(rawTarget);
         const difficulty = 4;
         const salt = process.env.POW_SECRET || 'sentinel-secure-powder';
         const fp = crypto_1.default.createHash('md5').update(userAgent).digest('hex').substring(0, 8);
@@ -234,7 +236,8 @@ class IntelService {
             instruction: `Intent Proof: Click and hold for ${duration || 2.0}s.`
         };
     }
-    static verifyBehavioralWork(target, nonce, userAgent = 'unknown') {
+    static verifyBehavioralWork(rawTarget, nonce, userAgent = 'unknown') {
+        const target = this.normalizeTarget(rawTarget);
         try {
             const difficulty = parseInt(nonce.substring(8, 9), 10);
             const salt = process.env.POW_SECRET || 'sentinel-secure-powder';
@@ -258,11 +261,24 @@ class IntelService {
             return false;
         }
     }
-    static generateTrustToken(target) {
+    static generateTrustToken(rawTarget) {
+        const target = this.normalizeTarget(rawTarget);
         const salt = process.env.POW_SECRET || 'sentinel-secure-powder';
         const ts = Math.floor(Date.now() / 1000);
         const sig = crypto_1.default.createHmac('sha256', salt).update(`${target}:${ts}`).digest('hex').substring(0, 16);
         return Buffer.from(`${target}:${ts}:${sig}`).toString('base64');
+    }
+    /**
+     * Patch IPv6 Loophole: Collapse IPv6 addresses into their /64 subnet
+     */
+    static normalizeTarget(ip) {
+        if (!ip.includes(':'))
+            return ip; // Return IPv4 as is
+        const blocks = ip.split(':');
+        if (blocks.length >= 4) {
+            return blocks.slice(0, 4).join(':') + '::/64';
+        }
+        return ip;
     }
 }
 exports.IntelService = IntelService;
