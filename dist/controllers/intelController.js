@@ -11,6 +11,7 @@ const axios_1 = __importDefault(require("axios"));
 const crypto_1 = __importDefault(require("crypto"));
 const logger_1 = __importDefault(require("../utils/logger"));
 const broadcastService_1 = require("../services/broadcastService");
+const telemetryService_1 = require("../services/telemetryService");
 const cache_1 = require("../utils/cache");
 const checkSchema = zod_1.z.object({
     target: zod_1.z.string().min(3).max(255),
@@ -62,16 +63,12 @@ const checkTarget = async (req, res) => {
                     trust_score: result.trust_score,
                     profile: profile,
                     latency_ms: result.latency_ms,
-                    reason: result.verdict_reasons?.[0] || (result.verdict === 'UNTRUSTED' ? 'untrusted_infrastructure' : 'reputation_verified'),
+                    reason: `[${requestPath || 'UNKNOWN'}] ${result.verdict_reasons?.[0] || (result.verdict === 'UNTRUSTED' ? 'untrusted_infrastructure' : 'reputation_verified')}`,
                     confidence: result.confidence / 100,
                     bwt_verified: isBwtValid || !!trustToken,
                     created_at: new Date().toISOString()
                 };
-                supabase_1.supabase.from('telemetry').insert(telemetryPayload).then(({ error }) => {
-                    if (error) {
-                        logger_1.default.error('Telemetry Log Error:', error);
-                    }
-                });
+                telemetryService_1.TelemetryService.log(telemetryPayload);
             }
             catch (e) {
                 logger_1.default.error('Telemetry recording failed', e);
@@ -143,7 +140,8 @@ const getHealth = async (req, res) => {
             version: '1.2.0-ALPHA',
             uptime: `${Math.floor(uptimeInSeconds / 3600)}h ${Math.floor((uptimeInSeconds % 3600) / 60)}m`,
             asn_matrix_loaded: true,
-            intel_tether_status: intelStatus
+            intel_tether_status: intelStatus,
+            distributed_velocity_active: !!cache_1.redisClient
         },
         stats: {
             cache_hits: cache_1.cacheStats.hits,

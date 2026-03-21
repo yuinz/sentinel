@@ -7,7 +7,8 @@ import axios from 'axios';
 import crypto from 'crypto';
 import logger from '../utils/logger';
 import { BroadcastService } from '../services/broadcastService';
-import { intelCache, cacheStats, velocityCache } from '../utils/cache';
+import { TelemetryService } from '../services/telemetryService';
+import { intelCache, cacheStats, velocityCache, redisClient } from '../utils/cache';
 
 const checkSchema = zod.object({
     target: zod.string().min(3).max(255),
@@ -67,17 +68,13 @@ export const checkTarget = async (req: AuthRequest, res: Response) => {
                     trust_score: result.trust_score,
                     profile: profile,
                     latency_ms: result.latency_ms,
-                    reason: result.verdict_reasons?.[0] || (result.verdict === 'UNTRUSTED' ? 'untrusted_infrastructure' : 'reputation_verified'),
+                    reason: `[${requestPath || 'UNKNOWN'}] ${result.verdict_reasons?.[0] || (result.verdict === 'UNTRUSTED' ? 'untrusted_infrastructure' : 'reputation_verified')}`,
                     confidence: result.confidence / 100,
                     bwt_verified: isBwtValid || !!trustToken,
                     created_at: new Date().toISOString()
                 };
 
-                supabase.from('telemetry').insert(telemetryPayload).then(({ error }) => {
-                    if (error) {
-                        logger.error('Telemetry Log Error:', error);
-                    }
-                });
+                TelemetryService.log(telemetryPayload);
             } catch (e) {
                 logger.error('Telemetry recording failed', e);
             }
@@ -154,7 +151,8 @@ export const getHealth = async (req: AuthRequest, res: Response) => {
             version: '1.2.0-ALPHA',
             uptime: `${Math.floor(uptimeInSeconds / 3600)}h ${Math.floor((uptimeInSeconds % 3600) / 60)}m`,
             asn_matrix_loaded: true,
-            intel_tether_status: intelStatus
+            intel_tether_status: intelStatus,
+            distributed_velocity_active: !!redisClient
         },
         stats: {
             cache_hits: cacheStats.hits,

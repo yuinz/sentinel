@@ -1,6 +1,8 @@
 import { supabase } from '../config/supabase';
 import logger from '../utils/logger';
 
+import { redisClient } from '../utils/cache';
+
 /**
  * Sentinel Live Signal Tailing Utility
  * Mimics the 'sentinel tail' experience from the architecture spec.
@@ -8,6 +10,13 @@ import logger from '../utils/logger';
 async function tailSignals() {
     console.clear();
     console.log('\x1b[36m%s\x1b[0m', '🚀 Sentinel Node ACTIVE | Monitoring Global Threat Signals...');
+    
+    if (redisClient) {
+        console.log('\x1b[35m%s\x1b[0m', '⚡ Distributed Velocity Engine: ONLINE (Redis Sync Active)');
+    } else {
+        console.log('\x1b[33m%s\x1b[0m', '⚠️ Distributed Velocity Engine: OFFLINE (Using Local LRU Cache)');
+    }
+    
     console.log('\x1b[90m%s\x1b[0m', '-------------------------------------------------------------');
 
     // Currently polling since standard anon keys may have limited realtime perms

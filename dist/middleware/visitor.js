@@ -4,9 +4,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.visitorTracker = void 0;
-const supabase_1 = require("../config/supabase");
 const axios_1 = __importDefault(require("axios"));
 const logger_1 = __importDefault(require("../utils/logger"));
+const telemetryService_1 = require("../services/telemetryService");
 // simple in-memory cache to avoid redundant IP-to-Country lookups in the same session
 const countryCache = {};
 const visitorTracker = async (req, res, next) => {
@@ -45,7 +45,7 @@ async function trackVisit(ip, userAgent) {
             // Ignore lookup errors
         }
     }
-    await supabase_1.supabase.from('site_visits').insert({
+    telemetryService_1.TelemetryService.logVisit({
         ip,
         country,
         user_agent: userAgent,

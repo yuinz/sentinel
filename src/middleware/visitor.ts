@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
-import { supabase } from '../config/supabase';
 import axios from 'axios';
 import logger from '../utils/logger';
+import { TelemetryService } from '../services/telemetryService';
 
 // simple in-memory cache to avoid redundant IP-to-Country lookups in the same session
 const countryCache: Record<string, string> = {};
@@ -49,7 +49,7 @@ async function trackVisit(ip: string, userAgent: string) {
         }
     }
 
-    await supabase.from('site_visits').insert({
+    TelemetryService.logVisit({
         ip,
         country,
         user_agent: userAgent,
