@@ -8,6 +8,7 @@ import path from 'path';
 import logger from './utils/logger';
 import intelRoutes from './routes/intelRoutes';
 import { ConfigService } from './services/configService';
+import { TelemetryService } from './services/telemetryService';
 import authRoutes from './routes/authRoutes';
 import payRoutes from './routes/payRoutes';
 import { errorHandler } from './middleware/error';
@@ -102,4 +103,7 @@ app.listen(PORT, async () => {
     setInterval(() => {
         ConfigService.syncIntelligence();
     }, 1000 * 60 * 60 * 6);
+
+    // Initialize the DB Auto-Cleanup Job (Prevents Supabase Free Tier crash)
+    TelemetryService.startRetentionCron();
 });

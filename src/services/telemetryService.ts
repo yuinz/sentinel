@@ -57,4 +57,36 @@ export class TelemetryService {
             logger.error('[TelemetryService] Exception during flush:', e.message);
         }
     }
+
+    /**
+     * Prevents the Supabase 500MB free tier from filling up and crashing the app.
+     * Starts a background cron job to silently delete logs older than 7 days.
+     */
+    static startRetentionCron() {
+        const ONE_DAY_MS = 24 * 60 * 60 * 1000;
+        
+        // Clean once a day natively
+        setInterval(() => this.cleanOldData(), ONE_DAY_MS);
+        
+        // Run first cleanup 5 minutes after Node server starts
+        setTimeout(() => this.cleanOldData(), 5 * 60 * 1000);
+    }
+
+    private static async cleanOldData() {
+        try {
+            const cutoffIso = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+            
+            const [telRes, visRes] = await Promise.all([
+                supabase.from('telemetry').delete().lt('created_at', cutoffIso),
+                supabase.from('site_visits').delete().lt('created_at', cutoffIso)
+            ]);
+
+            if (telRes.error) logger.error('[RetentionCron] Telemetry Delete Error:', telRes.error.message);
+            if (visRes.error) logger.error('[RetentionCron] Site Visits Delete Error:', visRes.error.message);
+            
+            logger.info('[RetentionCron] DB Auto-Cleanup successfully swept records older than 7 Days.');
+        } catch (err: any) {
+            logger.error('[RetentionCron] Exception during cleanup:', err.message);
+        }
+    }
 }

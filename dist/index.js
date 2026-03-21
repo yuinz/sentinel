@@ -13,6 +13,7 @@ const path_1 = __importDefault(require("path"));
 const logger_1 = __importDefault(require("./utils/logger"));
 const intelRoutes_1 = __importDefault(require("./routes/intelRoutes"));
 const configService_1 = require("./services/configService");
+const telemetryService_1 = require("./services/telemetryService");
 const authRoutes_1 = __importDefault(require("./routes/authRoutes"));
 const payRoutes_1 = __importDefault(require("./routes/payRoutes"));
 const error_1 = require("./middleware/error");
@@ -91,4 +92,6 @@ app.listen(PORT, async () => {
     setInterval(() => {
         configService_1.ConfigService.syncIntelligence();
     }, 1000 * 60 * 60 * 6);
+    // Initialize the DB Auto-Cleanup Job (Prevents Supabase Free Tier crash)
+    telemetryService_1.TelemetryService.startRetentionCron();
 });
