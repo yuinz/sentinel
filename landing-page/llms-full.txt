@@ -1,0 +1,80 @@
+# Sentinel Engine - Full API Protocol
+> The HTTP specification and architectural details for integrating Sentinel.
+
+## 1. Architectural Philosophy
+Unlike CAPTCHAs that disrupt legitimate users, Sentinel renders sub-50ms trust decisions. It functions as a reverse proxy middleware or Edge worker.
+Traffic is vetted first against a Distributed ASN Matrix (in memory/Redis), falling back to Behavioral Work Tokens (BWT) — cryptographic PoW tasks executed silently by `sentinel.js`. The engine actively stops AI scrapers (e.g. OpenAI crawler), data-centers, and residential proxy rotation (via IPv6 /64 subnet tracking).
+
+## 2. API Reference: /v1/check
+This is heavily used by the backend Node.js middleware.
+Endpoint: `POST https://sentinel.risksignal.name.ng/v1/check`
+Headers: `Content-Type: application/json`
+
+### Body payload:
+```json
+{
+  "target": "185.123.45.6",
+  "profile": "signup", // Other options: "api", "payments", "crypto"
+  "privacy_mode": "full",
+  "path": "/api/users" // Helps prevent Robotic Path Traversal (Sequence Entropy)
+}
+```
+
+### Response on Authorized IP (TRUSTED):
+```json
+{
+  "allow": true,
+  "action": "allow",
+  "risk": "trusted",
+  "reason": "reputation_verified",
+  "confidence": 0.99,
+  "latency_ms": 3,
+  "remediation": null
+}
+```
+
+### Response on Blocked/Suspicious (UNSTABLE):
+```json
+{
+  "allow": false,
+  "action": "block",
+  "risk": "unstable",
+  "reason": "vpn_detection_confirmed",
+  "confidence": 0.85,
+  "latency_ms": 14,
+  "remediation": { "widget_required": true }
+}
+```
+
+## 3. The Frontend SDK (`sentinel.js`)
+When an endpoint responds with a 403, the client can resolve the ban by fetching the Sentinel SDK (`sentinel.js`).
+```html
+<script src="https://sentinel.risksignal.name.ng/sentinel.js"></script>
+```
+JavaScript Usage:
+```javascript
+// Resolves using background WebCrypto SHA-256 looping
+const verification = await window.Sentinel.verify(USER_IP);
+console.log(verification.token);
+```
+
+## 4. Node Middleware Implementation (api-turnstile)
+`npm install api-turnstile`
+
+```javascript
+import { sentinel } from 'api-turnstile';
+import express from 'express';
+
+const app = express();
+app.use(sentinel({
+  apiKey: "sz_live_XXX",
+  protect: ["/auth/*", "/pay"],
+  profile: "strict",
+  verifyToken: true
+}));
+```
+
+## 5. Security Enforcements
+- **Sequence Entropy**: Sentinel tracks paths visited by an IP. Fast sequential jumps trigger massive penalties.
+- **Distributed Velocity**: Redis bounds track velocity across multiple load-balanced Edge nodes perfectly.
+- **IPv6 Normalization**: Attackers cannot rotate IPs within a `/64` subnet block. All traffic is anchored to the prefix.

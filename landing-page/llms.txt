@@ -1,0 +1,26 @@
+# Sentinel Engine
+
+> The Deterministic Trust Layer for Modern APIs.
+
+Sentinel is a high-velocity decision engine designed to render sub-50ms trust decisions for API traffic at the network edge. It replaces user-hostile CAPTCHAs with infrastructure forensics and cryptographic Proof-of-Work (Behavioral Work Tokens).
+
+## Key Features
+- **Fast-Path Matrix**: In-memory vetting against known-bad hosts and VPNs.
+- **Behavioral Work Tokens (BWT)**: Cryptographic challenges solved silently in the browser via `sentinel.js`.
+- **Distributed Velocity**: Redis-backed distributed rate limiting mapped to IPv6 subnet blocks.
+- **Infrastructure Forensics**: Advanced detection of headless browsers and botnets.
+- **Agentic Security**: Specific profiles to classify and limit AI Agents (AutoGPT, ChatGPT Browse).
+
+## Getting Started
+To protect an Express, Fastify, or Next.js app:
+1. `npm install api-turnstile`
+2. Initialize the middleware:
+```javascript
+import { sentinel } from 'api-turnstile';
+app.use(sentinel({ apiKey: 'sz_live_...', protect: ['/api/auth/*'] }));
+```
+3. Keys are generated via the Sentinel Dashboard.
+
+## Documentation
+- [Full Documentation](https://sentinel.risksignal.name.ng/docs)
+- [Detailed LLM Context](https://sentinel.risksignal.name.ng/llms-full.txt)
