@@ -25,14 +25,14 @@ export const visitorTracker = async (req: Request, res: Response, next: NextFunc
     const cleanIp = ip.includes(',') ? ip.split(',')[0].trim() : ip;
 
     // Fire and forget tracking
-    trackVisit(cleanIp, userAgent).catch(err => {
+    trackVisit(cleanIp, userAgent, req.path).catch(err => {
         logger.error('Visitor tracking failed:', err);
     });
 
     next();
 };
 
-async function trackVisit(ip: string, userAgent: string) {
+async function trackVisit(ip: string, userAgent: string, path: string) {
     if (ip === '127.0.0.1' || ip === '::1') return;
 
     let country = countryCache[ip] || 'Unknown';
@@ -52,7 +52,7 @@ async function trackVisit(ip: string, userAgent: string) {
     TelemetryService.logVisit({
         ip,
         country,
-        user_agent: userAgent,
+        user_agent: `[${path}] ${userAgent}`,
         created_at: new Date().toISOString()
     });
 }

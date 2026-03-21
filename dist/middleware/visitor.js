@@ -23,13 +23,13 @@ const visitorTracker = async (req, res, next) => {
     const ip = req.headers['x-forwarded-for'] || req.ip || '127.0.0.1';
     const cleanIp = ip.includes(',') ? ip.split(',')[0].trim() : ip;
     // Fire and forget tracking
-    trackVisit(cleanIp, userAgent).catch(err => {
+    trackVisit(cleanIp, userAgent, req.path).catch(err => {
         logger_1.default.error('Visitor tracking failed:', err);
     });
     next();
 };
 exports.visitorTracker = visitorTracker;
-async function trackVisit(ip, userAgent) {
+async function trackVisit(ip, userAgent, path) {
     if (ip === '127.0.0.1' || ip === '::1')
         return;
     let country = countryCache[ip] || 'Unknown';
@@ -48,7 +48,7 @@ async function trackVisit(ip, userAgent) {
     telemetryService_1.TelemetryService.logVisit({
         ip,
         country,
-        user_agent: userAgent,
+        user_agent: `[${path}] ${userAgent}`,
         created_at: new Date().toISOString()
     });
 }
