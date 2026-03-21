@@ -6,6 +6,7 @@ import { z as zod } from 'zod';
 import axios from 'axios';
 import crypto from 'crypto';
 import logger from '../utils/logger';
+import { BroadcastService } from '../services/broadcastService';
 import { intelCache, cacheStats, velocityCache } from '../utils/cache';
 
 const checkSchema = zod.object({
@@ -52,28 +53,43 @@ export const checkTarget = async (req: AuthRequest, res: Response) => {
         const isBwtValid = bwtNonce ? IntelService.verifyBehavioralWork(target, bwtNonce) : false;
 
         // 3. Telemetry Logic: Record the event for Analytics
-        try {
-            // We fire and forget this to keep response times <50ms
-            const telemetryPayload = {
-                api_access_id: (req as any).apiRecordId,
-                target: target,
-                verdict: result.verdict,
-                trust_score: result.trust_score,
-                profile: profile,
-                latency_ms: result.latency_ms,
-                reason: result.verdict_reasons?.[0] || (result.verdict === 'UNTRUSTED' ? 'untrusted_infrastructure' : 'reputation_verified'),
-                confidence: result.confidence / 100,
-                bwt_verified: isBwtValid || !!trustToken,
-                created_at: new Date().toISOString()
-            };
+        const userAgent = req.headers['user-agent'] || 'unknown';
+        const isBotMonitor = userAgent.toLowerCase().includes('uptimerobot');
 
-            supabase.from('telemetry').insert(telemetryPayload).then(({ error }) => {
-                if (error) {
-                    logger.error('Telemetry Log Error:', error);
-                }
-            });
-        } catch (e) {
-            logger.error('Telemetry recording failed', e);
+        if (!isBotMonitor) {
+            try {
+                // We fire and forget this to keep response times <50ms
+                const telemetryPayload = {
+                    api_access_id: (req as any).apiRecordId,
+                    target: target,
+                    verdict: result.verdict,
+                    trust_score: result.trust_score,
+                    profile: profile,
+                    latency_ms: result.latency_ms,
+                    reason: result.verdict_reasons?.[0] || (result.verdict === 'UNTRUSTED' ? 'untrusted_infrastructure' : 'reputation_verified'),
+                    confidence: result.confidence / 100,
+                    bwt_verified: isBwtValid || !!trustToken,
+                    created_at: new Date().toISOString()
+                };
+
+                supabase.from('telemetry').insert(telemetryPayload).then(({ error }) => {
+                    if (error) {
+                        logger.error('Telemetry Log Error:', error);
+                    }
+                });
+            } catch (e) {
+                logger.error('Telemetry recording failed', e);
+            }
+
+            // 3.5 Global Propagation: Broadcast UNTRUSTED signals to the Edge
+            if (result.verdict === 'UNTRUSTED') {
+                BroadcastService.broadcast({
+                    ip: target,
+                    verdict: 'UNTRUSTED',
+                    reason: result.verdict_reasons?.[0] || 'untrusted_infrastructure',
+                    profile: profile
+                }).catch(e => logger.error('Global Broadcast failed', e));
+            }
         }
 
         // 4. Mode Selection (Standard vs Trust Decision)

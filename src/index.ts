@@ -7,6 +7,7 @@ import dotenv from 'dotenv';
 import path from 'path';
 import logger from './utils/logger';
 import intelRoutes from './routes/intelRoutes';
+import { ConfigService } from './services/configService';
 import authRoutes from './routes/authRoutes';
 import payRoutes from './routes/payRoutes';
 import { errorHandler } from './middleware/error';
@@ -89,7 +90,16 @@ app.use((req, res, next) => {
 
 app.use(errorHandler as any);
 
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
     logger.info(`🚀 Sentinel Engine ACTIVE on Port ${PORT}`);
     logger.info(`Environment: ${process.env.NODE_ENV}`);
+
+    // Sync Intelligence on Startup
+    logger.info('Initializing Dynamic Threat Matrix...');
+    await ConfigService.syncIntelligence();
+
+    // Periodic Sync (Every 6 hours)
+    setInterval(() => {
+        ConfigService.syncIntelligence();
+    }, 1000 * 60 * 60 * 6);
 });

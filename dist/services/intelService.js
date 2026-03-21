@@ -8,14 +8,7 @@ const axios_1 = __importDefault(require("axios"));
 const crypto_1 = __importDefault(require("crypto"));
 const logger_1 = __importDefault(require("../utils/logger"));
 const cache_1 = require("../utils/cache");
-const HIGH_RISK_ASNS = [
-    212238, 9009, 14061, 20473, 16509, 14618, 63949, 15169, 396982,
-    24940, 21341, 16276, 13335, 54113, 20940, 204915, 47583, 53667,
-    8100, 13213, 46475, 60068, 199218, 203020, 201839, 398324,
-    398705, 398722, 211298, 213412, 216341, 30823, 214497, 215208,
-    215240, 198953, 200593, 42969, 215778, 49217, 20052, 11878,
-    46562, 204957, 216419, 51167, 12876, 16276, 35816, 50673
-];
+const configService_1 = require("./configService");
 exports.SENTINEL_PROFILES = {
     api: { threshold: 60 },
     signup: { threshold: 75 },
@@ -60,7 +53,7 @@ class IntelService {
             const deepIntel = cache_1.intelCache.get(cacheKey);
             if (deepIntel && deepIntel.asn) {
                 const asnNumber = deepIntel.asn.asn;
-                const isHighRisk = HIGH_RISK_ASNS.includes(asnNumber);
+                const isHighRisk = configService_1.ConfigService.getHighRiskAsns().includes(asnNumber);
                 if (isHighRisk) {
                     currentRisk += 80; // Massive penalty for Data Centers/VPNs
                     signals.push({
@@ -79,7 +72,7 @@ class IntelService {
                 if (forceEnrich) {
                     const freshIntel = await this.performSyncEnrich(target);
                     if (freshIntel && freshIntel.asn) {
-                        const isHighRisk = HIGH_RISK_ASNS.includes(freshIntel.asn.asn);
+                        const isHighRisk = configService_1.ConfigService.getHighRiskAsns().includes(freshIntel.asn.asn);
                         if (isHighRisk) {
                             currentRisk += 80;
                             signals.push({ id: 'ASN-REPUTATION', label: `High-Risk Infrastructure (${freshIntel.asn.name})`, weight: 80, status: 'negative' });
@@ -149,8 +142,9 @@ class IntelService {
         }
     }
     static checkLocalAsnMatrix(target) {
+        const ranges = configService_1.ConfigService.getDatacenterRanges();
         // Instant forensic check against known hosting ranges
-        for (const range of this.DATACENTER_RANGES) {
+        for (const range of ranges) {
             if (this.ipInRow(target, range)) {
                 return { risk: 85 }; // Critical Risk: Data-Center Origin
             }
@@ -234,30 +228,3 @@ class IntelService {
     }
 }
 exports.IntelService = IntelService;
-// Comprehensive High-Risk Matrix (Hosting, VPN, Tor, Proxy)
-// In Pro Tier, this list is updated via the Sentinel Global C2 every 6 hours.
-IntelService.DATACENTER_RANGES = [
-    // Amazon Web Services (AWS)
-    '3.0.0.0/8', '13.0.0.0/8', '18.0.0.0/8', '34.192.0.0/10', '35.160.0.0/12',
-    '44.0.0.0/8', '52.0.0.0/10', '54.0.0.0/8',
-    // Microsoft Azure
-    '13.64.0.0/11', '20.33.0.0/16', '23.96.0.0/12', '40.64.0.0/10',
-    '51.103.0.0/16', '52.136.0.0/13',
-    // Google Cloud (GCP)
-    '34.64.0.0/10', '35.184.0.0/13', '104.154.0.0/15',
-    // DigitalOcean
-    '104.248.0.0/13', '138.197.0.0/16', '159.203.0.0/16', '165.22.0.0/16',
-    // Akamai / Linode / Cloudflare
-    '45.33.0.0/16', '104.16.0.0/12', '162.158.0.0/15', '172.64.0.0/13',
-    // Vultr / Hetzner / OVH
-    '45.32.0.0/16', '108.61.0.0/16', '95.216.0.0/15', '116.202.0.0/15',
-    '51.254.0.0/15', '54.36.0.0/15', '188.165.0.0/16',
-    // Common VPN Vectors (M247, Datacamp, Choopa)
-    '185.204.0.0/22', '193.108.0.0/22', '185.228.0.0/16', '193.36.0.0/16',
-    '89.187.0.0/16', '45.155.0.0/16', '82.102.0.0/16', '84.239.0.0/16',
-    '185.151.0.0/16', '212.102.0.0/18',
-    // Specialized Anonymizers
-    '185.220.101.0/24', // Tor Exit Node Cluster
-    '103.208.220.0/22', // Proxy Traffic
-    '176.10.99.0/24' // Known VPN Exit
-];

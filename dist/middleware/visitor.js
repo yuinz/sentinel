@@ -10,6 +10,11 @@ const logger_1 = __importDefault(require("../utils/logger"));
 // simple in-memory cache to avoid redundant IP-to-Country lookups in the same session
 const countryCache = {};
 const visitorTracker = async (req, res, next) => {
+    const userAgent = req.get('User-Agent') || 'unknown';
+    // 1. Skip UptimeRobot and other health monitors to keep DB clean
+    if (userAgent.toLowerCase().includes('uptimerobot')) {
+        return next();
+    }
     // Only track HTML page requests or root
     const isPage = req.accepts('html') && !req.path.includes('.') || req.path === '/' || req.path.endsWith('.html');
     if (!isPage) {
@@ -18,7 +23,7 @@ const visitorTracker = async (req, res, next) => {
     const ip = req.headers['x-forwarded-for'] || req.ip || '127.0.0.1';
     const cleanIp = ip.includes(',') ? ip.split(',')[0].trim() : ip;
     // Fire and forget tracking
-    trackVisit(cleanIp, req.get('User-Agent') || 'unknown').catch(err => {
+    trackVisit(cleanIp, userAgent).catch(err => {
         logger_1.default.error('Visitor tracking failed:', err);
     });
     next();

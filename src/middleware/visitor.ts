@@ -7,6 +7,13 @@ import logger from '../utils/logger';
 const countryCache: Record<string, string> = {};
 
 export const visitorTracker = async (req: Request, res: Response, next: NextFunction) => {
+    const userAgent = req.get('User-Agent') || 'unknown';
+
+    // 1. Skip UptimeRobot and other health monitors to keep DB clean
+    if (userAgent.toLowerCase().includes('uptimerobot')) {
+        return next();
+    }
+
     // Only track HTML page requests or root
     const isPage = req.accepts('html') && !req.path.includes('.') || req.path === '/' || req.path.endsWith('.html');
 
@@ -18,7 +25,7 @@ export const visitorTracker = async (req: Request, res: Response, next: NextFunc
     const cleanIp = ip.includes(',') ? ip.split(',')[0].trim() : ip;
 
     // Fire and forget tracking
-    trackVisit(cleanIp, req.get('User-Agent') || 'unknown').catch(err => {
+    trackVisit(cleanIp, userAgent).catch(err => {
         logger.error('Visitor tracking failed:', err);
     });
 
