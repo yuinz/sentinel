@@ -710,6 +710,31 @@ if (!res.allow) {
             </div>
         </div>
     </section>
+    <section class="support-contact" style="padding: 100px 0; background: #050505; border-top: 1px solid #111;">
+        <div class="container">
+            <h2 style="text-align: center; margin-bottom: 20px;">Support & Feedback</h2>
+            <p style="text-align: center; color: var(--text-secondary); margin-bottom: 50px; max-width: 600px; margin-left: auto; margin-right: auto;">
+                Have a question or feature request? Send a message directly to our engineering team.
+            </p>
+
+            <form action="https://formsubmit.co/femonla6@gmail.com" method="POST" style="max-width: 600px; margin: 0 auto; display: flex; flex-direction: column; gap: 15px;">
+                <!-- Security & Redirects for Formsubmit -->
+                <input type="hidden" name="_captcha" value="false">
+                <input type="hidden" name="_subject" value="New Sentinel Support Request!">
+                <input type="hidden" name="_next" value="https://sentinel.risksignal.name.ng">
+
+                <div style="display: flex; gap: 15px; width: 100%;">
+                    <input type="text" name="name" placeholder="Your Name" required style="flex: 1; padding: 15px; background: #0a0a0a; border: 1px solid #222; border-radius: 8px; color: #fff; font-family: 'Inter', sans-serif;">
+                    <input type="email" name="email" placeholder="Email Address" required style="flex: 1; padding: 15px; background: #0a0a0a; border: 1px solid #222; border-radius: 8px; color: #fff; font-family: 'Inter', sans-serif;">
+                </div>
+                
+                <textarea name="message" placeholder="How can we help?" required rows="5" style="width: 100%; padding: 15px; background: #0a0a0a; border: 1px solid #222; border-radius: 8px; color: #fff; font-family: 'Inter', sans-serif; resize: vertical; box-sizing: border-box;"></textarea>
+                
+                <button type="submit" class="btn btn-primary" style="align-self: center; padding: 12px 40px; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">Send Message</button>
+            </form>
+        </div>
+    </section>
+
     <footer class="footer">
         <div class="container">
             <div class="footer-content">
