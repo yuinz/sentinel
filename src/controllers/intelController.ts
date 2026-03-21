@@ -12,7 +12,8 @@ import { intelCache, cacheStats, velocityCache } from '../utils/cache';
 const checkSchema = zod.object({
     target: zod.string().min(3).max(255),
     privacy_mode: zod.enum(['strict', 'full']).optional().default('full'),
-    profile: zod.enum(['api', 'signup', 'payments', 'crypto']).optional().default('api')
+    profile: zod.enum(['api', 'signup', 'payments', 'crypto']).optional().default('api'),
+    path: zod.string().optional()
 });
 
 export const checkTarget = async (req: AuthRequest, res: Response) => {
@@ -22,7 +23,7 @@ export const checkTarget = async (req: AuthRequest, res: Response) => {
             return res.status(400).json({ error: 'Invalid target format.', details: validation.error.format() });
         }
 
-        const { target, privacy_mode, profile } = validation.data;
+        const { target, privacy_mode, profile, path: requestPath } = validation.data;
         const mode = req.query.mode as string;
         const bwtNonce = req.headers['x-bwt-nonce'] as string;
         const trustToken = req.headers['x-sentinel-trust'] as string;
@@ -44,7 +45,7 @@ export const checkTarget = async (req: AuthRequest, res: Response) => {
             cacheStats.misses++;
         }
 
-        const result = cachedResult ? cachedResult : await IntelService.analyze(target, privacy_mode, profile, trustToken, req.user?.tier);
+        const result = cachedResult ? cachedResult : await IntelService.analyze(target, privacy_mode, profile, trustToken, req.user?.tier, false, requestPath);
 
         // 2. Persist to Cache if new
         if (!cachedResult) {

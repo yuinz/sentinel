@@ -1,7 +1,7 @@
 import axios from 'axios';
 import crypto from 'crypto';
 import logger from '../utils/logger';
-import { velocityCache, intelCache } from '../utils/cache';
+import { SharedCache, intelCache } from '../utils/cache';
 import { ConfigService } from './configService';
 
 export interface IntelResult {
@@ -54,7 +54,8 @@ export class IntelService {
         profileName: keyof typeof SENTINEL_PROFILES = 'api',
         trustToken?: string,
         tier: 'FREE' | 'PRO' = 'FREE',
-        forceEnrich: boolean = false
+        forceEnrich: boolean = false,
+        requestPath?: string
     ): Promise<IntelResult & { verdict_reasons?: string[] }> {
         const start = Date.now();
         const profile = SENTINEL_PROFILES[profileName];
@@ -72,18 +73,34 @@ export class IntelService {
             signals.push({ id: 'NET-RECOVERY', label: 'Verified Intent Proof', weight: 35, status: 'positive', confidence: 1.0 });
         }
 
-        // 3. FAST PATH: Local ASN Matrix & Velocity (<5ms)
+        // 3. FAST PATH: Local/Distributed Velocity (<5ms)
         const asnRisk = this.checkLocalAsnMatrix(target);
-        const velocity = velocityCache.get(target) || [];
-        const isHighVelocity = velocity.length > 5;
-
-        // Update velocity sync
-        velocity.push(Date.now());
-        velocityCache.set(target, velocity.slice(-10));
+        
+        // Track Velocity via Distributed SharedCache
+        const velocityCount = await SharedCache.recordVelocity(target);
+        const isHighVelocity = velocityCount > 5;
 
         let currentRisk = asnRisk.risk + (isHighVelocity ? 20 : 0);
         if (asnRisk.risk > 0) signals.push({ id: 'ASN-MATRIX', label: 'High-Risk Network Match', weight: asnRisk.risk, status: 'negative' });
         if (isHighVelocity) signals.push({ id: 'NET-VELOCITY', label: 'Request Velocity Spike', weight: 20, status: 'negative' });
+
+        // Sequence Entropy Check (if path is provided)
+        if (requestPath && tier === 'PRO') {
+            const sequence = await SharedCache.recordSequence(target, requestPath);
+            if (sequence.length >= 3) {
+                // Heuristic: Are they moving through paths impossibly fast?
+                const recent = sequence.slice(-3);
+                const timeDiff = recent[2].time - recent[0].time; // time to hit 3 endpoints
+                const isRapidSequence = timeDiff < 400 && new Set(recent.map(s => s.path)).size >= 2;
+                
+                if (isRapidSequence) {
+                    currentRisk += 30;
+                    signals.push({ id: 'SEQ-ENTROPY', label: 'Robotic Path Traversal', weight: 30, status: 'negative' });
+                } else {
+                    signals.push({ id: 'SEQ-HUMAN', label: 'Organic Site Traversal', weight: 0, status: 'positive' });
+                }
+            }
+        }
 
         // 4. COLD ENRICHMENT: Triggered Async (PRO Only)
         if (tier === 'PRO') {
