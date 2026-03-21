@@ -775,51 +775,42 @@ sentinel check 1.2.3.4</pre>
         </section>
 
         <section id="widget">
-            <h2>Frontend Widget</h2>
-            <p>For high-risk interactions like signups or payments, you can add an interactive behavioral challenge to
-                your frontend. The Sentinel Widget requires users to demonstrate "Proof of Intent" through a controlled
-                interaction that bots cannot easily replicate.</p>
+            <h2>Frontend Interaction SDK</h2>
+            <p>For high-risk interactions like signups or payments, Sentinel may issue an "UNSTABLE" verdict. You can seamlessly resolve this using the <strong>Sentinel JS SDK</strong>.</p>
 
             <div class="info-box">
-                <strong>Zero-IFRAME ARCHITECTURE</strong>
-                Unlike other solutions, our widget runs natively in your DOM via Shadow DOM, ensuring maximum
-                performance and a seamless visual integration without the overhead of heavy iframes.
+                <strong>Zero-UI Cryptography</strong>
+                Unlike CAPTCHAs, the Sentinel SDK operates entirely in the background. It silently fetches the challenge, computes the Proof-of-Work locally using WebCrypto, and generates a verified Trust Token.
             </div>
 
-            <h3>1. Implementation</h3>
-            <p>Include the Sentinel client script and add the target element where you want the widget to appear.</p>
-
-            <div class="test-section"
-                style="background: #050505; border: 1px solid #111; padding: 2rem; border-radius: 8px; margin: 2rem 0; text-align: center;">
-                <div class="mono"
-                    style="color: var(--accent); font-size: 0.7rem; margin-bottom: 15px; text-transform: uppercase;">
-                    Live Interactive Preview</div>
-                <div id="sentinel-widget" data-sitekey="sl_fd037e1c88fc16b96e920a41dafe2b78b9bb2ba346e634d7"
-                    style="margin: 0 auto;"></div>
-                <p style="font-size: 11px; color: #444; margin-top: 15px;">Note: This demo uses a testing site-key.</p>
-            </div>
+            <h3>1. Installation</h3>
+            <p>Include the Sentinel client script on your page.</p>
 
             <div class="code-block">
-                <pre>&lt;!-- 1. Add the target element --&gt;
-&lt;div id="sentinel-widget" data-sitekey="YOUR_PROJECT_KEY"&gt;&lt;/div&gt;
-
-&lt;!-- 2. Include the widget script --&gt;
-&lt;script src="https://sentinel.risksignal.name.ng/widget.js" async defer&gt;&lt;/script&gt;</pre>
+                <pre>&lt;!-- Add to your head or before body close --&gt;
+&lt;script src="https://sentinel.risksignal.name.ng/sentinel.js"&gt;&lt;/script&gt;</pre>
             </div>
 
             <h3>2. Handling Verification</h3>
-            <p>When the user successfully completes the challenge, the widget fires a <code>sentinelSuccess</code> event
-                and automatically injects a hidden input named <code>sentinel-token</code> if it resides within a form.
-            </p>
+            <p>If your API returns a 403 due to an "UNSTABLE" IP, invoke the Sentinel engine to automatically clear the restriction before retrying.</p>
 
             <div class="code-block">
-                <pre>document.addEventListener('sentinelSuccess', (event) => {
-  const { trust_token } = event.detail;
-  console.log('Verified!', trust_token);
-  
-  // Optional: Manually submit or enable your submit button
-  document.getElementById('submit-btn').disabled = false;
-});</pre>
+                <pre>// 1. API Call gets Blocked (UNSTABLE IP)
+const res = await fetch('/api/checkout', { method: 'POST' });
+
+if (res.status === 403) {
+    // 2. Automatically solve the Behavioral Work Token (BWT)
+    const verification = await window.Sentinel.verify(USER_IP);
+    
+    if (verification.success) {
+        // 3. Retry the request! SDK auto-saves Trust Token to localStorage
+        const headers = window.Sentinel.getAuthHeaders();
+        const retryRes = await fetch('/api/checkout', { 
+            method: 'POST', 
+            headers: { ...headers } // Inject x-sentinel-trust natively
+        });
+    }
+}</pre>
             </div>
 
             <div class="method-item" id="backend-enforcement">
@@ -828,13 +819,10 @@ sentinel check 1.2.3.4</pre>
                     request is legitimate. There are two ways to do this:</p>
 
                 <h4 style="margin-top: 1.5rem; color: #fff;">Wait, How does it get to the server?</h4>
-                <p>The Sentinel Widget is designed to be zero-config. It will automatically:</p>
+                <p>The Sentinel SDK provides an easy way to retrieve the token:</p>
                 <ul>
-                    <li><strong>Forms</strong>: Search for the nearest <code>&lt;form&gt;</code> and inject a hidden
-                        <code>&lt;input name="sentinel-token"&gt;</code> upon success.
-                    </li>
-                    <li><strong>AJAX/Fetch</strong>: Fire the <code>sentinelSuccess</code> event so you can manually add
-                        the <code>X-Sentinel-Trust</code> header to your API calls.</li>
+                    <li><strong>Fetch Helper</strong>: Use `window.Sentinel.getAuthHeaders()` to grab the cached token.</li>
+                    <li><strong>Manual Headers</strong>: Inject `x-sentinel-trust: YOUR_TOKEN` manually into any backend request.</li>
                 </ul>
 
                 <h4 style="margin-top: 2rem; color: #fff;">Option A: Express/Node.js Middleware (Pre-built)</h4>
@@ -1017,8 +1005,8 @@ if (!isValid) return res.status(403).send("Behavioral Proof Required");</pre>
             });
         });
     </script>
-    <!-- Sentinel Widget Engine -->
-    <script src="./widget.js" async defer></script>
+    <!-- Sentinel Invisible WebCrypto SDK -->
+    <script src="./sentinel.js" async defer></script>
 </body>
 
 </html>
