@@ -53,8 +53,21 @@ class IntelService {
             const deepIntel = cache_1.intelCache.get(cacheKey);
             if (deepIntel && deepIntel.asn) {
                 const asnNumber = deepIntel.asn.asn;
+                const verifiedBots = configService_1.ConfigService.getVerifiedBotAsns();
+                const verifiedBotName = verifiedBots[asnNumber];
                 const isHighRisk = configService_1.ConfigService.getHighRiskAsns().includes(asnNumber);
-                if (isHighRisk) {
+                if (verifiedBotName) {
+                    currentRisk = 0; // Reset risk
+                    trustBonus += 50; // Heavy boost for verified bots
+                    signals.push({
+                        id: 'ASN-VERIFIED',
+                        label: verifiedBotName,
+                        weight: 50,
+                        status: 'positive',
+                        confidence: 0.99
+                    });
+                }
+                else if (isHighRisk) {
                     currentRisk += 80; // Massive penalty for Data Centers/VPNs
                     signals.push({
                         id: 'ASN-REPUTATION',
@@ -65,15 +78,23 @@ class IntelService {
                     });
                 }
                 else {
-                    signals.push({ id: 'ASN-REPUTATION', label: 'Residential/Consumer Network', weight: 0, status: 'positive' });
+                    signals.push({ id: 'ASN-REPUTATION', label: `Network Domain (${deepIntel.asn.name || 'ISP'})`, weight: 0, status: 'positive' });
                 }
             }
             else {
                 if (forceEnrich) {
                     const freshIntel = await this.performSyncEnrich(target);
                     if (freshIntel && freshIntel.asn) {
-                        const isHighRisk = configService_1.ConfigService.getHighRiskAsns().includes(freshIntel.asn.asn);
-                        if (isHighRisk) {
+                        const asnNumber = freshIntel.asn.asn;
+                        const verifiedBots = configService_1.ConfigService.getVerifiedBotAsns();
+                        const verifiedBotName = verifiedBots[asnNumber];
+                        const isHighRisk = configService_1.ConfigService.getHighRiskAsns().includes(asnNumber);
+                        if (verifiedBotName) {
+                            currentRisk = 0;
+                            trustBonus += 50;
+                            signals.push({ id: 'ASN-VERIFIED', label: verifiedBotName, weight: 50, status: 'positive' });
+                        }
+                        else if (isHighRisk) {
                             currentRisk += 80;
                             signals.push({ id: 'ASN-REPUTATION', label: `High-Risk Infrastructure (${freshIntel.asn.name})`, weight: 80, status: 'negative' });
                         }
@@ -182,10 +203,11 @@ class IntelService {
             return false;
         }
     }
-    static async issueBehavioralWork(target, context, duration) {
+    static async issueBehavioralWork(target, context, duration, userAgent = 'unknown') {
         const difficulty = 4;
         const salt = process.env.POW_SECRET || 'sentinel-secure-powder';
-        const signature = crypto_1.default.createHash('sha256').update(target + salt + difficulty).digest('hex').substring(0, 8);
+        const fp = crypto_1.default.createHash('md5').update(userAgent).digest('hex').substring(0, 8);
+        const signature = crypto_1.default.createHash('sha256').update(target + salt + difficulty + fp).digest('hex').substring(0, 8);
         const prefix = `${signature}${difficulty}`;
         logger_1.default.info(`[PoW Issue] Target: ${target}, Prefix: ${prefix}`);
         return {
@@ -197,11 +219,12 @@ class IntelService {
             instruction: `Intent Proof: Click and hold for ${duration || 2.0}s.`
         };
     }
-    static verifyBehavioralWork(target, nonce) {
+    static verifyBehavioralWork(target, nonce, userAgent = 'unknown') {
         try {
             const difficulty = parseInt(nonce.substring(8, 9), 10);
             const salt = process.env.POW_SECRET || 'sentinel-secure-powder';
-            const signature = crypto_1.default.createHash('sha256').update(target + salt + difficulty).digest('hex').substring(0, 8);
+            const fp = crypto_1.default.createHash('md5').update(userAgent).digest('hex').substring(0, 8);
+            const signature = crypto_1.default.createHash('sha256').update(target + salt + difficulty + fp).digest('hex').substring(0, 8);
             logger_1.default.info(`[PoW Verify] Target: ${target}, Difficulty: ${difficulty}`);
             logger_1.default.info(`[PoW Verify] Nonce: ${nonce}`);
             logger_1.default.info(`[PoW Verify] Expected Signature Prefix: ${signature}`);

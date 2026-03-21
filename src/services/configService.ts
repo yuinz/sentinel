@@ -4,6 +4,7 @@ import logger from '../utils/logger';
 export interface ThreatIntelligenceConfig {
     datacenter_ranges: string[];
     high_risk_asns: number[];
+    verified_bot_asns: { [asn: number]: string };
     last_updated: string;
 }
 
@@ -14,9 +15,17 @@ export interface ThreatIntelligenceConfig {
 export class ConfigService {
     private static intelligence: ThreatIntelligenceConfig = {
         last_updated: new Date().toISOString(),
+        verified_bot_asns: {
+            15169: "Googlebot (Verified)",
+            8075: "Bingbot (Verified)",
+            714: "Applebot (Verified)",
+            20940: "Akamai (CDN/Verified)",
+            13335: "Cloudflare (Proxy/Verified)",
+            32934: "Facebook (Verified)"
+        },
         high_risk_asns: [
-            212238, 9009, 14061, 20473, 16509, 14618, 63949, 15169, 396982,
-            24940, 21341, 16276, 13335, 54113, 20940, 204915, 47583, 53667,
+            212238, 9009, 14061, 20473, 16509, 14618, 63949, 396982,
+            24940, 21341, 16276, 54113, 204915, 47583, 53667,
             8100, 13213, 46475, 60068, 199218, 203020, 201839, 398324,
             398705, 398722, 211298, 213412, 216341, 30823, 214497, 215208,
             215240, 198953, 200593, 42969, 215778, 49217, 20052, 11878,
@@ -36,6 +45,10 @@ export class ConfigService {
         return this.intelligence.high_risk_asns;
     }
 
+    static getVerifiedBotAsns(): { [asn: number]: string } {
+        return this.intelligence.verified_bot_asns || {};
+    }
+
     static getDatacenterRanges(): string[] {
         return this.intelligence.datacenter_ranges;
     }
@@ -51,6 +64,7 @@ export class ConfigService {
             const { data } = await axios.get(C2_URL, { timeout: 2000 });
             if (data && data.datacenter_ranges && data.high_risk_asns) {
                 this.intelligence = {
+                    ...this.intelligence,
                     ...data,
                     last_updated: new Date().toISOString()
                 };

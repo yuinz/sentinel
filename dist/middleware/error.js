@@ -4,6 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.errorHandler = void 0;
+const crypto_1 = __importDefault(require("crypto"));
 const logger_1 = __importDefault(require("../utils/logger"));
 const errorHandler = (err, req, res, next) => {
     const statusCode = err.status || 500;
@@ -18,7 +19,7 @@ const errorHandler = (err, req, res, next) => {
         status: 'error',
         error_code: statusCode === 500 ? 'INTERNAL_KERNEL_STALL' : 'GATEWAY_ERROR',
         message: message,
-        correlation_id: crypto.randomUUID(),
+        correlation_id: crypto_1.default.randomUUID(),
         timestamp: new Date().toISOString()
     });
 };

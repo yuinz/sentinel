@@ -28,6 +28,7 @@ const checkTarget = async (req, res) => {
         const bwtNonce = req.headers['x-bwt-nonce'];
         const trustToken = req.headers['x-sentinel-trust'];
         const bypassHeader = req.headers['x-sentinel-bypass'] === 'true';
+        const userAgent = req.headers['user-agent'] || 'unknown';
         // 0. Developer Invisibility Layer
         if (bypassHeader && (target === '127.0.0.1' || target === 'localhost')) {
             logger_1.default.info(`Developer Bypass Triggered for ${target}`);
@@ -47,9 +48,8 @@ const checkTarget = async (req, res) => {
         if (!cachedResult) {
             cache_1.intelCache.set(cacheKey, result);
         }
-        const isBwtValid = bwtNonce ? intelService_1.IntelService.verifyBehavioralWork(target, bwtNonce) : false;
+        const isBwtValid = bwtNonce ? intelService_1.IntelService.verifyBehavioralWork(target, bwtNonce, userAgent) : false;
         // 3. Telemetry Logic: Record the event for Analytics
-        const userAgent = req.headers['user-agent'] || 'unknown';
         const isBotMonitor = userAgent.toLowerCase().includes('uptimerobot');
         if (!isBotMonitor) {
             try {
@@ -185,7 +185,8 @@ const issueChallenge = async (req, res) => {
     const { target, context, duration } = req.body;
     if (!target)
         return res.status(400).json({ error: 'Target IP required.' });
-    const challenge = await intelService_1.IntelService.issueBehavioralWork(target, context || 'general', duration);
+    const userAgent = req.headers['user-agent'] || 'unknown';
+    const challenge = await intelService_1.IntelService.issueBehavioralWork(target, context || 'general', duration, userAgent);
     return res.json(challenge);
 };
 exports.issueChallenge = issueChallenge;
@@ -193,7 +194,8 @@ const verifyChallenge = async (req, res) => {
     const { target, nonce } = req.body;
     if (!target || !nonce)
         return res.status(400).json({ error: 'Target and Nonce required.' });
-    const isValid = intelService_1.IntelService.verifyBehavioralWork(target, nonce);
+    const userAgent = req.headers['user-agent'] || 'unknown';
+    const isValid = intelService_1.IntelService.verifyBehavioralWork(target, nonce, userAgent);
     if (!isValid) {
         return res.status(403).json({ success: false, error: 'Trust verification failed.' });
     }
