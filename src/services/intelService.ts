@@ -76,7 +76,7 @@ export class IntelService {
 
         // 3. FAST PATH: Local/Distributed Velocity (<5ms)
         const asnRisk = this.checkLocalAsnMatrix(target);
-
+        
         // Track Velocity via Distributed SharedCache
         const velocityCount = await SharedCache.recordVelocity(target);
         const isHighVelocity = velocityCount > 5;
@@ -145,11 +145,11 @@ export class IntelService {
             const bonus = cachedTrustCard.trust_score > 80 ? 15 : (cachedTrustCard.trust_score < 60 ? -20 : 0);
             if (bonus !== 0) {
                 currentRisk -= bonus;
-                signals.push({
-                    id: 'RS-TRUSTCARD',
-                    label: `RiskSignal ${cachedTrustCard.verdict} Card`,
-                    weight: bonus,
-                    status: bonus > 0 ? 'positive' : 'negative'
+                signals.push({ 
+                    id: 'RS-TRUSTCARD', 
+                    label: `RiskSignal ${cachedTrustCard.verdict} Card`, 
+                    weight: bonus, 
+                    status: bonus > 0 ? 'positive' : 'negative' 
                 });
             }
         } else {
