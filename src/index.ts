@@ -7,7 +7,7 @@ import dotenv from 'dotenv';
 import path from 'path';
 import logger from './utils/logger';
 import intelRoutes from './routes/intelRoutes';
-import { ConfigService } from './services/configService';
+import { ConfigService } from './services/ConfigService';
 import { TelemetryService } from './services/telemetryService';
 import authRoutes from './routes/authRoutes';
 import payRoutes from './routes/payRoutes';

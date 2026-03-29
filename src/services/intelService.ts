@@ -2,7 +2,7 @@ import axios from 'axios';
 import crypto from 'crypto';
 import logger from '../utils/logger';
 import { SharedCache, intelCache } from '../utils/cache';
-import { ConfigService } from './configService';
+import { ConfigService } from './ConfigService';
 
 export interface IntelResult {
     target: string;
