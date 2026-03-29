@@ -85,80 +85,54 @@ export class IntelService {
         if (asnRisk.risk > 0) signals.push({ id: 'ASN-MATRIX', label: 'High-Risk Network Match', weight: asnRisk.risk, status: 'negative' });
         if (isHighVelocity) signals.push({ id: 'NET-VELOCITY', label: 'Request Velocity Spike', weight: 20, status: 'negative' });
 
-        // Sequence Entropy Check (if path is provided)
-        if (requestPath && tier === 'PRO') {
-            const sequence = await SharedCache.recordSequence(target, requestPath);
-            if (sequence.length >= 3) {
-                // Heuristic: Are they moving through paths impossibly fast?
-                const recent = sequence.slice(-3);
-                const timeDiff = recent[2].time - recent[0].time; // time to hit 3 endpoints
-                const isRapidSequence = timeDiff < 400 && new Set(recent.map(s => s.path)).size >= 2;
-                
-                if (isRapidSequence) {
-                    currentRisk += 30;
-                    signals.push({ id: 'SEQ-ENTROPY', label: 'Robotic Path Traversal', weight: 30, status: 'negative' });
-                } else {
-                    signals.push({ id: 'SEQ-HUMAN', label: 'Organic Site Traversal', weight: 0, status: 'positive' });
+        // 4. COLD ENRICHMENT & INFRASTRUCTURE MATRIX (Universal - ALL TIERS)
+        const cacheKey = `deep:${target}`;
+        const deepIntel = intelCache.get(cacheKey) as any;
+
+        if (deepIntel && deepIntel.asn) {
+            const asnNumber = deepIntel.asn.asn;
+            const verifiedBots = ConfigService.getVerifiedBotAsns();
+            const verifiedBotName = verifiedBots[asnNumber];
+            const isHighRisk = ConfigService.getHighRiskAsns().includes(asnNumber);
+
+            if (verifiedBotName) {
+                currentRisk = 0; // Reset risk
+                trustBonus += 50; // Heavy boost for verified bots
+                signals.push({ id: 'ASN-VERIFIED', label: verifiedBotName, weight: 50, status: 'positive', confidence: 0.99 });
+            } else if (isHighRisk) {
+                currentRisk += 80; // Massive penalty for Data Centers/VPNs
+                signals.push({ id: 'ASN-REPUTATION', label: `High-Risk Infrastructure (${deepIntel.asn.name || 'Hosting'})`, weight: 80, status: 'negative', confidence: 0.95 });
+            } else {
+                signals.push({ id: 'ASN-REPUTATION', label: `Network Domain (${deepIntel.asn.name || 'ISP'})`, weight: 0, status: 'positive' });
+            }
+        } else {
+            if (forceEnrich) {
+                const freshIntel = await this.performSyncEnrich(target);
+                if (freshIntel && freshIntel.asn) {
+                    const asnNumber = freshIntel.asn.asn;
+                    const isHighRisk = ConfigService.getHighRiskAsns().includes(asnNumber);
+                    if (isHighRisk) {
+                        currentRisk += 80;
+                        signals.push({ id: 'ASN-REPUTATION', label: `High-Risk Infrastructure (${freshIntel.asn.name})`, weight: 80, status: 'negative' });
+                    }
                 }
+            } else {
+                // Background enrichment for next time
+                this.enrichInBackground(target, privacyMode, profileName);
+                signals.push({ id: 'SYS-PENDING', label: 'Background Forensic Gathering', weight: 0, status: 'neutral' });
             }
         }
 
-        // 4. COLD ENRICHMENT: Triggered Async (PRO Only)
-        if (tier === 'PRO') {
-            // Check if we already have this IP's DNA in cache
-            const cacheKey = `deep:${target}`;
-            const deepIntel = intelCache.get(cacheKey) as any;
-
-            if (deepIntel && deepIntel.asn) {
-                const asnNumber = deepIntel.asn.asn;
-                const verifiedBots = ConfigService.getVerifiedBotAsns();
-                const verifiedBotName = verifiedBots[asnNumber];
-                const isHighRisk = ConfigService.getHighRiskAsns().includes(asnNumber);
-
-                if (verifiedBotName) {
-                    currentRisk = 0; // Reset risk
-                    trustBonus += 50; // Heavy boost for verified bots
-                    signals.push({
-                        id: 'ASN-VERIFIED',
-                        label: verifiedBotName,
-                        weight: 50,
-                        status: 'positive',
-                        confidence: 0.99
-                    });
-                } else if (isHighRisk) {
-                    currentRisk += 80; // Massive penalty for Data Centers/VPNs
-                    signals.push({
-                        id: 'ASN-REPUTATION',
-                        label: `High-Risk Infrastructure (${deepIntel.asn.name || 'Hosting'})`,
-                        weight: 80,
-                        status: 'negative',
-                        confidence: 0.95
-                    });
-                } else {
-                    signals.push({ id: 'ASN-REPUTATION', label: `Network Domain (${deepIntel.asn.name || 'ISP'})`, weight: 0, status: 'positive' });
-                }
-            } else {
-                if (forceEnrich) {
-                    const freshIntel = await this.performSyncEnrich(target);
-                    if (freshIntel && freshIntel.asn) {
-                        const asnNumber = freshIntel.asn.asn;
-                        const verifiedBots = ConfigService.getVerifiedBotAsns();
-                        const verifiedBotName = verifiedBots[asnNumber];
-                        const isHighRisk = ConfigService.getHighRiskAsns().includes(asnNumber);
-                        
-                        if (verifiedBotName) {
-                            currentRisk = 0;
-                            trustBonus += 50;
-                            signals.push({ id: 'ASN-VERIFIED', label: verifiedBotName, weight: 50, status: 'positive' });
-                        } else if (isHighRisk) {
-                            currentRisk += 80;
-                            signals.push({ id: 'ASN-REPUTATION', label: `High-Risk Infrastructure (${freshIntel.asn.name})`, weight: 80, status: 'negative' });
-                        }
-                    }
-                } else {
-                    // If not in cache, trigger background enrichment for next time
-                    this.enrichInBackground(target, privacyMode, profileName);
-                    signals.push({ id: 'SYS-PENDING', label: 'Background Forensic Gathering', weight: 0, status: 'neutral' });
+        // Sequence Entropy Check (PRO Only)
+        if (requestPath && tier === 'PRO') {
+            const sequence = await SharedCache.recordSequence(target, requestPath);
+            if (sequence.length >= 3) {
+                const recent = sequence.slice(-3);
+                const timeDiff = recent[2].time - recent[0].time;
+                const isRapidSequence = timeDiff < 400 && new Set(recent.map(s => s.path)).size >= 2;
+                if (isRapidSequence) {
+                    currentRisk += 30;
+                    signals.push({ id: 'SEQ-ENTROPY', label: 'Robotic Path Traversal', weight: 30, status: 'negative' });
                 }
             }
         }
