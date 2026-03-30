@@ -209,9 +209,8 @@ export class IntelService {
                     new Promise<undefined>((resolve) => setTimeout(() => resolve(undefined), 500))
                 ]);
 
-                if (cachedTrustCard) {
-                    intelCache.set(trustCardCacheKey, cachedTrustCard as any, { ttl: 2 * 60 * 60 * 1000 });
-                }
+                // The fetchTrustCard method now internally saves to cache on success.
+                // We just use the awaited result here if it arrived in time.
             } catch (e) {
                 // Fallback gracefully
             }
@@ -430,15 +429,20 @@ export class IntelService {
 
             const res = await axios.post(apiURL, { target }, {
                 headers: { 'x-api-key': apiKey, 'Content-Type': 'application/json' },
-                timeout: 500 // Fail aggressively to respect engine SLA
+                timeout: 4000 // Give the background fetch plenty of time to succeed
             });
 
             if (res.data && res.data.status === 'success') {
                 logger.info(`[Sentinel] TrustCard Sync Success: ${target}`);
+                
+                // CRITICAL: Save to cache internally here so that even if Promise.race times out upstream, 
+                // the data is persisted for the exact next request.
+                const trustCardCacheKey = `trustcard:${target}`;
+                intelCache.set(trustCardCacheKey, res.data.trust_card as any, { ttl: 2 * 60 * 60 * 1000 }); // Cache for 2 hours
+                
                 return res.data.trust_card;
             }
         } catch (e: any) {
-            // Fallback - Timeout handled upstream
             return undefined;
         }
         return undefined;
