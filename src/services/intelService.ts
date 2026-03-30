@@ -198,7 +198,24 @@ export class IntelService {
 
         // 4. RISKSIGNAL TRUSTCARD ENRICHMENT (Available for FREE and PRO)
         const trustCardCacheKey = `trustcard:${target}`;
-        const cachedTrustCard = intelCache.get(trustCardCacheKey) as TrustCard | undefined;
+        let cachedTrustCard = intelCache.get(trustCardCacheKey) as TrustCard | undefined;
+
+        // 🔥 INLINE REAL-TIME FETCH ON CACHE MISS (Max 500ms SLA)
+        if (!cachedTrustCard) {
+            try {
+                // Race the API call against a hard 500ms timeout
+                cachedTrustCard = await Promise.race([
+                    this.fetchTrustCard(target),
+                    new Promise<undefined>((resolve) => setTimeout(() => resolve(undefined), 500))
+                ]);
+
+                if (cachedTrustCard) {
+                    intelCache.set(trustCardCacheKey, cachedTrustCard as any, { ttl: 2 * 60 * 60 * 1000 });
+                }
+            } catch (e) {
+                // Fallback gracefully
+            }
+        }
 
         let fullTrustCardData: TrustCard | undefined = undefined;
 
@@ -245,9 +262,8 @@ export class IntelService {
             }
 
         } else {
-            // Trigger background enrichment if not cached
-            this.enrichWithTrustCard(target);
-            signals.push({ id: 'RS-PENDING', label: 'RiskSignal Forensic Syncing', weight: 0, status: 'neutral' });
+            // Hard timeout reached - API too slow or unreachable
+            signals.push({ id: 'RS-TIMEOUT', label: 'RiskSignal Enforcement Bypassed (Latency)', weight: 0, status: 'neutral' });
         }
 
         const finalScore = Math.max(0, 100 - currentRisk + trustBonus);
@@ -405,26 +421,27 @@ export class IntelService {
         return Buffer.from(`${target}:${ts}:${sig}`).toString('base64');
     }
 
-    static async enrichWithTrustCard(target: string) {
+    static async fetchTrustCard(target: string): Promise<TrustCard | undefined> {
         try {
             const apiURL = process.env.RISKSIGNAL_API_URL || 'https://ahwkraeuotptvwvutbng.supabase.co/functions/v1/trust-api';
             const apiKey = process.env.RISKSIGNAL_API_KEY;
 
-            if (!apiKey) return;
+            if (!apiKey) return undefined;
 
             const res = await axios.post(apiURL, { target }, {
                 headers: { 'x-api-key': apiKey, 'Content-Type': 'application/json' },
-                timeout: 3000
+                timeout: 500 // Fail aggressively to respect engine SLA
             });
 
             if (res.data && res.data.status === 'success') {
-                const trustCardCacheKey = `trustcard:${target}`;
-                intelCache.set(trustCardCacheKey, res.data.trust_card, { ttl: 2 * 60 * 60 * 1000 }); // Cache for 2 hours
-                logger.info(`[Sentinel] TrustCard Synced for ${target}: ${res.data.trust_card.verdict}`);
+                logger.info(`[Sentinel] TrustCard Sync Success: ${target}`);
+                return res.data.trust_card;
             }
         } catch (e: any) {
-            // Silent fail - Sentinel priority is speed
+            // Fallback - Timeout handled upstream
+            return undefined;
         }
+        return undefined;
     }
 
     /**
