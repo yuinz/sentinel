@@ -48,9 +48,14 @@ export const checkTarget = async (req: AuthRequest, res: Response) => {
 
         const result = cachedResult ? cachedResult : await IntelService.analyze(target, privacy_mode, profile, trustToken, req.user?.tier, false, requestPath);
 
-        // 2. Persist to Cache if new
+        // 2. Persist to Cache if new (but skip caching transient fallback states like timeouts)
         if (!cachedResult) {
-            intelCache.set(cacheKey, result);
+            const hasPendingSignals = result.signals.some(s => 
+                s.id === 'RS-PENDING' || s.id === 'RS-TIMEOUT' || s.id === 'SYS-PENDING'
+            );
+            if (!hasPendingSignals) {
+                intelCache.set(cacheKey, result);
+            }
         }
 
         const isBwtValid = bwtNonce ? IntelService.verifyBehavioralWork(target, bwtNonce, userAgent) : false;

@@ -46,9 +46,12 @@ const checkTarget = async (req, res) => {
             cache_1.cacheStats.misses++;
         }
         const result = cachedResult ? cachedResult : await intelService_1.IntelService.analyze(target, privacy_mode, profile, trustToken, req.user?.tier, false, requestPath);
-        // 2. Persist to Cache if new
+        // 2. Persist to Cache if new (but skip caching transient fallback states like timeouts)
         if (!cachedResult) {
-            cache_1.intelCache.set(cacheKey, result);
+            const hasPendingSignals = result.signals.some(s => s.id === 'RS-PENDING' || s.id === 'RS-TIMEOUT' || s.id === 'SYS-PENDING');
+            if (!hasPendingSignals) {
+                cache_1.intelCache.set(cacheKey, result);
+            }
         }
         const isBwtValid = bwtNonce ? intelService_1.IntelService.verifyBehavioralWork(target, bwtNonce, userAgent) : false;
         // 3. Telemetry Logic: Record the event for Analytics
