@@ -12,7 +12,7 @@ const dotenv_1 = __importDefault(require("dotenv"));
 const path_1 = __importDefault(require("path"));
 const logger_1 = __importDefault(require("./utils/logger"));
 const intelRoutes_1 = __importDefault(require("./routes/intelRoutes"));
-const ConfigService_1 = require("./services/ConfigService");
+const configService_1 = require("./services/configService");
 const telemetryService_1 = require("./services/telemetryService");
 const authRoutes_1 = __importDefault(require("./routes/authRoutes"));
 const payRoutes_1 = __importDefault(require("./routes/payRoutes"));
@@ -87,10 +87,10 @@ app.listen(PORT, async () => {
     logger_1.default.info(`Environment: ${process.env.NODE_ENV}`);
     // Sync Intelligence on Startup
     logger_1.default.info('Initializing Dynamic Threat Matrix...');
-    await ConfigService_1.ConfigService.syncIntelligence();
+    await configService_1.ConfigService.syncIntelligence();
     // Periodic Sync (Every 6 hours)
     setInterval(() => {
-        ConfigService_1.ConfigService.syncIntelligence();
+        configService_1.ConfigService.syncIntelligence();
     }, 1000 * 60 * 60 * 6);
     // Initialize the DB Auto-Cleanup Job (Prevents Supabase Free Tier crash)
     telemetryService_1.TelemetryService.startRetentionCron();
