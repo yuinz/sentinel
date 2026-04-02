@@ -265,16 +265,25 @@ export class IntelService {
             signals.push({ id: 'RS-TIMEOUT', label: 'RiskSignal Enforcement Bypassed (Latency)', weight: 0, status: 'neutral' });
         }
 
-        const finalScore = Math.max(0, 100 - currentRisk + trustBonus);
-        const verdict = finalScore >= (profile.threshold + 15) ? 'TRUSTED' : finalScore >= profile.threshold ? 'UNSTABLE' : 'UNTRUSTED';
+        let finalScore = Math.max(0, 100 - currentRisk + trustBonus);
+        let verdict = finalScore >= (profile.threshold + 15) ? 'TRUSTED' : finalScore >= profile.threshold ? 'UNSTABLE' : 'UNTRUSTED';
+        const verdictReasons: string[] = [];
+
+        // 🔥 THE BRAIN OVERRIDE: If the upstream Multi-Provider Brain says UNTRUSTED, we OBEY.
+        if (fullTrustCardData && fullTrustCardData.verdict === 'UNTRUSTED') {
+            verdict = 'UNTRUSTED';
+            finalScore = Math.min(finalScore, 30); // Force the score down to reflect the risk
+            verdictReasons.push('untrusted_infrastructure');
+        }
 
         return this.finalize(target, finalScore, verdict, signals, start, {
             risk_signal_card: fullTrustCardData,
-            remediation: finalScore < profile.threshold + 15 ? {
+            verdict_reasons: verdictReasons,
+            remediation: verdict !== 'TRUSTED' ? {
                 type: 'challenge',
-                optional: finalScore >= profile.threshold,
+                optional: verdict === 'UNSTABLE',
                 recommended: true,
-                behavioral_duration: finalScore < profile.threshold ? 4.0 : 2.0
+                behavioral_duration: verdict === 'UNTRUSTED' ? 4.0 : 2.0
             } : undefined
         });
     }
