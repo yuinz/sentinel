@@ -422,27 +422,28 @@ export class IntelService {
 
     static async fetchTrustCard(target: string): Promise<TrustCard | undefined> {
         try {
-            const apiURL = process.env.RISKSIGNAL_API_URL || 'https://ahwkraeuotptvwvutbng.supabase.co/functions/v1/trust-api';
+            // Target the Vercel Gatherer with ?legacy=true so it returns the formatted Trust Card
+            const apiURL = process.env.RISKSIGNAL_API_URL || `https://app.risksignal.name.ng/api/scan`;
             const apiKey = process.env.RISKSIGNAL_API_KEY;
 
             if (!apiKey) return undefined;
 
-            const res = await axios.post(apiURL, { target }, {
-                headers: { 'x-api-key': apiKey, 'Content-Type': 'application/json' },
-                timeout: 4000 // Give the background fetch plenty of time to succeed
+            // Vercel /api/scan is a GET endpoint
+            const res = await axios.get(`${apiURL}?ip=${target}&legacy=true`, {
+                headers: { 'x-api-key': apiKey },
+                timeout: 4000 // Multi-provider cluster will naturally take slightly longer
             });
 
-            if (res.data && res.data.status === 'success') {
-                logger.info(`[Sentinel] TrustCard Sync Success: ${target}`);
+            if (res.data && res.data.status === 'success' && res.data.trust_card) {
+                logger.info(`[Sentinel] Multi-Provider Sync Success: ${target}`);
                 
-                // CRITICAL: Save to cache internally here so that even if Promise.race times out upstream, 
-                // the data is persisted for the exact next request.
                 const trustCardCacheKey = `trustcard:${target}`;
                 intelCache.set(trustCardCacheKey, res.data.trust_card as any, { ttl: 2 * 60 * 60 * 1000 }); // Cache for 2 hours
                 
                 return res.data.trust_card;
             }
         } catch (e: any) {
+            logger.warn(`[Sentinel] Upstream Cluster Timeout: ${e.message}`);
             return undefined;
         }
         return undefined;
