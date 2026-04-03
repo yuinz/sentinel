@@ -200,13 +200,13 @@ export class IntelService {
         const trustCardCacheKey = `trustcard:${target}`;
         let cachedTrustCard = intelCache.get(trustCardCacheKey) as TrustCard | undefined;
 
-        // 🔥 INLINE REAL-TIME FETCH ON CACHE MISS (Max 500ms SLA)
+        // 🔥 INLINE REAL-TIME FETCH ON CACHE MISS (Max 2500ms SLA)
         if (!cachedTrustCard) {
             try {
-                // Race the API call against a hard 500ms timeout
+                // Race the API call against a hard 2500ms timeout
                 cachedTrustCard = await Promise.race([
                     this.fetchTrustCard(target),
-                    new Promise<undefined>((resolve) => setTimeout(() => resolve(undefined), 500))
+                    new Promise<undefined>((resolve) => setTimeout(() => resolve(undefined), 2500))
                 ]);
 
                 // The fetchTrustCard method now internally saves to cache on success.
@@ -440,7 +440,7 @@ export class IntelService {
             // Vercel /api/scan is a GET endpoint
             const res = await axios.get(`${apiURL}?ip=${target}&legacy=true`, {
                 headers: { 'x-api-key': apiKey },
-                timeout: 4000 // Multi-provider cluster will naturally take slightly longer
+                timeout: 2500 // Aligned with SLA race timeout
             });
 
             if (res.data && res.data.status === 'success' && res.data.trust_card) {
