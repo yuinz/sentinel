@@ -59,6 +59,7 @@ export const checkTarget = async (req: AuthRequest, res: Response) => {
         }
 
         const isBwtValid = bwtNonce ? IntelService.verifyBehavioralWork(target, bwtNonce, userAgent) : false;
+        const isTrustTokenValid = trustToken ? IntelService.verifyTrustToken(target, trustToken) : false;
 
         // 3. Telemetry Logic: Record the event for Analytics
         const isBotMonitor = userAgent.toLowerCase().includes('uptimerobot');
@@ -75,7 +76,7 @@ export const checkTarget = async (req: AuthRequest, res: Response) => {
                     latency_ms: result.latency_ms,
                     reason: `[${requestPath || 'UNKNOWN'}] ${result.verdict_reasons?.[0] || (result.verdict === 'UNTRUSTED' ? 'untrusted_infrastructure' : 'reputation_verified')}`,
                     confidence: result.confidence / 100,
-                    bwt_verified: isBwtValid || !!trustToken,
+                    bwt_verified: isBwtValid || isTrustTokenValid,
                     created_at: new Date().toISOString()
                 };
 
@@ -97,8 +98,8 @@ export const checkTarget = async (req: AuthRequest, res: Response) => {
 
         // 4. Mode Selection (Standard vs Trust Decision)
         if (mode === 'decision') {
-            const hasPassedChallenge = isBwtValid || !!trustToken;
-            const allow = result.verdict !== 'UNTRUSTED' || hasPassedChallenge;
+            const hasPassedChallenge = isBwtValid || isTrustTokenValid;
+            const allow = result.verdict === 'TRUSTED' || hasPassedChallenge;
 
             return res.json({
                 allow: allow,
