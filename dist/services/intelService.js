@@ -20,7 +20,7 @@ class IntelService {
      * The Real Product: Decision Latency.
      * Rendering a trust decision in <50ms by prioritizing in-memory signals.
      */
-    static async analyze(rawTarget, privacyMode = 'full', profileName = 'api', trustToken, tier = 'FREE', forceEnrich = false, requestPath) {
+    static async analyze(rawTarget, privacyMode = 'full', profileName = 'api', trustToken, tier = 'FREE', forceEnrich = false, requestPath, userAgent) {
         const target = this.normalizeTarget(rawTarget);
         const start = Date.now();
         const profile = exports.SENTINEL_PROFILES[profileName];
@@ -184,14 +184,22 @@ class IntelService {
             // Hard timeout reached - API too slow or unreachable
             signals.push({ id: 'RS-TIMEOUT', label: 'RiskSignal Enforcement Bypassed (Latency)', weight: 0, status: 'neutral' });
         }
+        // 5. Automation Check
+        if (userAgent) {
+            const botKeywords = /headless|puppeteer|selenium|playwright|bot|crawl|spider|axios|python-requests|curl|wget/i;
+            if (botKeywords.test(userAgent)) {
+                currentRisk += 35;
+                signals.push({ id: 'META-BOT', label: 'Automation Signature Detected', weight: 35, status: 'negative' });
+            }
+        }
         let finalScore = Math.max(0, 100 - currentRisk + trustBonus);
         let verdict = finalScore >= (profile.threshold + 15) ? 'TRUSTED' : finalScore >= profile.threshold ? 'UNSTABLE' : 'UNTRUSTED';
         const verdictReasons = [];
         // 🔥 THE BRAIN OVERRIDE: If the upstream Multi-Provider Brain says UNTRUSTED, we OBEY.
-        if (fullTrustCardData && fullTrustCardData.verdict === 'UNTRUSTED') {
+        if (fullTrustCardData && (fullTrustCardData.verdict === 'UNTRUSTED' || fullTrustCardData.network?.node_type === 'VPN' || fullTrustCardData.network?.node_type === 'Proxy')) {
             verdict = 'UNTRUSTED';
-            finalScore = Math.min(finalScore, 30); // Force the score down to reflect the risk
-            verdictReasons.push('untrusted_infrastructure');
+            finalScore = Math.min(finalScore, 5); // Force the score to near zero for infrastructure
+            verdictReasons.push(fullTrustCardData.network?.node_type === 'VPN' ? 'vpn_detected' : 'untrusted_infrastructure');
         }
         return this.finalize(target, finalScore, verdict, signals, start, {
             risk_signal_card: fullTrustCardData,
@@ -337,8 +345,17 @@ class IntelService {
     }
     static async fetchTrustCard(target) {
         // ── LOCAL INTELLIGENCE CONSTANTS ─────────────────────────────────────
-        const HIGH_RISK_ASNS = new Set([9009, 212238, 14061, 20473, 16509, 14618, 63949, 24940, 16276, 54113, 60068, 51167, 200651]);
-        const HIGH_RISK_TERMS = ['m247', 'datacamp', 'digitalocean', 'hetzner', 'vultr', 'linode', 'ovh', 'vpn', 'proxy', 'datacenter', 'hosting', 'cloud', 'server', 'dedicated'];
+        const HIGH_RISK_ASNS = new Set([
+            9009, 212238, 14061, 20473, 16509, 14618, 63949, 24940, 16276, 54113,
+            60068, 51167, 200651, 46484, 14576, 36352, 9318, 30823, 21341, 14061,
+            20473, 16509, 14618, 13335, 16276, 24940, 212238, 60068, 396982
+        ]);
+        const HIGH_RISK_TERMS = [
+            'm247', 'datacamp', 'digitalocean', 'hetzner', 'vultr', 'linode', 'ovh',
+            'vpn', 'proxy', 'datacenter', 'hosting', 'cloud', 'server', 'dedicated',
+            'hosthatch', 'leaseweb', 'packethost', 'quadranet', 'ovh-hosting', 'virtuozzo',
+            'contabo', 'torguard', 'expressvpn', 'nordvpn', 'surfshark', 'mullvad', 'pnet'
+        ];
         const normalizeIpApiIs = (d) => {
             if (!d?.ip)
                 return null;

@@ -46,7 +46,7 @@ export const checkTarget = async (req: AuthRequest, res: Response) => {
             cacheStats.misses++;
         }
 
-        const result = cachedResult ? cachedResult : await IntelService.analyze(target, privacy_mode, profile, trustToken, req.user?.tier, false, requestPath);
+        const result = cachedResult ? cachedResult : await IntelService.analyze(target, privacy_mode, profile, trustToken, req.user?.tier, false, requestPath, userAgent);
 
         // 2. Persist to Cache if new (but skip caching transient fallback states like timeouts)
         if (!cachedResult) {

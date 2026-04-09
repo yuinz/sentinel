@@ -45,7 +45,7 @@ const checkTarget = async (req, res) => {
         else {
             cache_1.cacheStats.misses++;
         }
-        const result = cachedResult ? cachedResult : await intelService_1.IntelService.analyze(target, privacy_mode, profile, trustToken, req.user?.tier, false, requestPath);
+        const result = cachedResult ? cachedResult : await intelService_1.IntelService.analyze(target, privacy_mode, profile, trustToken, req.user?.tier, false, requestPath, userAgent);
         // 2. Persist to Cache if new (but skip caching transient fallback states like timeouts)
         if (!cachedResult) {
             const hasPendingSignals = result.signals.some(s => s.id === 'RS-PENDING' || s.id === 'RS-TIMEOUT' || s.id === 'SYS-PENDING');
