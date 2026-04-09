@@ -126,13 +126,13 @@ class IntelService {
         // 4. RISKSIGNAL TRUSTCARD ENRICHMENT (Available for FREE and PRO)
         const trustCardCacheKey = `trustcard:${target}`;
         let cachedTrustCard = cache_1.intelCache.get(trustCardCacheKey);
-        // 🔥 INLINE REAL-TIME FETCH ON CACHE MISS (Max 500ms SLA)
+        // 🔥 INLINE REAL-TIME FETCH ON CACHE MISS (Max 2500ms SLA)
         if (!cachedTrustCard) {
             try {
-                // Race the API call against a hard 500ms timeout
+                // Race the API call against a hard 2500ms timeout
                 cachedTrustCard = await Promise.race([
                     this.fetchTrustCard(target),
-                    new Promise((resolve) => setTimeout(() => resolve(undefined), 500))
+                    new Promise((resolve) => setTimeout(() => resolve(undefined), 2500))
                 ]);
                 // The fetchTrustCard method now internally saves to cache on success.
                 // We just use the awaited result here if it arrived in time.
@@ -184,15 +184,23 @@ class IntelService {
             // Hard timeout reached - API too slow or unreachable
             signals.push({ id: 'RS-TIMEOUT', label: 'RiskSignal Enforcement Bypassed (Latency)', weight: 0, status: 'neutral' });
         }
-        const finalScore = Math.max(0, 100 - currentRisk + trustBonus);
-        const verdict = finalScore >= (profile.threshold + 15) ? 'TRUSTED' : finalScore >= profile.threshold ? 'UNSTABLE' : 'UNTRUSTED';
+        let finalScore = Math.max(0, 100 - currentRisk + trustBonus);
+        let verdict = finalScore >= (profile.threshold + 15) ? 'TRUSTED' : finalScore >= profile.threshold ? 'UNSTABLE' : 'UNTRUSTED';
+        const verdictReasons = [];
+        // 🔥 THE BRAIN OVERRIDE: If the upstream Multi-Provider Brain says UNTRUSTED, we OBEY.
+        if (fullTrustCardData && fullTrustCardData.verdict === 'UNTRUSTED') {
+            verdict = 'UNTRUSTED';
+            finalScore = Math.min(finalScore, 30); // Force the score down to reflect the risk
+            verdictReasons.push('untrusted_infrastructure');
+        }
         return this.finalize(target, finalScore, verdict, signals, start, {
             risk_signal_card: fullTrustCardData,
-            remediation: finalScore < profile.threshold + 15 ? {
+            verdict_reasons: verdictReasons,
+            remediation: verdict !== 'TRUSTED' ? {
                 type: 'challenge',
-                optional: finalScore >= profile.threshold,
+                optional: verdict === 'UNSTABLE',
                 recommended: true,
-                behavioral_duration: finalScore < profile.threshold ? 4.0 : 2.0
+                behavioral_duration: verdict === 'UNTRUSTED' ? 4.0 : 2.0
             } : undefined
         });
     }
@@ -328,26 +336,102 @@ class IntelService {
         return Buffer.from(`${target}:${ts}:${sig}`).toString('base64');
     }
     static async fetchTrustCard(target) {
+        // ── LOCAL INTELLIGENCE CONSTANTS ─────────────────────────────────────
+        const HIGH_RISK_ASNS = new Set([9009, 212238, 14061, 20473, 16509, 14618, 63949, 24940, 16276, 54113, 60068, 51167, 200651]);
+        const HIGH_RISK_TERMS = ['m247', 'datacamp', 'digitalocean', 'hetzner', 'vultr', 'linode', 'ovh', 'vpn', 'proxy', 'datacenter', 'hosting', 'cloud', 'server', 'dedicated'];
+        const normalizeIpApiIs = (d) => {
+            if (!d?.ip)
+                return null;
+            const asnNum = parseInt(String(d.asn?.asn ?? 0));
+            const org = (d.asn?.org ?? '').toLowerCase();
+            const isp = (d.asn?.isp ?? '').toLowerCase();
+            const isVpn = !!(d.is_vpn || d.is_tor || d.is_proxy);
+            const isDC = !!(d.is_datacenter);
+            const asnHit = HIGH_RISK_ASNS.has(asnNum);
+            const termHit = HIGH_RISK_TERMS.some(t => org.includes(t) || isp.includes(t));
+            const hostile = isVpn || isDC || asnHit || termHit;
+            return {
+                target,
+                verdict: hostile ? 'UNTRUSTED' : 'TRUSTED',
+                trust_score: hostile ? 5 : 90,
+                network: {
+                    provider: d.asn?.org ?? 'Unknown',
+                    asn: String(d.asn?.asn ?? 'UNKNOWN'),
+                    system: d.asn?.isp ?? 'Unknown',
+                    protocol: 'IPv4',
+                    node_type: isVpn ? 'VPN' : (isDC || asnHit ? 'Infrastructure' : 'Residential'),
+                    zone: d.location?.countryCode ?? 'XX'
+                },
+                geo: { location: d.location?.country ?? 'Unknown', city: d.location?.city ?? 'Unknown' },
+                intelligence_signals: [
+                    ...(isVpn ? [{ id: 'LOCAL-VPN', label: 'VPN/Proxy Detected', weight: 30, status: 'negative' }] : []),
+                    ...(asnHit ? [{ id: 'LOCAL-ASN', label: `High-Risk ASN (AS${asnNum})`, weight: 25, status: 'negative' }] : []),
+                    ...(termHit ? [{ id: 'LOCAL-ORG', label: 'Infrastructure Org Match', weight: 20, status: 'negative' }] : []),
+                ],
+                telemetry_flags: hostile ? ['LOCAL_INFRA_MATCH'] : []
+            };
+        };
+        // ── STEP 1: DIRECT PROVIDER CALL (ipapi.is) ──────────────────────────
         try {
-            const apiURL = process.env.RISKSIGNAL_API_URL || 'https://ahwkraeuotptvwvutbng.supabase.co/functions/v1/trust-api';
-            const apiKey = process.env.RISKSIGNAL_API_KEY;
-            if (!apiKey)
-                return undefined;
-            const res = await axios_1.default.post(apiURL, { target }, {
-                headers: { 'x-api-key': apiKey, 'Content-Type': 'application/json' },
-                timeout: 4000 // Give the background fetch plenty of time to succeed
-            });
-            if (res.data && res.data.status === 'success') {
-                logger_1.default.info(`[Sentinel] TrustCard Sync Success: ${target}`);
-                // CRITICAL: Save to cache internally here so that even if Promise.race times out upstream, 
-                // the data is persisted for the exact next request.
+            const r = await axios_1.default.get(`https://api.ipapi.is/?q=${target}`, { timeout: 2000 });
+            const card = normalizeIpApiIs(r.data);
+            if (card) {
                 const trustCardCacheKey = `trustcard:${target}`;
-                cache_1.intelCache.set(trustCardCacheKey, res.data.trust_card, { ttl: 2 * 60 * 60 * 1000 }); // Cache for 2 hours
-                return res.data.trust_card;
+                cache_1.intelCache.set(trustCardCacheKey, card, { ttl: 2 * 60 * 60 * 1000 });
+                // ── STEP 2: FIRE-AND-FORGET Vercel enrichment overlay ─────────
+                const apiURL = process.env.RISKSIGNAL_API_URL || `https://app.risksignal.name.ng/api/scan`;
+                const apiKey = process.env.RISKSIGNAL_API_KEY;
+                if (apiKey) {
+                    axios_1.default.get(`${apiURL}?ip=${target}&legacy=true`, {
+                        headers: { 'x-api-key': apiKey },
+                        timeout: 3000
+                    }).then(res => {
+                        if (res.data?.status === 'success' && res.data?.trust_card) {
+                            cache_1.intelCache.set(trustCardCacheKey, res.data.trust_card, { ttl: 2 * 60 * 60 * 1000 });
+                            logger_1.default.info(`[Sentinel] Brain enrichment overlay applied for ${target}`);
+                        }
+                    }).catch(() => { });
+                }
+                return card;
             }
         }
         catch (e) {
-            return undefined;
+            logger_1.default.warn(`[Sentinel] Direct provider call failed: ${e.message}`);
+        }
+        // ── STEP 3: FALLBACK — ip-api.com ────────────────────────────────────
+        try {
+            const r = await axios_1.default.get(`http://ip-api.com/json/${target}?fields=status,proxy,hosting,isp,org,as,countryCode,country,city`, { timeout: 2000 });
+            if (r.data?.status === 'success') {
+                const asnNum = parseInt(String(r.data.as ?? '').split(' ')[0].replace('AS', '') || '0');
+                const org = (r.data.org ?? '').toLowerCase();
+                const isp = (r.data.isp ?? '').toLowerCase();
+                const isVpn = !!(r.data.proxy);
+                const isDC = !!(r.data.hosting);
+                const asnHit = HIGH_RISK_ASNS.has(asnNum);
+                const termHit = HIGH_RISK_TERMS.some(t => org.includes(t) || isp.includes(t));
+                const hostile = isVpn || isDC || asnHit || termHit;
+                const card = {
+                    target,
+                    verdict: hostile ? 'UNTRUSTED' : 'TRUSTED',
+                    trust_score: hostile ? 5 : 88,
+                    network: {
+                        provider: r.data.org ?? 'Unknown',
+                        asn: String(asnNum),
+                        system: r.data.isp ?? 'Unknown',
+                        protocol: 'IPv4',
+                        node_type: isVpn ? 'VPN' : (isDC || asnHit ? 'Infrastructure' : 'Residential'),
+                        zone: r.data.countryCode ?? 'XX'
+                    },
+                    geo: { location: r.data.country ?? 'Unknown', city: r.data.city ?? 'Unknown' },
+                    telemetry_flags: hostile ? ['FALLBACK_INFRA_MATCH'] : []
+                };
+                const trustCardCacheKey = `trustcard:${target}`;
+                cache_1.intelCache.set(trustCardCacheKey, card, { ttl: 2 * 60 * 60 * 1000 });
+                return card;
+            }
+        }
+        catch (e) {
+            logger_1.default.warn(`[Sentinel] Fallback provider failed: ${e.message}`);
         }
         return undefined;
     }
