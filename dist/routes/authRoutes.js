@@ -189,7 +189,8 @@ router.get('/analytics', ensureSupabaseAuth, async (req, res) => {
                 time: l.created_at,
                 profile: l.profile || 'api',
                 reason: l.reason || 'reputation_verified',
-                confidence: l.confidence || 0.9
+                confidence: l.confidence || 0.9,
+                trust_score: l.trust_score
             }))
         });
     }

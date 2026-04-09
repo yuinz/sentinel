@@ -218,7 +218,8 @@ router.get('/analytics', ensureSupabaseAuth, async (req: any, res) => {
                 time: l.created_at,
                 profile: (l as any).profile || 'api',
                 reason: (l as any).reason || 'reputation_verified',
-                confidence: (l as any).confidence || 0.9
+                confidence: (l as any).confidence || 0.9,
+                trust_score: (l as any).trust_score
             }))
         });
 
