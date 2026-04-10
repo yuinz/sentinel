@@ -83,7 +83,7 @@
 
                 if (data.allow) {
                     statusBox.className = 'status-box success';
-                    statusBox.innerHTML = `[✓] Execution Authorized.<br>Monolithic Score: ${data.trust_score}`;
+                    statusBox.innerHTML = `[✓] Execution Authorized.<br>Status: ${data.risk.toUpperCase()} | Risk Reason: ${data.reason}`;
                     statusBox.style.display = 'block';
                     btn.innerHTML = 'Success';
                 } else if (!data.allow && data.remediation && data.remediation.recommended === 'verify') {

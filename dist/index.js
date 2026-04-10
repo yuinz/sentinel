@@ -22,8 +22,8 @@ const visitor_1 = require("./middleware/visitor");
 dotenv_1.default.config();
 const app = (0, express_1.default)();
 const PORT = process.env.PORT || 3001;
-// Trust Proxy: set to false for local development to avoid rate-limit validation errors
-app.set('trust proxy', false);
+// Trust Proxy: Set to 1 to correctly read True Client IP behind Nginx/Cloudflare/Railway
+app.set('trust proxy', 1);
 // 1. Security & Middleware
 app.use((0, helmet_1.default)({
     contentSecurityPolicy: {
@@ -72,7 +72,7 @@ app.get('/', (req, res) => {
 });
 // Diagnostic Consoles
 app.get('/api/my-ip', (req, res) => {
-    let target = req.ip || req.headers['x-forwarded-for'] || '127.0.0.1';
+    let target = req.headers['x-forwarded-for']?.split(',')[0].trim() || req.ip || '127.0.0.1';
     if (target.startsWith('::ffff:'))
         target = target.substring(7);
     res.json({ ip: target === '::1' ? '127.0.0.1' : target });
