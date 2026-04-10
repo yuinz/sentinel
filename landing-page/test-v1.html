@@ -89,7 +89,7 @@
                 const res1 = await fetch('/v1/check', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${API_KEY}` },
-                    body: JSON.stringify({ target: ip, profile: "diagnostic" })
+                    body: JSON.stringify({ target: ip, profile: "api" })
                 });
                 const data1 = await res1.json();
                 const v1Latency = (performance.now() - startTime).toFixed(0);
@@ -153,7 +153,7 @@
                                     'Authorization': `Bearer ${API_KEY}`,
                                     'X-Sentinel-Trust': verifyData.trust_token
                                 },
-                                body: JSON.stringify({ target: ip })
+                                body: JSON.stringify({ target: ip, profile: "api" })
                             });
                             const data2 = await res2.json();
                             log(`[SUCCESS] V1 Override Authorized!`, 'log-success');
