@@ -19,7 +19,12 @@ const evaluateV2 = async (req, res) => {
         if (!validation.success) {
             return res.status(400).json({ status: 'error', error: 'Invalid target format.' });
         }
-        const { target } = validation.data;
+        let target = validation.data.target;
+        if (target === 'detect') {
+            target = req.ip || req.headers['x-forwarded-for'] || '127.0.0.1';
+            if (target.startsWith('::ffff:'))
+                target = target.substring(7);
+        }
         const trustToken = req.headers['x-sentinel-trust'];
         const userAgent = req.headers['user-agent'] || 'unknown';
         // 2. Multi-Tenant Lookup

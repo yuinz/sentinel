@@ -24,7 +24,12 @@ export const checkTarget = async (req: AuthRequest, res: Response) => {
             return res.status(400).json({ error: 'Invalid target format.', details: validation.error.format() });
         }
 
-        const { target, privacy_mode, profile, path: requestPath } = validation.data;
+        let target = validation.data.target;
+        if (target === 'detect') {
+            target = req.ip || (req.headers['x-forwarded-for'] as string) || '127.0.0.1';
+            if (target.startsWith('::ffff:')) target = target.substring(7);
+        }
+        const { privacy_mode, profile, path: requestPath } = validation.data;
         const mode = req.query.mode as string;
         const bwtNonce = req.headers['x-bwt-nonce'] as string;
         const trustToken = req.headers['x-sentinel-trust'] as string;
