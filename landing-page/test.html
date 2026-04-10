@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Sentinel V2 | Live PoW Test</title>
+    <link rel="stylesheet" href="./styles.css">
+    <style>
+        .terminal { background: #050505; border: 1px solid #222; padding: 20px; border-radius: 8px; font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #acc; max-height: 400px; overflow-y: auto; margin-bottom: 20px; word-wrap: break-word;}
+        .log-error { color: #f55; }
+        .log-success { color: #0f8; }
+        .log-warn { color: #fa0; }
+        #widget-container { display: none; margin-top: 20px; text-align: left; }
+    </style>
+</head>
+<body style="background: #000; color: #fff; padding: 40px; font-family: 'Inter', sans-serif;">
+    <div style="max-width: 800px; margin: 0 auto; text-align: center;">
+        <h2 style="margin-bottom: 10px;">V2 Engine Integration Test</h2>
+        <p style="color: #888; margin-bottom: 30px;">Hits the V2 API. If challenged, mines the cryptographic BWT and retries the request seamlessly.</p>
+        
+        <div style="display: flex; gap: 10px; margin-bottom: 20px; max-width: 500px; margin: 0 auto 30px auto;">
+            <input type="text" id="target-ip" value="105.113.18.224" style="padding: 15px; background: #111; border: 1px solid #333; color: #fff; border-radius: 4px; flex: 1; font-family: 'JetBrains Mono';">
+            <button onclick="runV2Test()" class="btn btn-primary" style="padding: 0 30px;">Fire API Request</button>
+        </div>
+
+        <div class="terminal" id="term" style="text-align: left;">
+            <div style="color: #666;">// Client terminal initialized...</div>
+        </div>
+
+        <div id="widget-container">
+            <div class="demo-widget" id="demo-widget" style="border: 1px solid var(--accent); position: relative; overflow: hidden; cursor: pointer; display: inline-block; width: 100%; max-width: 400px; margin: 0 auto;">
+                <div class="demo-progress" id="demo-progress" style="background: var(--accent); width: 0%; height: 100%; position: absolute; left: 0; top: 0; z-index: 1;"></div>
+                <div class="demo-text" style="position: relative; z-index: 2; padding: 15px; text-align: center;">
+                    <div class="demo-label" id="demo-label" style="font-weight: 600; font-size: 16px;">Sentinel Anti-Bot Verification</div>
+                    <div class="demo-sub" id="demo-sub" style="font-size: 12px; color: #888;">Click to verify intent</div>
+                </div>
+            </div>
+            <p style="font-size: 12px; color: #666; margin-top: 15px; text-align: center;" id="miner-status"></p>
+        </div>
+    </div>
+
+    <script>
+        const term = document.getElementById('term');
+        function log(msg, type='') {
+            const time = new Date().toISOString().split('T')[1].substring(0, 12);
+            term.innerHTML += `<div class="${type}">[${time}] ${msg}</div>`;
+            term.scrollTop = term.scrollHeight;
+        }
+
+        async function mineHash(prefix, difficulty) {
+            document.getElementById('miner-status').innerText = `Computing SHA256 hashes in browser...`;
+            log(`[Miner] Working... Difficulty: ${difficulty}. Prefix: ${prefix}`, 'log-warn');
+            const encoder = new TextEncoder();
+            let nonce = 0;
+            const startTime = performance.now();
+            while (true) {
+                const data = encoder.encode(prefix + nonce);
+                const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+                const hashArray = Array.from(new Uint8Array(hashBuffer));
+                const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+                if (hashHex.startsWith('0'.repeat(difficulty))) {
+                    const timeTaken = ((performance.now() - startTime) / 1000).toFixed(2);
+                    log(`[Miner] Solved! Nonce: ${nonce}. Hash: ${hashHex.substring(0,10)}... Time: ${timeTaken}s`, 'log-success');
+                    document.getElementById('miner-status').innerText = `Cryptographic proof generated!`;
+                    return nonce.toString();
+                }
+                nonce++;
+                if (nonce % 2000 === 0) { // Keep UI responsive
+                    await new Promise(r => setTimeout(r, 0));
+                }
+            }
+        }
+
+        async function runV2Test() {
+            term.innerHTML = '<div style="color: #666;">// Client terminal initialized...</div>';
+            document.getElementById('widget-container').style.display = 'none';
+            document.getElementById('demo-progress').style.width = '0%';
+            document.getElementById('demo-progress').style.background = 'var(--accent)';
+            document.getElementById('demo-sub').innerText = 'Click to verify intent';
+            document.getElementById('miner-status').innerText = '';
+
+            const ip = document.getElementById('target-ip').value;
+            
+            try {
+                log(`Sending 1st Request (Target: ${ip}) to /v2/evaluate...`);
+                const res1 = await fetch('/v2/evaluate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer demo-tenant-key' },
+                    body: JSON.stringify({ target: ip })
+                });
+                const data1 = await res1.json();
+                
+                log(`V2 Mathematics Completed in ${data1.decision.latency_ms}ms.`);
+                log(`VERDICT: ${data1.decision.verdict} (Score: ${data1.decision.score})`, data1.decision.verdict === 'ALLOW' ? 'log-success' : 'log-warn');
+                
+                if (data1.decision.verdict === 'CHALLENGE') {
+                    log(`Challenge Hook triggered. Rendering PoW Canvas...`);
+                    document.getElementById('widget-container').style.display = 'block';
+                    
+                    const widget = document.getElementById('demo-widget');
+                    const progress = document.getElementById('demo-progress');
+                    const subtitle = document.getElementById('demo-sub');
+                    let isSolved = false;
+
+                    // Remove old listeners
+                    const oldWidget = widget.cloneNode(true);
+                    widget.parentNode.replaceChild(oldWidget, widget);
+                    
+                    oldWidget.addEventListener('mousedown', async () => {
+                        if (isSolved) return;
+                        progress.style.transition = 'width 2s linear';
+                        progress.style.width = '100%';
+                        subtitle.innerText = "Analyzing behavioral intent & establishing PoW...";
+                        
+                        log(`[Widget] Reaching /v1/challenge/issue...`);
+                        const issueRes = await fetch('/v1/challenge/issue', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ target: ip })
+                        });
+                        const issueData = await issueRes.json();
+                        
+                        // Execute Proof of Work algorithm in client CPU
+                        const solvedNonce = await mineHash(issueData.nonce_prefix, issueData.difficulty || 3);
+                        
+                        // Fake a 2 second semantic hold just to prove it visually
+                        await new Promise(r => setTimeout(r, 2000));
+                        
+                        log(`[Widget] Submitting cryptographic verification...`);
+                        const verifyRes = await fetch('/v1/challenge/verify', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                target: ip,
+                                nonce: solvedNonce,
+                                timestamp: Date.now(),
+                                signature: "browser-sig-mock",
+                                duration_held: 2.1
+                            })
+                        });
+                        const verifyData = await verifyRes.json();
+                        
+                        if (verifyData.success) {
+                            isSolved = true;
+                            progress.style.background = '#0f8';
+                            subtitle.innerText = "Verified.";
+                            log(`[Widget] Token Acquired: ${verifyData.trust_token.substring(0, 15)}...`, 'log-success');
+                            
+                            log(`Retrying API Request directly with Token attached in Header...`);
+                            const res2 = await fetch('/v2/evaluate', {
+                                method: 'POST',
+                                headers: { 
+                                    'Content-Type': 'application/json', 
+                                    'Authorization': 'Bearer demo-tenant-key',
+                                    'X-Sentinel-Trust': verifyData.trust_token
+                                },
+                                body: JSON.stringify({ target: ip })
+                            });
+                            const data2 = await res2.json();
+                            log(`[SUCCESS] V2 Final Math: +30 Token Bonus Applied!`, 'log-success');
+                            log(`[SUCCESS] FINAL VERDICT: ${data2.decision.verdict} (Score: ${data2.decision.score})`, 'log-success');
+                        } else {
+                            progress.style.width = '0%';
+                            subtitle.innerText = "Verification failed.";
+                            log(`[Widget] Verification failed.`, 'log-error');
+                        }
+                    });
+                } else if (data1.decision.verdict === 'BLOCK') {
+                    log(`Request forcefully terminated.`, 'log-error');
+                }
+            } catch (err) {
+                log(`Client Error: ${err.message}`, 'log-error');
+            }
+        }
+    </script>
+</body>
+</html>

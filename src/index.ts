@@ -7,6 +7,7 @@ import dotenv from 'dotenv';
 import path from 'path';
 import logger from './utils/logger';
 import intelRoutes from './routes/intelRoutes';
+import v2Routes from './routes/v2Routes';
 import { ConfigService } from './services/configService';
 import { TelemetryService } from './services/telemetryService';
 import authRoutes from './routes/authRoutes';
@@ -78,6 +79,9 @@ app.get('/health', (req, res) => {
 
 // 5. API Routes
 app.use('/v1', intelRoutes);
+
+// V2 API Namespace (Total Isolation)
+app.use('/v2', v2Routes);
 
 // 6. Auth & Payment Routes
 app.use('/auth', authRoutes);
