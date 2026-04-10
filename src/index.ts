@@ -11,6 +11,7 @@ import v2Routes from './routes/v2Routes';
 import { ConfigService } from './services/configService';
 import { TelemetryService } from './services/telemetryService';
 import authRoutes from './routes/authRoutes';
+import policyRoutes from './routes/policyRoutes';
 import payRoutes from './routes/payRoutes';
 import { errorHandler } from './middleware/error';
 import { visitorTracker } from './middleware/visitor';
@@ -101,9 +102,10 @@ app.use('/v1', intelRoutes);
 // V2 API Namespace (Total Isolation)
 app.use('/v2', v2Routes);
 
-// 6. Auth & Payment Routes
+// 6. Auth, Policy & Payment Routes
 app.use('/auth', authRoutes);
 app.use('/api', authRoutes);
+app.use('/api/policy', policyRoutes);
 app.use('/v1/pay', payRoutes);
 
 // 7. 404 & Error Handling

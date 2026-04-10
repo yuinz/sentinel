@@ -991,7 +991,7 @@
                             <div style="font-family: 'JetBrains Mono'; font-size: 10px; color: #666; text-transform: uppercase; margin-bottom: 15px;">Behavioral Thresholds</div>
                             
                             <label style="display: block; color: #fff; font-size: 13px; font-weight: 600; margin-bottom: 8px;">Engine Operating Pipeline Mode</label>
-                            <select style="width: 100%; background: #0a0a0a; border: 1px solid #222; color: #fff; padding: 12px; border-radius: 6px; font-family: 'Inter'; font-size: 13px; margin-bottom: 25px; outline: none; appearance: none;">
+                            <select id="v2-mode" style="width: 100%; background: #0a0a0a; border: 1px solid #222; color: #fff; padding: 12px; border-radius: 6px; font-family: 'Inter'; font-size: 13px; margin-bottom: 25px; outline: none; appearance: none;">
                                 <option value="PASSIVE">PASSIVE (Monitor Telemetry Only)</option>
                                 <option value="BALANCED" selected>BALANCED (Auto-Mitigate Anomalies)</option>
                                 <option value="STRICT">STRICT (Zero-Trust Required)</option>
@@ -1003,7 +1003,7 @@
                                 <span>1 (Fast)</span>
                                 <span>5 (Impenetrable)</span>
                             </div>
-                            <input type="range" min="1" max="5" value="3" style="width: 100%; margin-bottom: 8px; cursor: pointer;">
+                            <input id="v2-diff" type="range" min="1" max="5" value="3" style="width: 100%; margin-bottom: 8px; cursor: pointer;">
                             <div style="font-size: 10px; color: #00ff88; text-align: right; font-family: 'JetBrains Mono';">Current Network Scale: Level 3</div>
                         </div>
                 
@@ -1024,7 +1024,7 @@
                                     <div style="color: #fff; font-size: 13px; font-weight: 600;">Deny Datacenter IPs</div>
                                     <div style="color: #666; font-size: 11px; margin-top: 4px;">Aggressively drop AWS/GCP/DO structural traffic.</div>
                                 </div>
-                                <label class="switch"><input type="checkbox"><span class="slider"></span></label>
+                                <label class="switch"><input id="v2-dc-toggle" type="checkbox"><span class="slider"></span></label>
                             </div>
                 
                             <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 0;">
@@ -1566,18 +1566,41 @@
                 sidebarOverlay.classList.remove('active');
             };
         }
-        // 8. Event Listener for V2 Save Button Animation
-        document.getElementById('save-v2-btn')?.addEventListener('click', (e) => {
+        // 8. Event Listener for V2 Save Button Animation & Database Sync
+        document.getElementById('save-v2-btn')?.addEventListener('click', async (e) => {
             const btn = e.target;
             const originalText = btn.innerText;
             btn.innerHTML = '<div class="loading-spinner" style="width:12px;height:12px;border-width:2px;margin:0 auto;"></div>';
             
-            setTimeout(() => {
-                btn.innerText = originalText;
-                const status = document.getElementById('v2-save-status');
-                status.style.display = 'inline-block';
-                setTimeout(() => { status.style.display = 'none'; }, 3000);
-            }, 800);
+            const mode = document.getElementById('v2-mode')?.value || 'BALANCED';
+            const difficulty = parseInt(document.getElementById('v2-diff')?.value || '3');
+            const blockProxies = document.getElementById('v2-proxy-toggle')?.checked ?? true;
+            const blockDc = document.getElementById('v2-dc-toggle')?.checked ?? false;
+            const forceBwt = document.getElementById('v2-bwt-toggle')?.checked ?? true;
+
+            const token = localStorage.getItem('sentinel_token');
+
+            try {
+                const res = await fetch('/api/policy/global', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({ mode, difficulty, block_proxies: blockProxies, block_dc: blockDc, force_bwt: forceBwt })
+                });
+
+                if (res.ok) {
+                    btn.innerText = originalText;
+                    const status = document.getElementById('v2-save-status');
+                    status.style.display = 'inline-block';
+                    setTimeout(() => { status.style.display = 'none'; }, 3000);
+                } else {
+                    btn.innerText = 'Failed. DB Config Required.';
+                    btn.style.background = '#ff4444';
+                    setTimeout(() => { btn.innerText = originalText; btn.style.background = ''; }, 3000);
+                }
+            } catch {
+                btn.innerText = 'Network Error';
+                setTimeout(() => { btn.innerText = originalText; }, 3000);
+            }
         });
 
     </script>
