@@ -383,7 +383,7 @@ export class IntelService {
 
     static async issueBehavioralWork(rawTarget: string, context: string, duration?: number, userAgent: string = 'unknown') {
         const target = this.normalizeTarget(rawTarget);
-        const difficulty = 4;
+        const difficulty = 3;
         const salt = process.env.POW_SECRET || 'sentinel-secure-powder';
         const fp = crypto.createHash('md5').update(userAgent).digest('hex').substring(0, 8);
         const signature = crypto.createHash('sha256').update(target + salt + difficulty + fp).digest('hex').substring(0, 8);
@@ -401,9 +401,10 @@ export class IntelService {
         };
     }
 
-    static verifyBehavioralWork(rawTarget: string, nonce: string, userAgent: string = 'unknown'): boolean {
+    static verifyBehavioralWork(rawTarget: string, rawNonce: any, userAgent: string = 'unknown'): boolean {
         const target = this.normalizeTarget(rawTarget);
         try {
+            const nonce = String(rawNonce);
             const difficulty = parseInt(nonce.substring(8, 9), 10);
             const salt = process.env.POW_SECRET || 'sentinel-secure-powder';
             const fp = crypto.createHash('md5').update(userAgent).digest('hex').substring(0, 8);

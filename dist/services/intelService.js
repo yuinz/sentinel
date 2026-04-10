@@ -296,7 +296,7 @@ class IntelService {
     }
     static async issueBehavioralWork(rawTarget, context, duration, userAgent = 'unknown') {
         const target = this.normalizeTarget(rawTarget);
-        const difficulty = 4;
+        const difficulty = 3;
         const salt = process.env.POW_SECRET || 'sentinel-secure-powder';
         const fp = crypto_1.default.createHash('md5').update(userAgent).digest('hex').substring(0, 8);
         const signature = crypto_1.default.createHash('sha256').update(target + salt + difficulty + fp).digest('hex').substring(0, 8);
@@ -311,9 +311,10 @@ class IntelService {
             instruction: `Intent Proof: Click and hold for ${duration || 2.0}s.`
         };
     }
-    static verifyBehavioralWork(rawTarget, nonce, userAgent = 'unknown') {
+    static verifyBehavioralWork(rawTarget, rawNonce, userAgent = 'unknown') {
         const target = this.normalizeTarget(rawTarget);
         try {
+            const nonce = String(rawNonce);
             const difficulty = parseInt(nonce.substring(8, 9), 10);
             const salt = process.env.POW_SECRET || 'sentinel-secure-powder';
             const fp = crypto_1.default.createHash('md5').update(userAgent).digest('hex').substring(0, 8);
