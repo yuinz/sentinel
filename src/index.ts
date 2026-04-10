@@ -67,6 +67,9 @@ app.use(express.static(path.join(__dirname, '..', 'landing-page'), {
     }
 }));
 
+// Serve V2 VitePress Documentation natively via Express
+app.use('/v2/docs', express.static(path.join(__dirname, '..', 'docs', '.vitepress', 'dist')));
+
 // Root route serves landing page
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '..', 'landing-page', 'index.html'));
