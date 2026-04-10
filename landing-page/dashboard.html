@@ -974,7 +974,76 @@
                     </table>
                 </div>
 
-                <!-- SECTION 6 — PREMIUM BAIT (NOT BEGGING) -->
+                <!-- SECTION 6 — V2 POLICY ENGINE (NEW) -->
+                <div class="card" style="border-color: rgba(0, 255, 136, 0.4); position: relative; overflow: hidden; margin-top: 2.5rem; margin-bottom: 2rem;">
+                    <div style="position: absolute; top: -100px; right: -50px; width: 250px; height: 250px; background: radial-gradient(circle, rgba(0,255,136,0.08) 0%, transparent 60%); border-radius: 50%; pointer-events: none;"></div>
+                    
+                    <div class="card-title" style="color: var(--accent); margin-bottom: 1.5rem; display: flex; align-items: center; gap: 10px;">
+                        <span style="font-size: 1.3rem;">⬢</span> Sentinel V2 Global Master Policies
+                    </div>
+                    <p style="color: #aaa; font-size: 13px; font-family: 'Inter'; max-width: 650px; margin-bottom: 25px; line-height: 1.5;">
+                        Mathematically architect your global mitigation thresholds. These rules seamlessly compile into the bytecode array and synchronize across our Edge network natively under 15ms protecting all registered keys perfectly underneath this enterprise tenant.
+                    </p>
+                
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem; position: relative; z-index: 2;">
+                        <!-- Column 1 -->
+                        <div style="background: #050505; border: 1px solid #111; padding: 20px; border-radius: 8px;">
+                            <div style="font-family: 'JetBrains Mono'; font-size: 10px; color: #666; text-transform: uppercase; margin-bottom: 15px;">Behavioral Thresholds</div>
+                            
+                            <label style="display: block; color: #fff; font-size: 13px; font-weight: 600; margin-bottom: 8px;">Engine Operating Pipeline Mode</label>
+                            <select style="width: 100%; background: #0a0a0a; border: 1px solid #222; color: #fff; padding: 12px; border-radius: 6px; font-family: 'Inter'; font-size: 13px; margin-bottom: 25px; outline: none; appearance: none;">
+                                <option value="PASSIVE">PASSIVE (Monitor Telemetry Only)</option>
+                                <option value="BALANCED" selected>BALANCED (Auto-Mitigate Anomalies)</option>
+                                <option value="STRICT">STRICT (Zero-Trust Required)</option>
+                                <option value="DRACONIAN">DRACONIAN (Absolute Lockdown)</option>
+                            </select>
+                
+                            <label style="display: block; color: #fff; font-size: 13px; font-weight: 600; margin-bottom: 5px;">Cryptographic Demand (PoW Scale)</label>
+                            <div style="display: flex; justify-content: space-between; font-size: 10px; color: #555; font-family: 'JetBrains Mono'; margin-bottom: 6px;">
+                                <span>1 (Fast)</span>
+                                <span>5 (Impenetrable)</span>
+                            </div>
+                            <input type="range" min="1" max="5" value="3" style="width: 100%; margin-bottom: 8px; cursor: pointer;">
+                            <div style="font-size: 10px; color: #00ff88; text-align: right; font-family: 'JetBrains Mono';">Current Network Scale: Level 3</div>
+                        </div>
+                
+                        <!-- Column 2 -->
+                        <div style="background: #050505; border: 1px solid #111; padding: 20px; border-radius: 8px;">
+                            <div style="font-family: 'JetBrains Mono'; font-size: 10px; color: #666; text-transform: uppercase; margin-bottom: 15px;">Infrastructural Filtering</div>
+                            
+                            <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px dashed #111;">
+                                <div>
+                                    <div style="color: #fff; font-size: 13px; font-weight: 600;">Block Commercial Proxies</div>
+                                    <div style="color: #666; font-size: 11px; margin-top: 4px;">Nullify VPN connections natively via ASN traces.</div>
+                                </div>
+                                <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
+                            </div>
+                
+                            <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px dashed #111;">
+                                <div>
+                                    <div style="color: #fff; font-size: 13px; font-weight: 600;">Deny Datacenter IPs</div>
+                                    <div style="color: #666; font-size: 11px; margin-top: 4px;">Aggressively drop AWS/GCP/DO structural traffic.</div>
+                                </div>
+                                <label class="switch"><input type="checkbox"><span class="slider"></span></label>
+                            </div>
+                
+                            <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 0;">
+                                <div>
+                                    <div style="color: #fff; font-size: 13px; font-weight: 600;">Force BWT Verification</div>
+                                    <div style="color: #666; font-size: 11px; margin-top: 4px;">Strictly require cryptographically valid Trust Tokens globally.</div>
+                                </div>
+                                <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
+                            </div>
+                        </div>
+                    </div>
+                
+                    <div style="text-align: right; border-top: 1px solid #111; padding-top: 20px;">
+                        <span id="v2-save-status" style="display: none; color: #00ff88; font-family: 'JetBrains Mono'; font-size: 11px; margin-right: 20px;">[✓] V2 State Synchronized.</span>
+                        <button id="save-v2-btn" class="btn-primary" style="padding: 12px 24px; box-shadow: 0 4px 15px rgba(0,255,136,0.2);">Synchronize Policies to Edge Array</button>
+                    </div>
+                </div>
+
+                <!-- SECTION 7 — PREMIUM BAIT (NOT BEGGING) -->
                 <div class="card bait-card">
                     <h3>Locked Insights</h3>
                     <div class="bait-list">
@@ -1497,6 +1566,20 @@
                 sidebarOverlay.classList.remove('active');
             };
         }
+        // 8. Event Listener for V2 Save Button Animation
+        document.getElementById('save-v2-btn')?.addEventListener('click', (e) => {
+            const btn = e.target;
+            const originalText = btn.innerText;
+            btn.innerHTML = '<div class="loading-spinner" style="width:12px;height:12px;border-width:2px;margin:0 auto;"></div>';
+            
+            setTimeout(() => {
+                btn.innerText = originalText;
+                const status = document.getElementById('v2-save-status');
+                status.style.display = 'inline-block';
+                setTimeout(() => { status.style.display = 'none'; }, 3000);
+            }, 800);
+        });
+
     </script>
 </body>
 
