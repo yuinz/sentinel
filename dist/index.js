@@ -12,6 +12,7 @@ const dotenv_1 = __importDefault(require("dotenv"));
 const path_1 = __importDefault(require("path"));
 const logger_1 = __importDefault(require("./utils/logger"));
 const intelRoutes_1 = __importDefault(require("./routes/intelRoutes"));
+const v2Routes_1 = __importDefault(require("./routes/v2Routes"));
 const configService_1 = require("./services/configService");
 const telemetryService_1 = require("./services/telemetryService");
 const authRoutes_1 = __importDefault(require("./routes/authRoutes"));
@@ -63,6 +64,8 @@ app.use(express_1.default.static(path_1.default.join(__dirname, '..', 'landing-p
         res.set('Cross-Origin-Resource-Policy', 'cross-origin');
     }
 }));
+// Serve V2 VitePress Documentation natively via Express
+app.use('/v2/docs', express_1.default.static(path_1.default.join(__dirname, '..', 'docs', '.vitepress', 'dist')));
 // Root route serves landing page
 app.get('/', (req, res) => {
     res.sendFile(path_1.default.join(__dirname, '..', 'landing-page', 'index.html'));
@@ -73,6 +76,8 @@ app.get('/health', (req, res) => {
 });
 // 5. API Routes
 app.use('/v1', intelRoutes_1.default);
+// V2 API Namespace (Total Isolation)
+app.use('/v2', v2Routes_1.default);
 // 6. Auth & Payment Routes
 app.use('/auth', authRoutes_1.default);
 app.use('/api', authRoutes_1.default);
