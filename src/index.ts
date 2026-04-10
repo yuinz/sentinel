@@ -76,6 +76,12 @@ app.get('/', (req, res) => {
 });
 
 // Diagnostic Consoles
+app.get('/api/my-ip', (req, res) => {
+    let target = req.ip || (req.headers['x-forwarded-for'] as string) || '127.0.0.1';
+    if (target.startsWith('::ffff:')) target = target.substring(7);
+    res.json({ ip: target === '::1' ? '127.0.0.1' : target });
+});
+
 app.get('/test', (req, res) => {
     res.sendFile(path.join(__dirname, '..', 'landing-page', 'test.html'));
 });

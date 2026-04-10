@@ -51,7 +51,7 @@
 
         document.addEventListener('DOMContentLoaded', async () => {
             try {
-                const ipRes = await fetch('https://api.ipify.org?format=json');
+                const ipRes = await fetch('/api/my-ip');
                 autoResolvedIp = (await ipRes.json()).ip;
             } catch { autoResolvedIp = '127.0.0.1'; }
         });
@@ -73,8 +73,8 @@
                 const headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${tenantKey}` };
                 if (authRetryToken) headers['x-sentinel-trust'] = authRetryToken;
 
-                // Hit V1 API naturally
-                const res = await fetch('/v1/check', {
+                // Hit V1 API naturally using evaluation mode
+                const res = await fetch('/v1/check?mode=decision', {
                     method: 'POST',
                     headers: headers,
                     body: JSON.stringify({ target: autoResolvedIp || 'detect', profile: 'api' })

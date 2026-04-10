@@ -52,8 +52,8 @@
 
         document.addEventListener('DOMContentLoaded', async () => {
             try {
-                // Instantly resolve user's true IP locally to simulate backend context
-                const ipRes = await fetch('https://api.ipify.org?format=json');
+                // Instantly resolve user's true IP from backend native proxy
+                const ipRes = await fetch('/api/my-ip');
                 autoResolvedIp = (await ipRes.json()).ip;
             } catch { autoResolvedIp = '127.0.0.1'; }
         });
