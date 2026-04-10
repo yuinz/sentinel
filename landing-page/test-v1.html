@@ -20,7 +20,7 @@
         
         <div style="display: flex; gap: 10px; margin-bottom: 20px; max-width: 500px; margin: 0 auto 30px auto;">
             <input type="text" id="target-ip" value="105.113.18.224" style="padding: 15px; background: #111; border: 1px solid #333; color: #fff; border-radius: 4px; flex: 1; font-family: 'JetBrains Mono';">
-            <button onclick="runV1Test()" class="btn btn-primary" style="padding: 0 30px;">Fire API Request</button>
+            <button id="run-btn" class="btn btn-primary" style="padding: 0 30px;">Fire API Request</button>
         </div>
 
         <div class="terminal" id="term" style="text-align: left;">
@@ -171,6 +171,9 @@
                 log(`Server Connection Error: ${err.message}`, 'log-error');
             }
         }
+
+        // CSP Safe Event Binding
+        document.getElementById('run-btn').addEventListener('click', runV1Test);
     </script>
 </body>
 </html>
