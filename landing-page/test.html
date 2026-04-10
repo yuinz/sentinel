@@ -61,7 +61,7 @@
                     const timeTaken = ((performance.now() - startTime) / 1000).toFixed(2);
                     log(`[Miner] Solved! Nonce: ${nonce}. Hash: ${hashHex.substring(0,10)}... Time: ${timeTaken}s`, 'log-success');
                     document.getElementById('miner-status').innerText = `Cryptographic proof generated!`;
-                    return nonce.toString();
+                    return prefix + nonce.toString();
                 }
                 nonce++;
                 if (nonce % 2000 === 0) { // Keep UI responsive

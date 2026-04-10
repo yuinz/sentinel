@@ -296,41 +296,43 @@ class IntelService {
     }
     static async issueBehavioralWork(rawTarget, context, duration, userAgent = 'unknown') {
         const target = this.normalizeTarget(rawTarget);
-        const difficulty = 3; // Lowered to 3 for browser speed — still cryptographically painful for bots
+        const difficulty = 4;
         const salt = process.env.POW_SECRET || 'sentinel-secure-powder';
-        // Signature is ONLY based on target + salt, NOT user-agent (removes browser variance)
-        const signature = crypto_1.default.createHash('sha256').update(target + salt).digest('hex').substring(0, 12);
-        const nonce_prefix = `${signature}`;
-        logger_1.default.info(`[PoW Issue] Target: ${target}, Prefix: ${nonce_prefix}, Difficulty: ${difficulty}`);
+        const fp = crypto_1.default.createHash('md5').update(userAgent).digest('hex').substring(0, 8);
+        const signature = crypto_1.default.createHash('sha256').update(target + salt + difficulty + fp).digest('hex').substring(0, 8);
+        const prefix = `${signature}${difficulty}`;
+        logger_1.default.info(`[PoW Issue] Target: ${target}, Prefix: ${prefix}`);
         return {
             challenge_id: `ch_${crypto_1.default.randomBytes(4).toString('hex')}`,
             type: 'BWT',
             difficulty,
-            nonce_prefix,
+            nonce_prefix: prefix,
             behavioral_duration: duration || 2.0,
             instruction: `Intent Proof: Click and hold for ${duration || 2.0}s.`
         };
     }
-    static verifyBehavioralWork(rawTarget, submitted_nonce, userAgent = 'unknown') {
+    static verifyBehavioralWork(rawTarget, nonce, userAgent = 'unknown') {
         const target = this.normalizeTarget(rawTarget);
         try {
-            const difficulty = 3;
+            const difficulty = parseInt(nonce.substring(8, 9), 10);
             const salt = process.env.POW_SECRET || 'sentinel-secure-powder';
-            const signature = crypto_1.default.createHash('sha256').update(target + salt).digest('hex').substring(0, 12);
-            const expected_prefix = signature;
-            logger_1.default.info(`[PoW Verify] Target: ${target}, Expected Prefix: ${expected_prefix}`);
-            logger_1.default.info(`[PoW Verify] Submitted Nonce: ${submitted_nonce}`);
-            // The browser submits the raw nonce NUMBER it found.
-            // We reconstruct the full string the browser hashed: nonce_prefix + nonce_number
-            const full_string = expected_prefix + submitted_nonce;
-            const hash = crypto_1.default.createHash('sha256').update(full_string).digest('hex');
-            logger_1.default.info(`[PoW Verify] Computed Hash (${expected_prefix}+${submitted_nonce}): ${hash}`);
-            const isValid = hash.startsWith('0'.repeat(difficulty));
+            const fp = crypto_1.default.createHash('md5').update(userAgent).digest('hex').substring(0, 8);
+            const signature = crypto_1.default.createHash('sha256').update(target + salt + difficulty + fp).digest('hex').substring(0, 8);
+            logger_1.default.info(`[PoW Verify] Target: ${target}, Difficulty: ${difficulty}`);
+            logger_1.default.info(`[PoW Verify] Nonce: ${nonce}`);
+            logger_1.default.info(`[PoW Verify] Expected Signature Prefix: ${signature}`);
+            if (!nonce.startsWith(`${signature}${difficulty}`)) {
+                logger_1.default.warn(`[PoW Verify] Signature Mismatch! Nonce doesn't start with ${signature}${difficulty}`);
+                return false;
+            }
+            const hash = crypto_1.default.createHash('sha256').update(nonce).digest('hex');
+            const isValid = hash.startsWith("0".repeat(difficulty));
+            logger_1.default.info(`[PoW Verify] Computed Hash: ${hash}`);
             logger_1.default.info(`[PoW Verify] Is Valid: ${isValid}`);
             return isValid;
         }
         catch (err) {
-            logger_1.default.error(`[PoW Verify] Error: ${err}`);
+            logger_1.default.error(`[PoW Verify] Error during verification: ${err}`);
             return false;
         }
     }
