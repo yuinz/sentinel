@@ -21,7 +21,7 @@ const evaluateV2 = async (req, res) => {
         }
         let target = validation.data.target;
         if (target === 'detect') {
-            target = req.ip || req.headers['x-forwarded-for'] || '127.0.0.1';
+            target = req.headers['x-forwarded-for']?.split(',')[0].trim() || req.ip || '127.0.0.1';
             if (target.startsWith('::ffff:'))
                 target = target.substring(7);
         }

@@ -381,12 +381,11 @@ export class IntelService {
         } catch { return false; }
     }
 
-    static async issueBehavioralWork(rawTarget: string, context: string, duration?: number, userAgent: string = 'unknown') {
+    static async issueBehavioralWork(rawTarget: string, context: string, duration?: number) {
         const target = this.normalizeTarget(rawTarget);
         const difficulty = 3;
         const salt = process.env.POW_SECRET || 'sentinel-secure-powder';
-        const fp = crypto.createHash('md5').update(userAgent).digest('hex').substring(0, 8);
-        const signature = crypto.createHash('sha256').update(target + salt + difficulty + fp).digest('hex').substring(0, 8);
+        const signature = crypto.createHash('sha256').update(target + salt + difficulty).digest('hex').substring(0, 8);
 
         const prefix = `${signature}${difficulty}`;
         logger.info(`[PoW Issue] Target: ${target}, Prefix: ${prefix}`);
@@ -401,14 +400,13 @@ export class IntelService {
         };
     }
 
-    static verifyBehavioralWork(rawTarget: string, rawNonce: any, userAgent: string = 'unknown'): boolean {
+    static verifyBehavioralWork(rawTarget: string, rawNonce: any): boolean {
         const target = this.normalizeTarget(rawTarget);
         try {
             const nonce = String(rawNonce);
             const difficulty = parseInt(nonce.substring(8, 9), 10);
             const salt = process.env.POW_SECRET || 'sentinel-secure-powder';
-            const fp = crypto.createHash('md5').update(userAgent).digest('hex').substring(0, 8);
-            const signature = crypto.createHash('sha256').update(target + salt + difficulty + fp).digest('hex').substring(0, 8);
+            const signature = crypto.createHash('sha256').update(target + salt + difficulty).digest('hex').substring(0, 8);
 
             logger.info(`[PoW Verify] Target: ${target}, Difficulty: ${difficulty}`);
             logger.info(`[PoW Verify] Nonce: ${nonce}`);

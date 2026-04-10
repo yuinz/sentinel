@@ -27,7 +27,7 @@ const checkTarget = async (req, res) => {
         }
         let target = validation.data.target;
         if (target === 'detect') {
-            target = req.ip || req.headers['x-forwarded-for'] || '127.0.0.1';
+            target = req.headers['x-forwarded-for']?.split(',')[0].trim() || req.ip || '127.0.0.1';
             if (target.startsWith('::ffff:'))
                 target = target.substring(7);
         }
@@ -194,11 +194,10 @@ const issueChallenge = async (req, res) => {
     const { target, context, duration } = req.body;
     if (!target)
         return res.status(400).json({ error: 'Target IP required.' });
-    let finalTarget = target === 'detect' ? (req.ip || req.headers['x-forwarded-for'] || '127.0.0.1') : target;
+    let finalTarget = target === 'detect' ? (req.headers['x-forwarded-for']?.split(',')[0].trim() || req.ip || '127.0.0.1') : target;
     if (finalTarget.startsWith('::ffff:'))
         finalTarget = finalTarget.substring(7);
-    const userAgent = req.headers['user-agent'] || 'unknown';
-    const challenge = await intelService_1.IntelService.issueBehavioralWork(finalTarget, context || 'general', duration, userAgent);
+    const challenge = await intelService_1.IntelService.issueBehavioralWork(finalTarget, context || 'general', duration);
     return res.json(challenge);
 };
 exports.issueChallenge = issueChallenge;
@@ -206,11 +205,10 @@ const verifyChallenge = async (req, res) => {
     const { target, nonce } = req.body;
     if (!target || !nonce)
         return res.status(400).json({ error: 'Target and Nonce required.' });
-    let finalTarget = target === 'detect' ? (req.ip || req.headers['x-forwarded-for'] || '127.0.0.1') : target;
+    let finalTarget = target === 'detect' ? (req.headers['x-forwarded-for']?.split(',')[0].trim() || req.ip || '127.0.0.1') : target;
     if (finalTarget.startsWith('::ffff:'))
         finalTarget = finalTarget.substring(7);
-    const userAgent = req.headers['user-agent'] || 'unknown';
-    const isValid = intelService_1.IntelService.verifyBehavioralWork(finalTarget, nonce, userAgent);
+    const isValid = intelService_1.IntelService.verifyBehavioralWork(finalTarget, nonce);
     if (!isValid) {
         return res.status(403).json({ success: false, error: 'Trust verification failed.' });
     }
