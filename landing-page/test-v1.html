@@ -2,178 +2,119 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Sentinel V1 | Global Firewall Diagnostic</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Integration Test | Sentinel V1</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="./styles.css">
     <style>
-        .terminal { background: #050505; border: 1px solid #222; padding: 20px; border-radius: 8px; font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #acc; max-height: 400px; overflow-y: auto; margin-bottom: 20px; word-wrap: break-word;}
-        .log-error { color: #f55; }
-        .log-success { color: #0f8; }
-        .log-warn { color: #fa0; }
-        #widget-container { display: none; margin-top: 20px; text-align: left; }
-        h2 span { color: #ff3366; }
+        body { background: #000; color: #fff; font-family: 'Inter', sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .demo-container { background: #0a0a0a; border: 1px solid #1a1a1a; border-radius: 12px; width: 400px; padding: 40px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .logo { font-size: 24px; font-weight: 800; margin-bottom: 20px; letter-spacing: -1px; }
+        .input-group { margin-bottom: 20px; text-align: left; }
+        .input-group label { display: block; font-size: 11px; color: #888; font-weight: 600; margin-bottom: 8px; text-transform: uppercase; }
+        .input-group input { width: 100%; box-sizing: border-box; background: #050505; border: 1px solid #222; color: #fff; padding: 12px; border-radius: 6px; font-family: 'Inter'; }
+        .btn { background: #fff; color: #000; font-weight: 600; border: none; padding: 12px; width: 100%; border-radius: 6px; cursor: pointer; transition: all 0.2s; }
+        .btn:hover { background: #00ff88; }
+        .status-box { margin-top: 20px; padding: 15px; border-radius: 6px; font-family: 'JetBrains Mono'; font-size: 11px; display: none; text-align: left; }
+        .status-box.success { background: rgba(0,255,136,0.1); border: 1px solid #00ff88; color: #00ff88; }
+        .status-box.error { background: rgba(255,68,68,0.1); border: 1px solid #ff4444; color: #ff4444; }
+        #widget-dock { margin-top: 30px; min-height: 50px; display: none; }
+        .loading-spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3); border-radius: 50%; border-top-color: #fff; animation: spin 1s ease-in-out infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
-<body style="background: #000; color: #fff; padding: 40px; font-family: 'Inter', sans-serif;">
-    <div style="max-width: 800px; margin: 0 auto; text-align: center;">
-        <h2 style="margin-bottom: 10px;">V1 Legacy Implementation <span>(The Shield)</span></h2>
-        <p style="color: #888; margin-bottom: 30px;">Tests the V1 engine. Hits `/v1/check` and evaluates the monolithic blocking heuristics. Uses synchronous ASN queries.</p>
+<body>
+    <div class="demo-container">
+        <div class="logo">ACME Corp <span style="color:#666; font-size:12px; vertical-align:middle; margin-left:10px; font-weight:400;">Legacy V1</span></div>
+        <p style="color: #666; font-size: 13px; margin-bottom: 30px;">This evaluates your browser against the monolithic Sentinel V1 API.</p>
         
-        <div style="display: flex; gap: 10px; margin-bottom: 20px; max-width: 500px; margin: 0 auto 30px auto;">
-            <input type="text" id="target-ip" value="105.113.18.224" style="padding: 15px; background: #111; border: 1px solid #333; color: #fff; border-radius: 4px; flex: 1; font-family: 'JetBrains Mono';">
-            <button id="run-btn" class="btn btn-primary" style="padding: 0 30px;">Fire API Request</button>
+        <div class="input-group">
+            <label>Secure Transfer</label>
+            <input type="text" value="Execute Bank Transfer" disabled>
         </div>
-
-        <div class="terminal" id="term" style="text-align: left;">
-            <div style="color: #666;">// Sentinel V1 Diagnostic Console Ready...</div>
-        </div>
-
-        <div id="widget-container">
-            <div class="demo-widget" id="demo-widget" style="border: 1px solid var(--accent); position: relative; overflow: hidden; cursor: pointer; display: inline-block; width: 100%; max-width: 400px; margin: 0 auto;">
-                <div class="demo-progress" id="demo-progress" style="background: var(--accent); width: 0%; height: 100%; position: absolute; left: 0; top: 0; z-index: 1;"></div>
-                <div class="demo-text" style="position: relative; z-index: 2; padding: 15px; text-align: center;">
-                    <div class="demo-label" id="demo-label" style="font-weight: 600; font-size: 16px;">Sentinel Verification</div>
-                    <div class="demo-sub" id="demo-sub" style="font-size: 12px; color: #888;">Analyze Behavioral Intent</div>
-                </div>
-            </div>
-            <p style="font-size: 12px; color: #666; margin-top: 15px; text-align: center;" id="miner-status"></p>
-        </div>
+        
+        <button id="action-btn" class="btn">Execute Action</button>
+        
+        <div id="status-box" class="status-box"></div>
+        <div id="widget-dock"></div>
     </div>
 
+    <script src="widget.js"></script>
+
     <script>
-        const term = document.getElementById('term');
-        const API_KEY = "sl_05a5bb0835cc8b64257cb5d9096386cf836c7dbc088b3b18";
+        const btn = document.getElementById('action-btn');
+        const statusBox = document.getElementById('status-box');
+        const widgetDock = document.getElementById('widget-dock');
+        const tenantKey = "sl_05a5bb0835cc8b64257cb5d9096386cf836c7dbc088b3b18";
+        let autoResolvedIp = null;
+        let authRetryToken = null;
 
-        function log(msg, type='') {
-            const time = new Date().toISOString().split('T')[1].substring(0, 12);
-            term.innerHTML += `<div class="${type}">[${time}] ${msg}</div>`;
-            term.scrollTop = term.scrollHeight;
-        }
-
-        async function mineHash(prefix, difficulty) {
-            document.getElementById('miner-status').innerText = `Computing SHA256 hashes in browser...`;
-            log(`[Miner] Working... Difficulty: ${difficulty}. Prefix: ${prefix}`, 'log-warn');
-            const encoder = new TextEncoder();
-            let nonce = 0;
-            const startTime = performance.now();
-            while (true) {
-                const data = encoder.encode(prefix + nonce);
-                const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-                const hashArray = Array.from(new Uint8Array(hashBuffer));
-                const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-                if (hashHex.startsWith('0'.repeat(difficulty))) {
-                    const timeTaken = ((performance.now() - startTime) / 1000).toFixed(2);
-                    log(`[Miner] Solved! Nonce: ${nonce}. Hash: ${hashHex.substring(0,10)}... Time: ${timeTaken}s`, 'log-success');
-                    document.getElementById('miner-status').innerText = `Cryptographic proof generated!`;
-                    return prefix + nonce.toString();
-                }
-                nonce++;
-                if (nonce % 2000 === 0) { 
-                    await new Promise(r => setTimeout(r, 0));
-                }
-            }
-        }
-
-        async function runV1Test() {
-            term.innerHTML = '<div style="color: #666;">// V1 Core execution initiated...</div>';
-            document.getElementById('widget-container').style.display = 'none';
-            document.getElementById('demo-progress').style.width = '0%';
-            document.getElementById('demo-progress').style.background = 'var(--accent)';
-            document.getElementById('demo-sub').innerText = 'Analyze Behavioral Intent';
-            document.getElementById('miner-status').innerText = '';
-
-            const ip = document.getElementById('target-ip').value;
-            
+        document.addEventListener('DOMContentLoaded', async () => {
             try {
-                const startTime = performance.now();
-                log(`Sending Request (Target: ${ip}) to /v1/check...`);
-                const res1 = await fetch('/v1/check', {
+                const ipRes = await fetch('https://api.ipify.org?format=json');
+                autoResolvedIp = (await ipRes.json()).ip;
+            } catch { autoResolvedIp = '127.0.0.1'; }
+        });
+
+        document.addEventListener('sentinelSuccess', (e) => {
+            authRetryToken = e.detail.trust_token;
+            widgetDock.style.display = 'none';
+            doAction(); 
+        });
+
+        async function doAction() {
+            btn.innerHTML = '<div class="loading-spinner"></div>';
+            btn.disabled = true;
+            statusBox.style.display = 'none';
+            widgetDock.innerHTML = '';
+            widgetDock.style.display = 'none';
+
+            try {
+                const headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${tenantKey}` };
+                if (authRetryToken) headers['x-sentinel-trust'] = authRetryToken;
+
+                // Hit V1 API naturally
+                const res = await fetch('/v1/check', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${API_KEY}` },
-                    body: JSON.stringify({ target: ip, profile: "api" })
+                    headers: headers,
+                    body: JSON.stringify({ target: autoResolvedIp || 'detect', profile: 'api' })
                 });
-                const data1 = await res1.json();
-                const v1Latency = (performance.now() - startTime).toFixed(0);
-                
-                if (res1.status === 401 || res1.status === 403) {
-                     log(`[AUTH FAILED] Database rejected API Key. Verify Supabase connection.`, 'log-error');
-                     return;
-                }
+                const data = await res.json();
 
-                log(`V1 Synchronous Intel Completed in ${v1Latency}ms.`);
-                log(`VERDICT: ALLOW=${data1.allow} (Risk: ${data1.risk_score}, Trust: ${data1.trust_score})`, data1.allow ? 'log-success' : 'log-error');
-                
-                if (!data1.allow && data1.remediation && data1.remediation.recommended === 'verify') {
-                    log(`Remediation Requested: 'verify'. Rendering PoW Canvas...`, 'log-warn');
-                    document.getElementById('widget-container').style.display = 'block';
-                    
-                    const widget = document.getElementById('demo-widget');
-                    const progress = document.getElementById('demo-progress');
-                    const subtitle = document.getElementById('demo-sub');
-                    let isSolved = false;
+                if (data.allow) {
+                    statusBox.className = 'status-box success';
+                    statusBox.innerHTML = `[✓] Execution Authorized.<br>Monolithic Score: ${data.trust_score}`;
+                    statusBox.style.display = 'block';
+                    btn.innerHTML = 'Success';
+                } else if (!data.allow && data.remediation && data.remediation.recommended === 'verify') {
+                    statusBox.className = 'status-box error';
+                    statusBox.innerHTML = `[!] Firewall Triggered.<br>Remediation: Validation Required.`;
+                    statusBox.style.display = 'block';
+                    btn.innerHTML = 'Action Required';
 
-                    const oldWidget = widget.cloneNode(true);
-                    widget.parentNode.replaceChild(oldWidget, widget);
+                    // Render REAL Widget dynamically
+                    widgetDock.style.display = 'block';
+                    widgetDock.innerHTML = `<div id="sentinel-widget" data-sitekey="${tenantKey}"></div>`;
                     
-                    oldWidget.addEventListener('mousedown', async () => {
-                        if (isSolved) return;
-                        progress.style.transition = 'width 2s linear';
-                        progress.style.width = '100%';
-                        subtitle.innerText = "Analyzing behavioral intent & establishing PoW...";
-                        
-                        log(`[Widget] Reaching /v1/challenge/issue...`);
-                        const issueRes = await fetch('/v1/challenge/issue', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ target: ip })
-                        });
-                        const issueData = await issueRes.json();
-                        
-                        const solvedNonce = await mineHash(issueData.nonce_prefix, issueData.difficulty || 4);
-                        await new Promise(r => setTimeout(r, 2000));
-                        
-                        log(`[Widget] Submitting cryptographic verification...`);
-                        const verifyRes = await fetch('/v1/challenge/verify', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ target: ip, nonce: solvedNonce, timestamp: Date.now(), signature: "browser-sig-mock", duration_held: 2.1 })
-                        });
-                        const verifyData = await verifyRes.json();
-                        
-                        if (verifyData.success) {
-                            isSolved = true;
-                            progress.style.background = '#0f8';
-                            subtitle.innerText = "Trust Token Acquired.";
-                            log(`[Widget] Success! Token Acquired: ${verifyData.trust_token.substring(0, 15)}...`, 'log-success');
-                            
-                            log(`Retrying /v1/check directly with Token attached in Header...`);
-                            const res2 = await fetch('/v1/check', {
-                                method: 'POST',
-                                headers: { 
-                                    'Content-Type': 'application/json', 
-                                    'Authorization': `Bearer ${API_KEY}`,
-                                    'X-Sentinel-Trust': verifyData.trust_token
-                                },
-                                body: JSON.stringify({ target: ip, profile: "api" })
-                            });
-                            const data2 = await res2.json();
-                            log(`[SUCCESS] V1 Override Authorized!`, 'log-success');
-                            log(`[SUCCESS] FINAL V1 VERDICT: ALLOW=${data2.allow}`, 'log-success');
-                        } else {
-                            progress.style.width = '0%';
-                            subtitle.innerText = "Verification failed.";
-                            log(`[Widget] Verification failed.`, 'log-error');
-                        }
-                    });
-                } else if (!data1.allow) {
-                    log(`Request forcefully terminated. No remediation offered by V1.`, 'log-error');
+                    const script = document.createElement('script');
+                    script.src = 'widget.js';
+                    widgetDock.appendChild(script);
+                } else {
+                    statusBox.className = 'status-box error';
+                    statusBox.innerHTML = `[x] FATAL DENY.<br>V1 Hard-Blocked your request.`;
+                    statusBox.style.display = 'block';
+                    btn.innerHTML = 'Access Denied';
                 }
             } catch (err) {
-                log(`Server Connection Error: ${err.message}`, 'log-error');
+                statusBox.className = 'status-box error';
+                statusBox.innerHTML = `Connection Error: ${err.message}`;
+                statusBox.style.display = 'block';
+                btn.innerHTML = 'Error';
+                btn.disabled = false;
             }
         }
 
-        // CSP Safe Event Binding
-        document.getElementById('run-btn').addEventListener('click', runV1Test);
+        btn.addEventListener('click', doAction);
     </script>
 </body>
 </html>
