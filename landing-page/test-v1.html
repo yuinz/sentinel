@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Sentinel V2 | Live PoW Test</title>
+    <title>Sentinel V1 | Global Firewall Diagnostic</title>
     <link rel="stylesheet" href="./styles.css">
     <style>
         .terminal { background: #050505; border: 1px solid #222; padding: 20px; border-radius: 8px; font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #acc; max-height: 400px; overflow-y: auto; margin-bottom: 20px; word-wrap: break-word;}
@@ -10,28 +10,29 @@
         .log-success { color: #0f8; }
         .log-warn { color: #fa0; }
         #widget-container { display: none; margin-top: 20px; text-align: left; }
+        h2 span { color: #ff3366; }
     </style>
 </head>
 <body style="background: #000; color: #fff; padding: 40px; font-family: 'Inter', sans-serif;">
     <div style="max-width: 800px; margin: 0 auto; text-align: center;">
-        <h2 style="margin-bottom: 10px;">V2 Engine Integration Test</h2>
-        <p style="color: #888; margin-bottom: 30px;">Hits the V2 API. If challenged, mines the cryptographic BWT and retries the request seamlessly.</p>
+        <h2 style="margin-bottom: 10px;">V1 Legacy Implementation <span>(The Shield)</span></h2>
+        <p style="color: #888; margin-bottom: 30px;">Tests the V1 engine. Hits `/v1/check` and evaluates the monolithic blocking heuristics. Uses synchronous ASN queries.</p>
         
         <div style="display: flex; gap: 10px; margin-bottom: 20px; max-width: 500px; margin: 0 auto 30px auto;">
             <input type="text" id="target-ip" value="105.113.18.224" style="padding: 15px; background: #111; border: 1px solid #333; color: #fff; border-radius: 4px; flex: 1; font-family: 'JetBrains Mono';">
-            <button onclick="runV2Test()" class="btn btn-primary" style="padding: 0 30px;">Fire API Request</button>
+            <button onclick="runV1Test()" class="btn btn-primary" style="padding: 0 30px;">Fire API Request</button>
         </div>
 
         <div class="terminal" id="term" style="text-align: left;">
-            <div style="color: #666;">// Client terminal initialized...</div>
+            <div style="color: #666;">// Sentinel V1 Diagnostic Console Ready...</div>
         </div>
 
         <div id="widget-container">
             <div class="demo-widget" id="demo-widget" style="border: 1px solid var(--accent); position: relative; overflow: hidden; cursor: pointer; display: inline-block; width: 100%; max-width: 400px; margin: 0 auto;">
                 <div class="demo-progress" id="demo-progress" style="background: var(--accent); width: 0%; height: 100%; position: absolute; left: 0; top: 0; z-index: 1;"></div>
                 <div class="demo-text" style="position: relative; z-index: 2; padding: 15px; text-align: center;">
-                    <div class="demo-label" id="demo-label" style="font-weight: 600; font-size: 16px;">Sentinel Anti-Bot Verification</div>
-                    <div class="demo-sub" id="demo-sub" style="font-size: 12px; color: #888;">Click to verify intent</div>
+                    <div class="demo-label" id="demo-label" style="font-weight: 600; font-size: 16px;">Sentinel Verification</div>
+                    <div class="demo-sub" id="demo-sub" style="font-size: 12px; color: #888;">Analyze Behavioral Intent</div>
                 </div>
             </div>
             <p style="font-size: 12px; color: #666; margin-top: 15px; text-align: center;" id="miner-status"></p>
@@ -40,6 +41,8 @@
 
     <script>
         const term = document.getElementById('term');
+        const API_KEY = "sl_05a5bb0835cc8b64257cb5d9096386cf836c7dbc088b3b18";
+
         function log(msg, type='') {
             const time = new Date().toISOString().split('T')[1].substring(0, 12);
             term.innerHTML += `<div class="${type}">[${time}] ${msg}</div>`;
@@ -64,36 +67,43 @@
                     return nonce.toString();
                 }
                 nonce++;
-                if (nonce % 2000 === 0) { // Keep UI responsive
+                if (nonce % 2000 === 0) { 
                     await new Promise(r => setTimeout(r, 0));
                 }
             }
         }
 
-        async function runV2Test() {
-            term.innerHTML = '<div style="color: #666;">// Client terminal initialized...</div>';
+        async function runV1Test() {
+            term.innerHTML = '<div style="color: #666;">// V1 Core execution initiated...</div>';
             document.getElementById('widget-container').style.display = 'none';
             document.getElementById('demo-progress').style.width = '0%';
             document.getElementById('demo-progress').style.background = 'var(--accent)';
-            document.getElementById('demo-sub').innerText = 'Click to verify intent';
+            document.getElementById('demo-sub').innerText = 'Analyze Behavioral Intent';
             document.getElementById('miner-status').innerText = '';
 
             const ip = document.getElementById('target-ip').value;
             
             try {
-                log(`Sending 1st Request (Target: ${ip}) to /v2/evaluate...`);
-                const res1 = await fetch('/v2/evaluate', {
+                const startTime = performance.now();
+                log(`Sending Request (Target: ${ip}) to /v1/check...`);
+                const res1 = await fetch('/v1/check', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer sl_05a5bb0835cc8b64257cb5d9096386cf836c7dbc088b3b18' },
-                    body: JSON.stringify({ target: ip })
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${API_KEY}` },
+                    body: JSON.stringify({ target: ip, profile: "diagnostic" })
                 });
                 const data1 = await res1.json();
+                const v1Latency = (performance.now() - startTime).toFixed(0);
                 
-                log(`V2 Mathematics Completed in ${data1.decision.latency_ms}ms.`);
-                log(`VERDICT: ${data1.decision.verdict} (Score: ${data1.decision.score})`, data1.decision.verdict === 'ALLOW' ? 'log-success' : 'log-warn');
+                if (res1.status === 401 || res1.status === 403) {
+                     log(`[AUTH FAILED] Database rejected API Key. Verify Supabase connection.`, 'log-error');
+                     return;
+                }
+
+                log(`V1 Synchronous Intel Completed in ${v1Latency}ms.`);
+                log(`VERDICT: ALLOW=${data1.allow} (Risk: ${data1.risk_score}, Trust: ${data1.trust_score})`, data1.allow ? 'log-success' : 'log-error');
                 
-                if (data1.decision.verdict === 'CHALLENGE') {
-                    log(`Challenge Hook triggered. Rendering PoW Canvas...`);
+                if (!data1.allow && data1.remediation && data1.remediation.recommended === 'verify') {
+                    log(`Remediation Requested: 'verify'. Rendering PoW Canvas...`, 'log-warn');
                     document.getElementById('widget-container').style.display = 'block';
                     
                     const widget = document.getElementById('demo-widget');
@@ -101,7 +111,6 @@
                     const subtitle = document.getElementById('demo-sub');
                     let isSolved = false;
 
-                    // Remove old listeners
                     const oldWidget = widget.cloneNode(true);
                     widget.parentNode.replaceChild(oldWidget, widget);
                     
@@ -119,56 +128,47 @@
                         });
                         const issueData = await issueRes.json();
                         
-                        // Execute Proof of Work algorithm in client CPU
-                        const solvedNonce = await mineHash(issueData.nonce_prefix, issueData.difficulty || 3);
-                        
-                        // Fake a 2 second semantic hold just to prove it visually
+                        const solvedNonce = await mineHash(issueData.nonce_prefix, issueData.difficulty || 4);
                         await new Promise(r => setTimeout(r, 2000));
                         
                         log(`[Widget] Submitting cryptographic verification...`);
                         const verifyRes = await fetch('/v1/challenge/verify', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                target: ip,
-                                nonce: solvedNonce,
-                                timestamp: Date.now(),
-                                signature: "browser-sig-mock",
-                                duration_held: 2.1
-                            })
+                            body: JSON.stringify({ target: ip, nonce: solvedNonce, timestamp: Date.now(), signature: "browser-sig-mock", duration_held: 2.1 })
                         });
                         const verifyData = await verifyRes.json();
                         
                         if (verifyData.success) {
                             isSolved = true;
                             progress.style.background = '#0f8';
-                            subtitle.innerText = "Verified.";
-                            log(`[Widget] Token Acquired: ${verifyData.trust_token.substring(0, 15)}...`, 'log-success');
+                            subtitle.innerText = "Trust Token Acquired.";
+                            log(`[Widget] Success! Token Acquired: ${verifyData.trust_token.substring(0, 15)}...`, 'log-success');
                             
-                            log(`Retrying API Request directly with Token attached in Header...`);
-                            const res2 = await fetch('/v2/evaluate', {
+                            log(`Retrying /v1/check directly with Token attached in Header...`);
+                            const res2 = await fetch('/v1/check', {
                                 method: 'POST',
                                 headers: { 
                                     'Content-Type': 'application/json', 
-                                    'Authorization': 'Bearer sl_05a5bb0835cc8b64257cb5d9096386cf836c7dbc088b3b18',
+                                    'Authorization': `Bearer ${API_KEY}`,
                                     'X-Sentinel-Trust': verifyData.trust_token
                                 },
                                 body: JSON.stringify({ target: ip })
                             });
                             const data2 = await res2.json();
-                            log(`[SUCCESS] V2 Final Math: +30 Token Bonus Applied!`, 'log-success');
-                            log(`[SUCCESS] FINAL VERDICT: ${data2.decision.verdict} (Score: ${data2.decision.score})`, 'log-success');
+                            log(`[SUCCESS] V1 Override Authorized!`, 'log-success');
+                            log(`[SUCCESS] FINAL V1 VERDICT: ALLOW=${data2.allow}`, 'log-success');
                         } else {
                             progress.style.width = '0%';
                             subtitle.innerText = "Verification failed.";
                             log(`[Widget] Verification failed.`, 'log-error');
                         }
                     });
-                } else if (data1.decision.verdict === 'BLOCK') {
-                    log(`Request forcefully terminated.`, 'log-error');
+                } else if (!data1.allow) {
+                    log(`Request forcefully terminated. No remediation offered by V1.`, 'log-error');
                 }
             } catch (err) {
-                log(`Client Error: ${err.message}`, 'log-error');
+                log(`Server Connection Error: ${err.message}`, 'log-error');
             }
         }
     </script>
