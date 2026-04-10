@@ -70,6 +70,13 @@ app.use('/v2/docs', express_1.default.static(path_1.default.join(__dirname, '..'
 app.get('/', (req, res) => {
     res.sendFile(path_1.default.join(__dirname, '..', 'landing-page', 'index.html'));
 });
+// Diagnostic Consoles
+app.get('/test', (req, res) => {
+    res.sendFile(path_1.default.join(__dirname, '..', 'landing-page', 'test.html'));
+});
+app.get('/test-v1', (req, res) => {
+    res.sendFile(path_1.default.join(__dirname, '..', 'landing-page', 'test-v1.html'));
+});
 // 4. Health Check
 app.get('/health', (req, res) => {
     res.json({ status: 'UP', service: 'Sentinel-Engine', version: '1.0.1' });
