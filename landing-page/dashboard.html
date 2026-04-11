@@ -1038,8 +1038,8 @@
                     </div>
                 
                     <div style="text-align: right; border-top: 1px solid #111; padding-top: 20px;">
-                        <span id="v2-save-status" style="display: none; color: #00ff88; font-family: 'JetBrains Mono'; font-size: 11px; margin-right: 20px;">[✓] V2 State Synchronized.</span>
-                        <button id="save-v2-btn" class="btn-primary" style="padding: 12px 24px; box-shadow: 0 4px 15px rgba(0,255,136,0.2);">Synchronize Policies to Edge Array</button>
+                        <span id="v2-save-status" style="display: none; color: #00ff88; font-family: 'JetBrains Mono'; font-size: 11px; margin-right: 20px;">[✓] Synced.</span>
+                        <button id="save-v2-btn" class="btn-primary" style="padding: 12px 24px; box-shadow: 0 4px 15px rgba(0,255,136,0.2);">Save &amp; Apply</button>
                     </div>
                 </div>
 
@@ -1578,7 +1578,7 @@
             const blockDc = document.getElementById('v2-dc-toggle')?.checked ?? false;
             const forceBwt = document.getElementById('v2-bwt-toggle')?.checked ?? true;
 
-            const token = localStorage.getItem('sentinel_token');
+            const token = session?.access_token;
 
             try {
                 const res = await fetch('/api/policy/global', {
