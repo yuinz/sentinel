@@ -177,7 +177,7 @@
             
             <div class="interactive-triage">
                 <input type="text" id="demo-ip" placeholder="Enter IP (e.g. 8.8.8.8 for VPN demo)">
-                <button onclick="runLiveCheck()">EVALUATE</button>
+                <button id="btn-evaluate">EVALUATE</button>
             </div>
 
             <div id="terminal-logs">
@@ -359,6 +359,30 @@ DIFFICULTY: target_level_3</div>
                 }
             }, 800);
         }
+
+        // CSP Safe Event Binding
+        document.getElementById('btn-evaluate').addEventListener('click', runLiveCheck);
+
+        // Ambient idle log simulation
+        const ambientIps = ['203.0.113.42', '198.51.100.18', '74.125.200.1', '104.28.15.22', '45.22.19.89', '8.8.8.8'];
+        const ambientTypes = [
+            { t: 'Residential', act: 'ALLOW', b: 'badge-allow', m: 'Clean trajectory.' },
+            { t: 'Datacenter', act: 'BLOCK', b: 'badge-block', m: 'Structurally invalid ASN.' },
+            { t: 'Commercial-VPN', act: 'BLOCK', b: 'badge-block', m: 'Proxy subnet match.' },
+            { t: 'Residential', act: 'ALLOW', b: 'badge-allow', m: 'Valid telemetry signature.' },
+            { t: 'Headless-Bot', act: 'BLOCK', b: 'badge-block', m: 'DOM automation detected.' }
+        ];
+
+        let ambientSim = setInterval(() => {
+            const time = new Date().toISOString().split('T')[1].substring(0, 11);
+            const ip = ambientIps[Math.floor(Math.random() * ambientIps.length)];
+            const type = ambientTypes[Math.floor(Math.random() * ambientTypes.length)];
+            _log(time, type.act, ip, '[' + type.t + '] ' + type.m, type.b);
+        }, 1500);
+
+        // Pause ambient when executing manual runs
+        document.getElementById('demo-ip').addEventListener('focus', () => { clearInterval(ambientSim); });
+        document.getElementById('btn-evaluate').addEventListener('click', () => { clearInterval(ambientSim); });
     </script>
 </body>
 </html>
