@@ -1,40 +1,144 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Integration Test | Sentinel V1</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="./styles.css">
     <style>
-        body { background: #000; color: #fff; font-family: 'Inter', sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-        .demo-container { background: #0a0a0a; border: 1px solid #1a1a1a; border-radius: 12px; width: 400px; padding: 40px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        .logo { font-size: 24px; font-weight: 800; margin-bottom: 20px; letter-spacing: -1px; }
-        .input-group { margin-bottom: 20px; text-align: left; }
-        .input-group label { display: block; font-size: 11px; color: #888; font-weight: 600; margin-bottom: 8px; text-transform: uppercase; }
-        .input-group input { width: 100%; box-sizing: border-box; background: #050505; border: 1px solid #222; color: #fff; padding: 12px; border-radius: 6px; font-family: 'Inter'; }
-        .btn { background: #fff; color: #000; font-weight: 600; border: none; padding: 12px; width: 100%; border-radius: 6px; cursor: pointer; transition: all 0.2s; }
-        .btn:hover { background: #00ff88; }
-        .status-box { margin-top: 20px; padding: 15px; border-radius: 6px; font-family: 'JetBrains Mono'; font-size: 11px; display: none; text-align: left; }
-        .status-box.success { background: rgba(0,255,136,0.1); border: 1px solid #00ff88; color: #00ff88; }
-        .status-box.error { background: rgba(255,68,68,0.1); border: 1px solid #ff4444; color: #ff4444; }
-        #widget-dock { margin-top: 30px; min-height: 50px; display: none; }
-        .loading-spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3); border-radius: 50%; border-top-color: #fff; animation: spin 1s ease-in-out infinite; }
-        @keyframes spin { to { transform: rotate(360deg); } }
+        body {
+            background: #000;
+            color: #fff;
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .demo-container {
+            background: #0a0a0a;
+            border: 1px solid #1a1a1a;
+            border-radius: 12px;
+            width: 400px;
+            padding: 40px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 800;
+            margin-bottom: 20px;
+            letter-spacing: -1px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 11px;
+            color: #888;
+            font-weight: 600;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .input-group input {
+            width: 100%;
+            box-sizing: border-box;
+            background: #050505;
+            border: 1px solid #222;
+            color: #fff;
+            padding: 12px;
+            border-radius: 6px;
+            font-family: 'Inter';
+        }
+
+        .btn {
+            background: #fff;
+            color: #000;
+            font-weight: 600;
+            border: none;
+            padding: 12px;
+            width: 100%;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn:hover {
+            background: #00ff88;
+        }
+
+        .status-box {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: 'JetBrains Mono';
+            font-size: 11px;
+            display: none;
+            text-align: left;
+        }
+
+        .status-box.success {
+            background: rgba(0, 255, 136, 0.1);
+            border: 1px solid #00ff88;
+            color: #00ff88;
+        }
+
+        .status-box.error {
+            background: rgba(255, 68, 68, 0.1);
+            border: 1px solid #ff4444;
+            color: #ff4444;
+        }
+
+        #widget-dock {
+            margin-top: 30px;
+            min-height: 50px;
+            display: none;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
     </style>
 </head>
+
 <body>
     <div class="demo-container">
-        <div class="logo">ACME Corp <span style="color:#666; font-size:12px; vertical-align:middle; margin-left:10px; font-weight:400;">Legacy V1</span></div>
-        <p style="color: #666; font-size: 13px; margin-bottom: 30px;">This evaluates your browser against the monolithic Sentinel V1 API.</p>
-        
+        <div class="logo">ACME Corp <span
+                style="color:#666; font-size:12px; vertical-align:middle; margin-left:10px; font-weight:400;">Legacy
+                V1</span></div>
+        <p style="color: #666; font-size: 13px; margin-bottom: 30px;">This evaluates your browser against the monolithic
+            Sentinel V1 API.</p>
+
         <div class="input-group">
             <label>Secure Transfer</label>
             <input type="text" value="Execute Bank Transfer" disabled>
         </div>
-        
+
         <button id="action-btn" class="btn">Execute Action</button>
-        
+
         <div id="status-box" class="status-box"></div>
         <div id="widget-dock"></div>
     </div>
@@ -59,7 +163,7 @@
         document.addEventListener('sentinelSuccess', (e) => {
             authRetryToken = e.detail.trust_token;
             widgetDock.style.display = 'none';
-            doAction(); 
+            doAction();
         });
 
         async function doAction() {
@@ -95,7 +199,7 @@
                     // Render REAL Widget dynamically
                     widgetDock.style.display = 'block';
                     widgetDock.innerHTML = `<div id="sentinel-widget" data-sitekey="${tenantKey}"></div>`;
-                    
+
                     const script = document.createElement('script');
                     script.src = 'widget.js';
                     widgetDock.appendChild(script);
@@ -117,4 +221,5 @@
         btn.addEventListener('click', doAction);
     </script>
 </body>
+
 </html>
