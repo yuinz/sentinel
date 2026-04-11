@@ -59,7 +59,7 @@ const checkTarget = async (req, res) => {
                 cache_1.intelCache.set(cacheKey, result);
             }
         }
-        const isBwtValid = bwtNonce ? intelService_1.IntelService.verifyBehavioralWork(target, bwtNonce, userAgent) : false;
+        const isBwtValid = bwtNonce ? intelService_1.IntelService.verifyBehavioralWork(target, bwtNonce) : false;
         const isTrustTokenValid = trustToken ? intelService_1.IntelService.verifyTrustToken(target, trustToken) : false;
         // 3. Telemetry Logic: Record the event for Analytics
         const isBotMonitor = userAgent.toLowerCase().includes('uptimerobot');

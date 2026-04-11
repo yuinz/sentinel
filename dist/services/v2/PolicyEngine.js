@@ -14,29 +14,35 @@ class PolicyEngine {
             return dslOverride;
         // 2. Fallback to Mathematical Score Thresholds
         switch (policy.mode) {
-            case 'AGGRESSIVE':
-                // Strict: Requires a very high score to pass smoothly.
-                if (score >= 50)
-                    return 'ALLOW';
-                if (score >= 10)
-                    return 'CHALLENGE';
-                return 'BLOCK'; // < 10 is blocked directly
-            case 'RELAXED':
-                // Forgiving: Allows almost anything unless clearly malevolent.
+            case 'PASSIVE':
+                // Monitor only — very forgiving, almost nothing gets blocked
                 if (score >= 10)
                     return 'ALLOW';
                 if (score >= -40)
                     return 'CHALLENGE';
-                return 'BLOCK'; // Only block explicitly terrible IPs (<-40)
+                return 'BLOCK';
+            case 'STRICT':
+                // Stricter than BALANCED — requires clear trust signals to pass
+                if (score >= 50)
+                    return 'ALLOW';
+                if (score >= 10)
+                    return 'CHALLENGE';
+                return 'BLOCK';
+            case 'DRACONIAN':
+                // Maximum lockdown — only explicitly verified traffic passes
+                if (score >= 70)
+                    return 'ALLOW';
+                if (score >= 30)
+                    return 'CHALLENGE';
+                return 'BLOCK';
             case 'BALANCED':
             default:
-                // Standard default profile. 
-                // A normal IP starts at 0 (Challenge). With a normal residential IP (+10) and Token (+30) -> 40 (ALLOW).
+                // Standard default. Residential IP (+10) + Token (+30) = 40 → ALLOW
                 if (score >= 30)
                     return 'ALLOW';
                 if (score >= 0)
-                    return 'CHALLENGE'; // 0 to 29
-                return 'BLOCK'; // < 0
+                    return 'CHALLENGE';
+                return 'BLOCK';
         }
     }
     /**

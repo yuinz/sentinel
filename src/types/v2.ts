@@ -1,6 +1,6 @@
 export type Verdict = 'ALLOW' | 'CHALLENGE' | 'BLOCK';
 
-export type PolicyMode = 'BALANCED' | 'AGGRESSIVE' | 'RELAXED';
+export type PolicyMode = 'PASSIVE' | 'BALANCED' | 'STRICT' | 'DRACONIAN';
 
 export interface V2PolicyConfig {
     mode: PolicyMode;
@@ -9,7 +9,13 @@ export interface V2PolicyConfig {
     allowed_countries?: string[];
     blocked_countries?: string[];
     rules?: string[]; // Custom DSL. Example: ["IF signal == 'VERIFIED_BOT' THEN ALLOW"]
+    // Dashboard-configurable flags
+    block_proxies?: boolean;
+    block_datacenters?: boolean;
+    force_bwt?: boolean;
+    difficulty_level?: number;
 }
+
 
 export type SignalId = 
     | 'TOKEN_VALID' 

@@ -29,13 +29,24 @@ class IntelServiceV2 {
             return this.finalizeCalculations(signals, policy, start);
         }
         // 2. FAST PATH: Cryptographic Token Proof
-        // Directly solves the "VPN Infinite Challenge" bug. We securely verify the PoW token.
         if (trustToken && intelService_1.IntelService.verifyTrustToken(target, trustToken)) {
             signals.push({
                 id: 'TOKEN_VALID',
                 weight: TrustCalculator_1.TrustCalculator.WEIGHTS.TOKEN_VALID,
                 label: 'Verified Behavioral Token Present'
             });
+        }
+        // 2a. POLICY ENFORCEMENT: Force BWT — challenge all unverified traffic
+        // If the tenant has enabled force_bwt and no token was validated, force CHALLENGE immediately.
+        const hasValidToken = signals.some(s => s.id === 'TOKEN_VALID');
+        if (policy.force_bwt === true && !hasValidToken) {
+            return {
+                verdict: 'CHALLENGE',
+                score: 0,
+                signals,
+                action_required: 'SOLVE_CAPTCHA',
+                latency_ms: Date.now() - start
+            };
         }
         // 2.5 FAST PATH: Read Async Intelligence State (L2 Redis)
         // Catch the VPN if the Async Engine recently resolved it in the background.
@@ -49,20 +60,27 @@ class IntelServiceV2 {
             }
             if (isAsyncVpn) {
                 signals.push({ id: 'VPN_DETECTED', weight: TrustCalculator_1.TrustCalculator.WEIGHTS.VPN_DETECTED, label: 'VPN/Proxy Detected (Async Intelligence)' });
+                // 2.5a. POLICY ENFORCEMENT: Block Proxies
+                if (policy.block_proxies === true) {
+                    signals.push({ id: 'POLICY_BLOCK_PROXY', weight: -100, label: 'Blocked by Tenant Policy: Proxy Denied' });
+                }
             }
         }
         catch (e) {
             logger_1.default.warn(`[V2] Failed to read async state for ${target}`);
         }
-        // 3. FAST PATH: Datacenter Check (<2ms memory operation)
-        // We reuse V1's matrix checker to identify AWS/Cloud infrastructure without applying V1's penalties.
         const v1MatrixCheck = intelService_1.IntelService.checkLocalAsnMatrix(target);
-        if (v1MatrixCheck && v1MatrixCheck.risk > 0) {
+        const isDatacenter = v1MatrixCheck && v1MatrixCheck.risk > 0;
+        if (isDatacenter) {
             signals.push({
                 id: 'DATACENTER_IP',
                 weight: TrustCalculator_1.TrustCalculator.WEIGHTS.DATACENTER_IP,
                 label: 'High-Risk Network Infrastructure (Cloud/Hosting)'
             });
+            // 3a. POLICY ENFORCEMENT: Block Datacenters
+            if (policy.block_datacenters === true) {
+                signals.push({ id: 'POLICY_BLOCK_DC', weight: -100, label: 'Blocked by Tenant Policy: Datacenter IP Denied' });
+            }
         }
         else if (!isAsyncVpn) {
             // Non-datacenter IPs act organically and get a baseline Trust Boost.

@@ -63,7 +63,7 @@ export const checkTarget = async (req: AuthRequest, res: Response) => {
             }
         }
 
-        const isBwtValid = bwtNonce ? IntelService.verifyBehavioralWork(target, bwtNonce, userAgent) : false;
+        const isBwtValid = bwtNonce ? IntelService.verifyBehavioralWork(target, bwtNonce) : false;
         const isTrustTokenValid = trustToken ? IntelService.verifyTrustToken(target, trustToken) : false;
 
         // 3. Telemetry Logic: Record the event for Analytics
