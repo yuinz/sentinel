@@ -62,7 +62,7 @@ router.post('/global', ensureSupabaseAuth, async (req, res) => {
                 .eq('user_id', user.id);
             if (keys) {
                 for (const k of keys) {
-                    cache_1.redisClient.del(`v2:policy:${k.api_key}`);
+                    cache_1.redisClient.del(`v2:policy:v2:${k.api_key}`);
                 }
             }
         }

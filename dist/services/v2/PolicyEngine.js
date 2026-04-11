@@ -13,31 +13,36 @@ class PolicyEngine {
         if (dslOverride)
             return dslOverride;
         // 2. Fallback to Mathematical Score Thresholds
+        // Max achievable score for a verified browser user: RESIDENTIAL_IP(+10) + TOKEN_VALID(+30) = 40
+        // All ALLOW thresholds are calibrated against this ceiling.
         switch (policy.mode) {
             case 'PASSIVE':
-                // Monitor only — very forgiving, almost nothing gets blocked
+                // Near-permissive. Only hard blocks for explicitly malicious IPs.
                 if (score >= 10)
                     return 'ALLOW';
                 if (score >= -40)
                     return 'CHALLENGE';
                 return 'BLOCK';
             case 'STRICT':
-                // Stricter than BALANCED — requires clear trust signals to pass
-                if (score >= 50)
+                // Requires residential IP + valid token to pass (score 40 ≥ 38).
+                // VPN + token (score 20) gets CHALLENGE. Datacenter alone (score -20) gets BLOCK.
+                if (score >= 38)
                     return 'ALLOW';
-                if (score >= 10)
+                if (score >= 5)
                     return 'CHALLENGE';
                 return 'BLOCK';
             case 'DRACONIAN':
-                // Maximum lockdown — only explicitly verified traffic passes
-                if (score >= 70)
+                // Maximum lockdown. Only residential + verified token passes (score 40 ≥ 38).
+                // VPN + token (score 20) gets BLOCK. Residential without token (score 10) gets BLOCK.
+                // Anything with both RESIDENTIAL_IP and TOKEN_VALID clears the threshold.
+                if (score >= 38)
                     return 'ALLOW';
-                if (score >= 30)
+                if (score >= 25)
                     return 'CHALLENGE';
                 return 'BLOCK';
             case 'BALANCED':
             default:
-                // Standard default. Residential IP (+10) + Token (+30) = 40 → ALLOW
+                // Standard. Residential IP (+10) + Token (+30) = 40 → ALLOW.
                 if (score >= 30)
                     return 'ALLOW';
                 if (score >= 0)

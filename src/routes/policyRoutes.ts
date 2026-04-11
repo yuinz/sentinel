@@ -72,7 +72,7 @@ router.post('/global', ensureSupabaseAuth, async (req: any, res) => {
 
             if (keys) {
                 for (const k of keys) {
-                    redisClient.del(`v2:policy:${k.api_key}`);
+                    redisClient.del(`v2:policy:v2:${k.api_key}`);
                 }
             }
         }

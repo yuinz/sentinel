@@ -12,7 +12,7 @@ export class TenantService {
     static async getPolicy(apiKey: string): Promise<V2PolicyConfig> {
         if (!apiKey) return this.getDefaultPolicy();
 
-        const cacheKey = `v2:policy:${apiKey}`;
+        const cacheKey = `v2:policy:v2:${apiKey}`;
 
         // 1. FAST PATH: Check Redis (L2 Cache)
         if (redisClient) {

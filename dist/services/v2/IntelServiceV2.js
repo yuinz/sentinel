@@ -19,7 +19,9 @@ class IntelServiceV2 {
         const start = Date.now();
         const target = intelService_1.IntelService.normalizeTarget(rawTarget);
         const signals = [];
-        // 1. FAST PATH: Local/Private Network Bypass
+        // ── PHASE 1: SIGNAL COLLECTION ─────────────────────────────────────────
+        // Collect ALL signals unconditionally before applying any policy overrides.
+        // 1. Private/Local Network — immediate trust, skip all checks
         if (intelService_1.IntelService.isPrivateIp(target)) {
             signals.push({
                 id: 'RESIDENTIAL_IP',
@@ -28,7 +30,7 @@ class IntelServiceV2 {
             });
             return this.finalizeCalculations(signals, policy, start);
         }
-        // 2. FAST PATH: Cryptographic Token Proof
+        // 2. Cryptographic Token Proof
         if (trustToken && intelService_1.IntelService.verifyTrustToken(target, trustToken)) {
             signals.push({
                 id: 'TOKEN_VALID',
@@ -36,20 +38,7 @@ class IntelServiceV2 {
                 label: 'Verified Behavioral Token Present'
             });
         }
-        // 2a. POLICY ENFORCEMENT: Force BWT — challenge all unverified traffic
-        // If the tenant has enabled force_bwt and no token was validated, force CHALLENGE immediately.
-        const hasValidToken = signals.some(s => s.id === 'TOKEN_VALID');
-        if (policy.force_bwt === true && !hasValidToken) {
-            return {
-                verdict: 'CHALLENGE',
-                score: 0,
-                signals,
-                action_required: 'SOLVE_CAPTCHA',
-                latency_ms: Date.now() - start
-            };
-        }
-        // 2.5 FAST PATH: Read Async Intelligence State (L2 Redis)
-        // Catch the VPN if the Async Engine recently resolved it in the background.
+        // 3. Async VPN Intelligence (L2 Redis — non-blocking read)
         let isAsyncVpn = false;
         try {
             if (cache_1.redisClient) {
@@ -59,16 +48,17 @@ class IntelServiceV2 {
                 isAsyncVpn = cache_1.intelCache.get(`v2:async:${target}:vpn`) === 'true';
             }
             if (isAsyncVpn) {
-                signals.push({ id: 'VPN_DETECTED', weight: TrustCalculator_1.TrustCalculator.WEIGHTS.VPN_DETECTED, label: 'VPN/Proxy Detected (Async Intelligence)' });
-                // 2.5a. POLICY ENFORCEMENT: Block Proxies
-                if (policy.block_proxies === true) {
-                    signals.push({ id: 'POLICY_BLOCK_PROXY', weight: -100, label: 'Blocked by Tenant Policy: Proxy Denied' });
-                }
+                signals.push({
+                    id: 'VPN_DETECTED',
+                    weight: TrustCalculator_1.TrustCalculator.WEIGHTS.VPN_DETECTED,
+                    label: 'VPN/Proxy Detected (Async Intelligence)'
+                });
             }
         }
-        catch (e) {
-            logger_1.default.warn(`[V2] Failed to read async state for ${target}`);
+        catch {
+            logger_1.default.warn(`[V2] Failed to read async VPN state for ${target}`);
         }
+        // 4. Datacenter / Infrastructure Check (<2ms memory operation)
         const v1MatrixCheck = intelService_1.IntelService.checkLocalAsnMatrix(target);
         const isDatacenter = v1MatrixCheck && v1MatrixCheck.risk > 0;
         if (isDatacenter) {
@@ -77,24 +67,17 @@ class IntelServiceV2 {
                 weight: TrustCalculator_1.TrustCalculator.WEIGHTS.DATACENTER_IP,
                 label: 'High-Risk Network Infrastructure (Cloud/Hosting)'
             });
-            // 3a. POLICY ENFORCEMENT: Block Datacenters
-            if (policy.block_datacenters === true) {
-                signals.push({ id: 'POLICY_BLOCK_DC', weight: -100, label: 'Blocked by Tenant Policy: Datacenter IP Denied' });
-            }
         }
         else if (!isAsyncVpn) {
-            // Non-datacenter IPs act organically and get a baseline Trust Boost.
             signals.push({
                 id: 'RESIDENTIAL_IP',
                 weight: TrustCalculator_1.TrustCalculator.WEIGHTS.RESIDENTIAL_IP,
                 label: 'Residential/Organic Network'
             });
         }
-        // 4. FAST PATH: Velocity Analysis (Redis-backed for edge compat)
+        // 5. Velocity Analysis
         try {
             const velocityCount = await cache_1.SharedCache.recordVelocity(target);
-            // V2 dynamically raises the velocity grace limit. 
-            // 15 requests/sec is generous for humans but devastating for brute-force.
             if (velocityCount > 15) {
                 signals.push({
                     id: 'HIGH_VELOCITY',
@@ -104,9 +87,9 @@ class IntelServiceV2 {
             }
         }
         catch (err) {
-            logger_1.default.error(`[V2] Distributed velocity check failed for ${target}:`, err);
+            logger_1.default.error(`[V2] Velocity check failed for ${target}:`, err);
         }
-        // 5. FAST PATH: Automation / Scanner Detection
+        // 6. Automation / Scanner Detection
         const botKeywords = /headless|puppeteer|selenium|playwright|bot|crawl|spider|axios|python-requests|curl|wget/i;
         if (botKeywords.test(userAgent)) {
             signals.push({
@@ -115,9 +98,54 @@ class IntelServiceV2 {
                 label: 'Automation/Script Signature Detected'
             });
         }
-        // 6. ASYNC BACKGROUND: Trigger forensic webhooks & rDNS (Does NOT block the user)
+        // ── PHASE 2: POLICY ENFORCEMENT ────────────────────────────────────────
+        // All signals are now collected. Apply hard policy overrides in order of severity.
+        // Hard blocks always take precedence over soft challenges.
+        const hasValidToken = signals.some(s => s.id === 'TOKEN_VALID');
+        // 2a. Block Proxies — hard block if VPN detected and policy says deny
+        if (policy.block_proxies === true && isAsyncVpn) {
+            signals.push({
+                id: 'POLICY_BLOCK_PROXY',
+                weight: -100,
+                label: 'Blocked by Tenant Policy: Proxy/VPN Denied'
+            });
+            // Return BLOCK immediately — don't invite them to solve a CAPTCHA
+            return {
+                verdict: 'BLOCK',
+                score: TrustCalculator_1.TrustCalculator.calculateScore(signals),
+                signals,
+                latency_ms: Date.now() - start
+            };
+        }
+        // 2b. Block Datacenters — hard block if datacenter IP and policy says deny
+        if (policy.block_datacenters === true && isDatacenter) {
+            signals.push({
+                id: 'POLICY_BLOCK_DC',
+                weight: -100,
+                label: 'Blocked by Tenant Policy: Datacenter IP Denied'
+            });
+            return {
+                verdict: 'BLOCK',
+                score: TrustCalculator_1.TrustCalculator.calculateScore(signals),
+                signals,
+                latency_ms: Date.now() - start
+            };
+        }
+        // 2c. Force BWT — challenge unverified traffic (checked AFTER hard blocks)
+        // Only fires if no hard block applied above.
+        if (policy.force_bwt === true && !hasValidToken) {
+            return {
+                verdict: 'CHALLENGE',
+                score: 0,
+                signals,
+                action_required: 'SOLVE_CAPTCHA',
+                latency_ms: Date.now() - start
+            };
+        }
+        // ── PHASE 3: ASYNC BACKGROUND ──────────────────────────────────────────
+        // Fire forensic tasks AFTER response is on its way. Never blocks the user.
         this.triggerAsyncTasks(target, policy);
-        // 7. Math & Verdict execution
+        // ── PHASE 4: SCORE + VERDICT ───────────────────────────────────────────
         return this.finalizeCalculations(signals, policy, start);
     }
     static finalizeCalculations(signals, policy, startTime) {
