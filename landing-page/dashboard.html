@@ -799,7 +799,7 @@
                 <!-- V2 Upgrade Banner -->
                 <div style="background: rgba(0, 255, 136, 0.05); border: 1px solid rgba(0, 255, 136, 0.4); padding: 15px 20px; border-radius: 8px; margin-bottom: 30px; display: flex; align-items: center; justify-content: space-between;">
                     <div>
-                        <h4 style="color: var(--accent); margin: 0 0 5px 0; font-size: 14px; font-family: 'JetBrains Mono', monospace;">🚀 AVAILABLE NOW: Sentinel Engine V2</h4>
+                        <h4 style="color: var(--accent); margin: 0 0 5px 0; font-size: 14px; font-family: 'JetBrains Mono', monospace;">AVAILABLE NOW: Sentinel Engine V2</h4>
                         <p style="margin: 0; color: #aaa; font-size: 13px;">You are currently viewing the V1 Telemetry console. Professionally upgrade to V2 for Custom B2B Policies and multi-tenant zero-latency routing.</p>
                     </div>
                     <a href="https://sentinel.risksignal.name.ng/v2/docs" style="text-decoration: none; padding: 10px 20px; border-radius: 6px; font-weight: 600; color: #000; background: var(--accent);">Start V2 Migration</a>
@@ -1135,6 +1135,7 @@
                 document.getElementById('user-avatar').src = meta.avatar_url || 'https://github.com/identicons/user.png';
 
                 loadApiKeys(currentSession);
+                loadV2Policy(currentSession);
                 renderCharts();
             } else {
                 if (event === 'INITIAL_SESSION' || event === 'SIGNED_OUT') {
@@ -1179,6 +1180,35 @@
                 checkSubscription(keys);
             } catch (e) {
                 console.error(e);
+            }
+        }
+
+        // Load saved V2 policy settings and hydrate all UI controls
+        async function loadV2Policy(curr) {
+            const s = curr || session;
+            if (!s) return;
+            try {
+                const res = await fetch('/api/policy/global', {
+                    method: 'GET',
+                    headers: { 'Authorization': `Bearer ${s.access_token}` }
+                });
+                if (!res.ok) return;
+                const p = await res.json();
+                if (!p) return;
+
+                const modeEl = document.getElementById('v2-mode');
+                const diffEl = document.getElementById('v2-diff');
+                const proxyEl = document.getElementById('v2-proxy-toggle');
+                const dcEl = document.getElementById('v2-dc-toggle');
+                const bwtEl = document.getElementById('v2-bwt-toggle');
+
+                if (modeEl && p.mode) modeEl.value = p.mode;
+                if (diffEl && p.difficulty_level) diffEl.value = p.difficulty_level;
+                if (proxyEl) proxyEl.checked = p.block_proxies ?? true;
+                if (dcEl) dcEl.checked = p.block_datacenters ?? false;
+                if (bwtEl) bwtEl.checked = p.force_bwt ?? true;
+            } catch (e) {
+                console.warn('[V2Policy] Could not load saved policies', e);
             }
         }
 

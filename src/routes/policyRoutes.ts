@@ -22,6 +22,24 @@ const ensureSupabaseAuth = async (req: Request, res: Response, next: any) => {
     next();
 };
 
+// GET — read current saved policy for this user (first key wins as global defaults)
+router.get('/global', ensureSupabaseAuth, async (req: any, res) => {
+    const user = req.user;
+    try {
+        const { data, error } = await supabase
+            .from('tenant_policies')
+            .select('mode, difficulty_level, block_proxies, block_datacenters, force_bwt')
+            .eq('user_id', user.id)
+            .limit(1)
+            .single();
+
+        if (error || !data) return res.json(null);
+        return res.json(data);
+    } catch {
+        return res.json(null);
+    }
+});
+
 router.post('/global', ensureSupabaseAuth, async (req: any, res) => {
     const user = req.user;
     const { mode, difficulty, block_proxies, block_dc, force_bwt } = req.body;
