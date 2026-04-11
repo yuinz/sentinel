@@ -345,24 +345,24 @@ DIFFICULTY: target_level_3</div>
             _log(time, 'SYS', targetIp === 'detect' ? 'Live Router' : targetIp, 'Resolving Deep ASN Context...', 'badge-info');
 
             try {
-                // TRUE BACKEND EXECUTION
-                const headers = {};
-                if (targetIp !== 'detect') {
-                    headers['x-sentinel-mock-ip'] = targetIp;
-                }
+                // TRUE BACKEND EXECUTION: Using Query Params for maximum reliability against proxy stripping
+                const url = targetIp !== 'detect' 
+                    ? `/v1/precheck?mock_ip=${encodeURIComponent(targetIp)}` 
+                    : '/v1/precheck';
 
-                const res = await fetch('/v1/precheck', { headers });
+                const res = await fetch(url);
                 const intel = await res.json();
                 
-                const resolvedIp = intel.target; // Backend echoes the resolved IP
+                const resolvedIp = intel.target; 
+                const traceTag = intel.trace_id ? ` [ID: ${intel.trace_id}]` : '';
 
                 if (intel.verdict === 'TRUSTED') {
-                    _log(time, 'ALLOW', resolvedIp, `[PASS] Node Confirmed. Score: ${intel.score}`, 'badge-allow');
+                    _log(time, 'ALLOW', resolvedIp, `[PASS] Node Confirmed. Score: ${intel.score}${traceTag}`, 'badge-allow');
                 } else if (intel.verdict === 'UNSTABLE') {
-                    _log(time, 'CHLNG', resolvedIp, `[WARN] Ambiguous Route (Score: ${intel.score}). Requiring BWT.`, 'badge-info');
+                    _log(time, 'CHLNG', resolvedIp, `[WARN] Ambiguous Route (Score: ${intel.score}). Requiring BWT.${traceTag}`, 'badge-info');
                     spawnWidget(time, resolvedIp);
                 } else {
-                    _log(time, 'BLOCK', resolvedIp, `[THREAT] VPN/Datacenter Confirmed.`, 'badge-block');
+                    _log(time, 'BLOCK', resolvedIp, `[THREAT] VPN/Datacenter Confirmed.${traceTag}`, 'badge-block');
                     spawnWidget(time, resolvedIp);
                 }
             } catch (err) {

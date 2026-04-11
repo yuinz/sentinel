@@ -8,7 +8,8 @@ export default defineConfig({
     logo: 'https://vitepress.dev/vitepress-logo-mini.svg', 
     nav: [
       { text: 'Home', link: '/' },
-      { text: 'Docs', link: '/introduction' }
+      { text: 'V2 Docs', link: '/introduction' },
+      { text: 'Legacy V1 Docs', link: '/docs.html' }
     ],
     sidebar: [
       {
@@ -23,6 +24,12 @@ export default defineConfig({
         items: [
           { text: 'Custom Policy DSL', link: '/dsl-rules' },
           { text: 'API Reference', link: '/v2-api' }
+        ]
+      },
+      {
+        text: 'Legacy Archive',
+        items: [
+          { text: 'V1 Engine (Legacy)', link: '/docs.html' }
         ]
       }
     ],
