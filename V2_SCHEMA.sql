@@ -1,7 +1,7 @@
 -- ============================================================
 -- Sentinel V2 User Policies Schema
 -- Run this once in your Supabase SQL Editor.
--- One row per user. No dependency on api_access table.
+-- One row per user. No dependency on any existing table.
 -- Does NOT affect V1 tables (api_access, telemetry) in any way.
 -- ============================================================
 
@@ -16,14 +16,7 @@ CREATE TABLE IF NOT EXISTS public.user_policies (
     updated_at       TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Row Level Security
-ALTER TABLE public.user_policies ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "select_own_policy" ON public.user_policies
-    FOR SELECT USING (auth.uid() = user_id);
-
-CREATE POLICY "insert_own_policy" ON public.user_policies
-    FOR INSERT WITH CHECK (auth.uid() = user_id);
-
-CREATE POLICY "update_own_policy" ON public.user_policies
-    FOR UPDATE USING (auth.uid() = user_id);
+-- RLS intentionally disabled.
+-- Auth is enforced server-side via Supabase JWT verification in Express.
+-- The server uses the service role key which bypasses RLS anyway.
+ALTER TABLE public.user_policies DISABLE ROW LEVEL SECURITY;
