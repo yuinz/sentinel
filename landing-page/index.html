@@ -331,33 +331,53 @@ DIFFICULTY: target_level_3</div>
             if (terminalLog.children.length > 5) terminalLog.removeChild(terminalLog.children[0]);
         }
 
-        function runLiveCheck() {
-            const ip = document.getElementById("demo-ip").value || '8.8.8.8';
-            document.getElementById("demo-ip").value = ip;
-            const time = new Date().toISOString().split('T')[1].substring(0, 11);
+        async function runLiveCheck() {
+            const el = document.getElementById("demo-ip");
+            let targetIp = el.value.trim();
             
-            // Heuristic detection purely for demo wow-factor
-            const isAbuse = ip.startsWith("8.") || ip.startsWith("3.") || ip.startsWith("18.") || ip.startsWith("104.");
+            // If empty, let the backend detect the real IP
+            if (!targetIp) targetIp = 'detect';
+
+            const time = new Date().toISOString().split('T')[1].substring(0, 11);
             widgetDock.style.display = 'none';
             widgetDock.innerHTML = `<div style="color: var(--cyan); margin-bottom:10px; font-size:0.75rem;">BWT CHALLENGE ISSUED:</div><div id="sentinel-widget" data-sitekey="sk_test_demo123456789"></div>`;
 
-            _log(time, 'SYS', ip, 'Resolving ASN Context...', 'badge-info');
+            _log(time, 'SYS', targetIp === 'detect' ? 'Live Router' : targetIp, 'Resolving Deep ASN Context...', 'badge-info');
 
-            setTimeout(() => {
-                if (isAbuse) {
-                    _log(time, 'BLOCK', ip, '[THREAT] Hosting/VPN ASN Detected. Isolating.', 'badge-block');
-                    setTimeout(() => {
-                        _log(time, 'CHLNG', ip, 'Spawning interactive BWT token sequence...', 'badge-info');
-                        widgetDock.style.display = 'block';
-                        // Dynamically load the widget script to fire it up perfectly
-                        const script = document.createElement('script');
-                        script.src = './widget.js'; // Ensure this points to the user's local widget script
-                        document.body.appendChild(script);
-                    }, 500);
-                } else {
-                    _log(time, 'ALLOW', ip, '[PASS] Residential Node Verified. Clearance Granted.', 'badge-allow');
+            try {
+                // TRUE BACKEND EXECUTION
+                const headers = {};
+                if (targetIp !== 'detect') {
+                    headers['x-sentinel-mock-ip'] = targetIp;
                 }
-            }, 800);
+
+                const res = await fetch('/v1/precheck', { headers });
+                const intel = await res.json();
+                
+                const resolvedIp = intel.target; // Backend echoes the resolved IP
+
+                if (intel.verdict === 'TRUSTED') {
+                    _log(time, 'ALLOW', resolvedIp, `[PASS] Node Confirmed. Score: ${intel.score}`, 'badge-allow');
+                } else if (intel.verdict === 'UNSTABLE') {
+                    _log(time, 'CHLNG', resolvedIp, `[WARN] Ambiguous Route (Score: ${intel.score}). Requiring BWT.`, 'badge-info');
+                    spawnWidget(time, resolvedIp);
+                } else {
+                    _log(time, 'BLOCK', resolvedIp, `[THREAT] VPN/Datacenter Confirmed.`, 'badge-block');
+                    spawnWidget(time, resolvedIp);
+                }
+            } catch (err) {
+                _log(time, 'ERROR', targetIp, 'Engine resolution malfunction', 'badge-block');
+            }
+        }
+
+        function spawnWidget(time, ip) {
+            setTimeout(() => {
+                _log(time, 'SYS', ip, 'Spawning interactive BWT token sequence...', 'badge-info');
+                widgetDock.style.display = 'block';
+                const script = document.createElement('script');
+                script.src = './widget.js'; // Fire the actual widget
+                document.body.appendChild(script);
+            }, 500);
         }
 
         // CSP Safe Event Binding
