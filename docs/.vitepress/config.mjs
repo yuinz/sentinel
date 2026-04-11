@@ -1,7 +1,7 @@
 import { defineConfig } from 'vitepress'
 
 export default defineConfig({
-  base: '/v2/docs/',
+  base: '/docs/',
   title: "Sentinel Engine",
   description: "B2B Dynamic Security Platform",
   themeConfig: {

@@ -112,12 +112,27 @@
         .footer-grid a { display: block; color: #888; text-decoration: none; margin-bottom: 0.5rem; transition: color 0.2s;}
         .footer-grid a:hover { color: var(--cyan);}
 
+        /* Media Queries for Bulletproof Mobile Scaling */
         @media (max-width: 1000px) {
-            .hero { flex-direction: column; height: auto; padding: 2rem;}
-            .bento-grid, .pricing-grid, .footer-grid { grid-template-columns: 1fr; }
+            .hero { flex-direction: column; height: auto; padding: 3rem 1.5rem; text-align: center; }
+            .hero-text h1 { font-size: clamp(2.5rem, 8vw, 4rem); letter-spacing: -1px; }
+            .hero-text p { margin: 1.5rem auto; font-size: 1rem; }
+            
+            nav { padding: 1.5rem; flex-direction: column; gap: 1.5rem; text-align: center; }
+            .nav-links { display: flex; flex-direction: column; gap: 1rem; margin-left: 0;}
+            
+            .terminal { padding: 1.5rem; min-height: 400px; width: 100%; box-sizing: border-box; }
+            .interactive-triage { flex-direction: column; }
+            .badge { display: block; margin-bottom: 5px; width: fit-content; }
+            
+            .section-wrap { padding: 4rem 1.5rem; }
+            .section-header { font-size: 2rem; margin-bottom: 2rem; }
+            .bento-grid, .pricing-grid, .footer-grid { grid-template-columns: 1fr; gap: 1.5rem; }
             .bento-card-large { grid-column: span 1; }
-            nav { padding: 1.5rem 2rem; flex-direction: column; gap: 1rem; }
-            .nav-links { margin-left: 0; }
+            .bento-card { padding: 1.5rem; }
+            
+            footer { padding: 3rem 1.5rem; text-align: center; }
+            .footer-grid { text-align: center; }
         }
     </style>
 </head>
