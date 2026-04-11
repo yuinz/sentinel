@@ -20,3 +20,12 @@ CREATE TABLE IF NOT EXISTS public.user_policies (
 -- Auth is enforced server-side via Supabase JWT verification in Express.
 -- The server uses the service role key which bypasses RLS anyway.
 ALTER TABLE public.user_policies DISABLE ROW LEVEL SECURITY;
+
+-- ============================================================
+-- Phase 2 Migration Script
+-- Run this if upgrading an existing user_policies table:
+-- ============================================================
+ALTER TABLE public.user_policies 
+  ADD COLUMN IF NOT EXISTS vpn_action TEXT DEFAULT 'allow',
+  ADD COLUMN IF NOT EXISTS datacenter_action TEXT DEFAULT 'allow',
+  ADD COLUMN IF NOT EXISTS exempt_server_requests BOOLEAN DEFAULT false;

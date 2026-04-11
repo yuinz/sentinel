@@ -37,6 +37,20 @@ export class PolicyEngine {
                 if (score >= 25) return 'CHALLENGE';
                 return 'BLOCK';
 
+            case 'HUMAN_ONLY':
+                // Absolute Zero-Trust: score doesn't matter, signals do.
+                // 1. Must NOT be an automated script or velocity abuser
+                if (signals.some(s => s.id === 'SCANNER_PATTERN' || s.id === 'HIGH_VELOCITY')) {
+                    return 'BLOCK';
+                }
+                // 2. Must be a residential IP and must have a valid token
+                const hasResidential = signals.some(s => s.id === 'RESIDENTIAL_IP');
+                const hasToken = signals.some(s => s.id === 'TOKEN_VALID');
+                
+                if (hasResidential && hasToken) return 'ALLOW';
+                if (hasToken) return 'CHALLENGE'; // Has token but bad network (e.g., VPN)
+                return 'BLOCK'; // No token, no entry
+
             case 'BALANCED':
             default:
                 // Standard. Residential IP (+10) + Token (+30) = 40 → ALLOW.

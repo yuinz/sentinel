@@ -996,6 +996,7 @@
                                 <option value="BALANCED" selected>BALANCED (Auto-Mitigate Anomalies)</option>
                                 <option value="STRICT">STRICT (Zero-Trust Required)</option>
                                 <option value="DRACONIAN">DRACONIAN (Absolute Lockdown)</option>
+                                <option value="HUMAN_ONLY">HUMANS ONLY (Absolute Zero-Trust)</option>
                             </select>
                 
                             <label style="display: block; color: #fff; font-size: 13px; font-weight: 600; margin-bottom: 5px;">Cryptographic Demand (PoW Scale)</label>
@@ -1013,26 +1014,42 @@
                             
                             <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px dashed #111;">
                                 <div>
-                                    <div style="color: #fff; font-size: 13px; font-weight: 600;">Block Commercial Proxies</div>
-                                    <div style="color: #666; font-size: 11px; margin-top: 4px;">Nullify VPN connections natively via ASN traces.</div>
+                                    <div style="color: #fff; font-size: 13px; font-weight: 600;">VPN / Proxy Traffic</div>
+                                    <div style="color: #666; font-size: 11px; margin-top: 4px;">Handle connections from commercial proxies.</div>
                                 </div>
-                                <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
+                                <select id="v2-vpn-action" style="background: #0a0a0a; border: 1px solid #222; color: #fff; padding: 6px 10px; border-radius: 4px; font-family: 'Inter'; font-size: 12px; outline: none;">
+                                    <option value="allow">Allow (Auto-Score)</option>
+                                    <option value="challenge">Force Challenge</option>
+                                    <option value="block">Hard Block</option>
+                                </select>
                             </div>
                 
                             <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px dashed #111;">
                                 <div>
-                                    <div style="color: #fff; font-size: 13px; font-weight: 600;">Deny Datacenter IPs</div>
-                                    <div style="color: #666; font-size: 11px; margin-top: 4px;">Aggressively drop AWS/GCP/DO structural traffic.</div>
+                                    <div style="color: #fff; font-size: 13px; font-weight: 600;">Datacenter IPs</div>
+                                    <div style="color: #666; font-size: 11px; margin-top: 4px;">Handle AWS/GCP/DO structural traffic.</div>
                                 </div>
-                                <label class="switch"><input id="v2-dc-toggle" type="checkbox"><span class="slider"></span></label>
+                                <select id="v2-dc-action" style="background: #0a0a0a; border: 1px solid #222; color: #fff; padding: 6px 10px; border-radius: 4px; font-family: 'Inter'; font-size: 12px; outline: none;">
+                                    <option value="allow">Allow (Auto-Score)</option>
+                                    <option value="challenge">Force Challenge</option>
+                                    <option value="block">Hard Block</option>
+                                </select>
                             </div>
                 
-                            <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 0;">
+                            <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px dashed #111;">
                                 <div>
                                     <div style="color: #fff; font-size: 13px; font-weight: 600;">Force BWT Verification</div>
-                                    <div style="color: #666; font-size: 11px; margin-top: 4px;">Strictly require cryptographically valid Trust Tokens globally.</div>
+                                    <div style="color: #666; font-size: 11px; margin-top: 4px;">Require valid Trust Tokens globally.</div>
                                 </div>
-                                <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
+                                <label class="switch"><input id="v2-bwt-toggle" type="checkbox" checked><span class="slider"></span></label>
+                            </div>
+
+                            <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 0;">
+                                <div>
+                                    <div style="color: #fff; font-size: 13px; font-weight: 600;">Exempt Server API Clients</div>
+                                    <div style="color: #666; font-size: 11px; margin-top: 4px;">Bypass BWT if no browser User-Agent detected.</div>
+                                </div>
+                                <label class="switch"><input id="v2-server-bypass-toggle" type="checkbox"><span class="slider"></span></label>
                             </div>
                         </div>
                     </div>
@@ -1198,15 +1215,17 @@
 
                 const modeEl = document.getElementById('v2-mode');
                 const diffEl = document.getElementById('v2-diff');
-                const proxyEl = document.getElementById('v2-proxy-toggle');
-                const dcEl = document.getElementById('v2-dc-toggle');
+                const vpnActionEl = document.getElementById('v2-vpn-action');
+                const dcActionEl = document.getElementById('v2-dc-action');
                 const bwtEl = document.getElementById('v2-bwt-toggle');
+                const bypassEl = document.getElementById('v2-server-bypass-toggle');
 
                 if (modeEl && p.mode) modeEl.value = p.mode;
                 if (diffEl && p.difficulty_level) diffEl.value = p.difficulty_level;
-                if (proxyEl) proxyEl.checked = p.block_proxies ?? true;
-                if (dcEl) dcEl.checked = p.block_datacenters ?? false;
+                if (vpnActionEl && p.vpn_action) vpnActionEl.value = p.vpn_action;
+                if (dcActionEl && p.datacenter_action) dcActionEl.value = p.datacenter_action;
                 if (bwtEl) bwtEl.checked = p.force_bwt ?? true;
+                if (bypassEl) bypassEl.checked = p.exempt_server_requests ?? false;
             } catch (e) {
                 console.warn('[V2Policy] Could not load saved policies', e);
             }
@@ -1604,9 +1623,10 @@
             
             const mode = document.getElementById('v2-mode')?.value || 'BALANCED';
             const difficulty = parseInt(document.getElementById('v2-diff')?.value || '3');
-            const blockProxies = document.getElementById('v2-proxy-toggle')?.checked ?? true;
-            const blockDc = document.getElementById('v2-dc-toggle')?.checked ?? false;
+            const vpnAction = document.getElementById('v2-vpn-action')?.value || 'allow';
+            const dcAction = document.getElementById('v2-dc-action')?.value || 'allow';
             const forceBwt = document.getElementById('v2-bwt-toggle')?.checked ?? true;
+            const exemptServer = document.getElementById('v2-server-bypass-toggle')?.checked ?? false;
 
             const token = session?.access_token;
 
@@ -1614,7 +1634,7 @@
                 const res = await fetch('/api/policy/global', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                    body: JSON.stringify({ mode, difficulty, block_proxies: blockProxies, block_dc: blockDc, force_bwt: forceBwt })
+                    body: JSON.stringify({ mode, difficulty, vpn_action: vpnAction, datacenter_action: dcAction, force_bwt: forceBwt, exempt_server_requests: exemptServer })
                 });
 
                 if (res.ok) {

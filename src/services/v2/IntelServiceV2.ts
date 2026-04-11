@@ -111,40 +111,60 @@ export class IntelServiceV2 {
 
         const hasValidToken = signals.some(s => s.id === 'TOKEN_VALID');
 
-        // 2a. Block Proxies — hard block if VPN detected and policy says deny
-        if (policy.block_proxies === true && isAsyncVpn) {
-            signals.push({
-                id: 'POLICY_BLOCK_PROXY',
-                weight: -100,
-                label: 'Blocked by Tenant Policy: Proxy/VPN Denied'
-            });
-            // Return BLOCK immediately — don't invite them to solve a CAPTCHA
-            return {
-                verdict: 'BLOCK',
-                score: TrustCalculator.calculateScore(signals),
-                signals,
-                latency_ms: Date.now() - start
-            };
+        // 2a. VPN / Proxy Enforcement
+        if (isAsyncVpn) {
+            const action = policy.vpn_action || 'allow';
+            if (action === 'block') {
+                signals.push({
+                    id: 'POLICY_BLOCK_PROXY',
+                    weight: -100,
+                    label: 'Blocked by Tenant Policy: Proxy/VPN Denied'
+                });
+                return {
+                    verdict: 'BLOCK',
+                    score: TrustCalculator.calculateScore(signals),
+                    signals,
+                    latency_ms: Date.now() - start
+                };
+            } else if (action === 'challenge') {
+                signals.push({
+                    id: 'POLICY_CHALLENGE_PROXY',
+                    weight: -40,
+                    label: 'Challenged by Tenant Policy: Proxy/VPN Detected'
+                });
+            }
         }
 
-        // 2b. Block Datacenters — hard block if datacenter IP and policy says deny
-        if (policy.block_datacenters === true && isDatacenter) {
-            signals.push({
-                id: 'POLICY_BLOCK_DC',
-                weight: -100,
-                label: 'Blocked by Tenant Policy: Datacenter IP Denied'
-            });
-            return {
-                verdict: 'BLOCK',
-                score: TrustCalculator.calculateScore(signals),
-                signals,
-                latency_ms: Date.now() - start
-            };
+        // 2b. Datacenter / Cloud Infrastructure Enforcement
+        if (isDatacenter) {
+            const action = policy.datacenter_action || 'allow';
+            if (action === 'block') {
+                signals.push({
+                    id: 'POLICY_BLOCK_DC',
+                    weight: -100,
+                    label: 'Blocked by Tenant Policy: Datacenter IP Denied'
+                });
+                return {
+                    verdict: 'BLOCK',
+                    score: TrustCalculator.calculateScore(signals),
+                    signals,
+                    latency_ms: Date.now() - start
+                };
+            } else if (action === 'challenge') {
+                signals.push({
+                    id: 'POLICY_CHALLENGE_DC',
+                    weight: -40,
+                    label: 'Challenged by Tenant Policy: Datacenter IP Detected'
+                });
+            }
         }
 
-        // 2c. Force BWT — challenge unverified traffic (checked AFTER hard blocks)
-        // Only fires if no hard block applied above.
-        if (policy.force_bwt === true && !hasValidToken) {
+        // 2c. Force BWT — challenge unverified traffic
+        // Check if server bypass applies (e.g. non-browser automated client)
+        const isServerClient = !(/mozilla|chrome|safari|applewebkit/i.test(userAgent)) || botKeywords.test(userAgent);
+        const exemptBwt = policy.exempt_server_requests === true && isServerClient;
+
+        if (policy.force_bwt === true && !hasValidToken && !exemptBwt) {
             return {
                 verdict: 'CHALLENGE',
                 score: 0,

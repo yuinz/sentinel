@@ -28,9 +28,16 @@ router.get('/global', ensureSupabaseAuth, async (req: any, res) => {
     try {
         const { data } = await supabase
             .from('user_policies')
-            .select('mode, difficulty_level, block_proxies, block_datacenters, force_bwt')
+            .select('mode, difficulty_level, vpn_action, datacenter_action, exempt_server_requests, block_proxies, block_datacenters, force_bwt')
             .eq('user_id', user.id)
             .maybeSingle();
+
+        if (data) {
+            // Apply migration fallback so the UI always gets the new schema shape
+            data.vpn_action = data.vpn_action || (data.block_proxies ? 'block' : 'allow');
+            data.datacenter_action = data.datacenter_action || (data.block_datacenters ? 'block' : 'allow');
+            data.exempt_server_requests = data.exempt_server_requests ?? false;
+        }
 
         return res.json(data || null);
     } catch {
@@ -41,15 +48,16 @@ router.get('/global', ensureSupabaseAuth, async (req: any, res) => {
 // POST — upsert policy for this user (one row per user, no FK dependency)
 router.post('/global', ensureSupabaseAuth, async (req: any, res) => {
     const user = req.user;
-    const { mode, difficulty, block_proxies, block_dc, force_bwt } = req.body;
+    const { mode, difficulty, vpn_action, datacenter_action, exempt_server_requests, block_proxies, block_dc, force_bwt } = req.body;
 
     try {
         const payload = {
             user_id: user.id,
             mode: mode || 'BALANCED',
             difficulty_level: difficulty || 3,
-            block_proxies: block_proxies !== undefined ? block_proxies : true,
-            block_datacenters: block_dc !== undefined ? block_dc : false,
+            vpn_action: vpn_action || (block_proxies !== undefined ? (block_proxies ? 'block' : 'allow') : 'allow'),
+            datacenter_action: datacenter_action || (block_dc !== undefined ? (block_dc ? 'block' : 'allow') : 'allow'),
+            exempt_server_requests: exempt_server_requests || false,
             force_bwt: force_bwt !== undefined ? force_bwt : true,
             updated_at: new Date().toISOString()
         };

@@ -1,6 +1,8 @@
 export type Verdict = 'ALLOW' | 'CHALLENGE' | 'BLOCK';
 
-export type PolicyMode = 'PASSIVE' | 'BALANCED' | 'STRICT' | 'DRACONIAN';
+export type PolicyMode = 'PASSIVE' | 'BALANCED' | 'STRICT' | 'DRACONIAN' | 'HUMAN_ONLY';
+
+export type ActionType = 'allow' | 'challenge' | 'block';
 
 export interface V2PolicyConfig {
     mode: PolicyMode;
@@ -10,9 +12,10 @@ export interface V2PolicyConfig {
     blocked_countries?: string[];
     rules?: string[]; // Custom DSL. Example: ["IF signal == 'VERIFIED_BOT' THEN ALLOW"]
     // Dashboard-configurable flags
-    block_proxies?: boolean;
-    block_datacenters?: boolean;
+    vpn_action?: ActionType;
+    datacenter_action?: ActionType;
     force_bwt?: boolean;
+    exempt_server_requests?: boolean;
     difficulty_level?: number;
 }
 

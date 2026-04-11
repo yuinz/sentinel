@@ -41,7 +41,7 @@ export class TenantService {
             // Step B: fetch the user's saved global policy
             const { data, error } = await supabase
                 .from('user_policies')
-                .select('mode, block_proxies, block_datacenters, force_bwt, difficulty_level, allowed_asns, blocked_asns')
+                .select('mode, vpn_action, datacenter_action, exempt_server_requests, block_proxies, block_datacenters, force_bwt, difficulty_level, allowed_asns, blocked_asns')
                 .eq('user_id', keyRow.user_id)
                 .maybeSingle();
 
@@ -51,8 +51,10 @@ export class TenantService {
 
             const policy: V2PolicyConfig = {
                 mode: (data.mode as any) || 'BALANCED',
-                block_proxies: data.block_proxies ?? true,
-                block_datacenters: data.block_datacenters ?? false,
+                // Graceful schema migration fallback:
+                vpn_action: data.vpn_action || (data.block_proxies ? 'block' : 'allow'),
+                datacenter_action: data.datacenter_action || (data.block_datacenters ? 'block' : 'allow'),
+                exempt_server_requests: data.exempt_server_requests ?? false,
                 force_bwt: data.force_bwt ?? true,
                 difficulty_level: data.difficulty_level ?? 3,
                 allowed_asns: data.allowed_asns || [],
