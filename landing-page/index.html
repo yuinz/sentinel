@@ -1,14 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sentinel | Turnstile for APIs & Bot Protection</title>
-    <meta name="description"
-        content="Stop 92% of bot signups without CAPTCHAs. Sentinel is the CAPTCHA alternative for APIs: sub-50ms trust decisions using infrastructure forensic signals.">
-    <meta name="keywords"
-        content="API bot protection, CAPTCHA alternative for APIs, Turnstile for APIs, bot mitigation, sentinel vs cloudflare, captcha vs sentinel, cloudflare bot mitigation, stop bot traffic, stop ai bot abuse, agentic ai security, ai safety, bypass ai detector, anthropic claude ai, grok ai security">
+    
+    <!-- SEO RESCUE: Restoring Original Meta Tags -->
+    <meta name="description" content="Stop 92% of bot signups without CAPTCHAs. Sentinel is the CAPTCHA alternative for APIs: sub-50ms trust decisions using infrastructure forensic signals.">
+    <meta name="keywords" content="API bot protection, CAPTCHA alternative for APIs, Turnstile for APIs, bot mitigation, sentinel vs cloudflare, captcha vs sentinel, cloudflare bot mitigation, stop bot traffic, stop ai bot abuse, agentic ai security, ai safety, bypass ai detector, anthropic claude ai, grok ai security">
     <meta name="google-site-verification" content="2mm0-A_FOgfgdi0g8R4Taaf9RBcMtdSZZKFYtHro_QM" />
     <link rel="canonical" href="https://sentinel.risksignal.name.ng/" />
     <meta name="robots" content="index, follow">
@@ -17,829 +16,329 @@
     <link rel="llm-context" href="/llm.txt" type="text/plain" />
     <link rel="llm-full" href="/llm-full.txt" type="text/plain" />
 
-    <!-- Open Graph / Facebook -->
+    <!-- Open Graph & Social -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://sentinel.risksignal.name.ng/">
     <meta property="og:title" content="Sentinel | Autonomous Trust API & Advanced Bot Protection">
-    <meta property="og:description"
-        content="The deterministic trust layer for modern APIs. Replace CAPTCHAs with behavioral analytics and the Sentinel Trust API.">
+    <meta property="og:description" content="The deterministic trust layer for modern APIs. Replace CAPTCHAs with behavioral analytics and the Sentinel Trust API.">
     <meta property="og:image" content="https://sentinel.risksignal.name.ng/og-image.png">
-
-    <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image">
-    <meta property="twitter:url" content="https://sentinel.risksignal.name.ng/">
     <meta property="twitter:title" content="Sentinel | Autonomous Trust API & Advanced Bot Protection">
-    <meta property="twitter:description"
-        content="Stop malicious bots and secure your APIs with behavioral threat detection. The Zero Trust engine for the modern Trust API economy.">
+    <meta property="twitter:description" content="Stop malicious bots and secure your APIs with behavioral threat detection.">
     <meta property="twitter:image" content="https://sentinel.risksignal.name.ng/og-image.png">
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap"
-        rel="stylesheet">
-    <link rel="stylesheet" href="./styles.css">
-    <link rel="icon" type="image/png" href="./logo.png">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root { --bg-dark: #050505; --grid-color: rgba(255,255,255,0.03); --cyan: #00E5FF; --red: #FF3366; --text-main: #E0E0E0; --text-dim: #888; }
+        body { margin: 0; background: var(--bg-dark); color: var(--text-main); font-family: 'Space Grotesk', sans-serif; overflow-x: hidden; }
+        
+        /* Grid Background Pattern */
+        .grid-bg {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1;
+            background-size: 40px 40px;
+            background-image: 
+                linear-gradient(to right, var(--grid-color) 1px, transparent 1px),
+                linear-gradient(to bottom, var(--grid-color) 1px, transparent 1px);
+        }
+
+        /* Top Nav */
+        nav { display: flex; justify-content: space-between; padding: 2rem 4rem; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .nav-links a { color: var(--text-dim); text-decoration: none; margin-left: 2rem; font-size: 0.9rem; font-family: 'JetBrains Mono'; transition: color 0.3s; }
+        .nav-links a:hover { color: var(--text-main); }
+        .btn-console { border: 1px solid var(--cyan); padding: 8px 16px; color: var(--cyan); text-decoration: none; font-family: 'JetBrains Mono'; font-size: 0.8rem; background: rgba(0, 229, 255, 0.05); transition: background 0.3s; }
+        .btn-console:hover { background: rgba(0, 229, 255, 0.15); box-shadow: 0 0 15px rgba(0,229,255,0.2); }
+
+        /* Unique Enterprise Logo */
+        .sentinel-logo { width: 24px; height: 24px; position: relative; display: inline-block; flex-shrink: 0; margin-right: 2px;}
+        .sentinel-logo::before, .sentinel-logo::after { content: ''; position: absolute; border: 2px solid var(--cyan); transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
+        .sentinel-logo::before { top: 0; left: 0; width: 14px; height: 14px; }
+        .sentinel-logo::after { bottom: 0; right: 0; width: 14px; height: 14px; border-color: var(--red); }
+        .logo:hover .sentinel-logo::before { transform: translate(5px, 5px); }
+        .logo:hover .sentinel-logo::after { transform: translate(-5px, -5px); }
+        .logo { font-size: 1.2rem; font-weight: 700; display: flex; align-items: center; gap: 12px; letter-spacing: 2px;}
+
+        /* Hero */
+        .hero { display: flex; padding: 4rem; height: calc(100vh - 150px); align-items: center; gap: 4rem; max-width: 1400px; margin: 0 auto;}
+        .hero-text { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+        .hero-text h1 { font-size: clamp(3rem, 6vw, 5rem); line-height: 1.1; margin: 0; font-weight: 700; letter-spacing: -2px; }
+        .hero-text h1 span { color: var(--cyan); }
+        .hero-text p { font-size: 1.2rem; color: var(--text-dim); margin: 2rem 0; max-width: 500px; line-height: 1.6; }
+        
+        /* Interactive Terminal UI */
+        .terminal { flex: 1; border: 1px solid rgba(255,255,255,0.1); background: rgba(10,10,10,0.8); backdrop-filter: blur(10px); padding: 2rem; font-family: 'JetBrains Mono'; font-size: 0.85rem; overflow: hidden; display: flex; flex-direction: column; position: relative; min-height: 480px;}
+        .terminal-header { display: flex; gap: 5px; margin-bottom: 2rem; }
+        .dot { width: 10px; height: 10px; border-radius: 50%; background: #333; }
+        
+        .interactive-triage { background: rgba(0,0,0,0.5); border: 1px solid #222; padding: 1rem; margin-bottom: 1.5rem; display: flex; gap: 10px;}
+        .interactive-triage input { flex: 1; background: transparent; border: none; color: #fff; font-family: 'JetBrains Mono'; padding: 5px; outline: none;}
+        .interactive-triage button { background: var(--cyan); border: none; color: #000; font-family: 'JetBrains Mono'; font-weight: bold; padding: 8px 16px; cursor: pointer;}
+        .interactive-triage button:hover { background: #fff; }
+
+        .log-line { margin-bottom: 8px; opacity: 0; animation: fadeUp 0.5s forwards; }
+        .log-time { color: #555; margin-right: 15px; }
+        .log-ip { color: #aaa; width: 130px; display: inline-block; }
+        .badge { padding: 2px 6px; font-size: 0.7rem; margin-right: 10px; display: inline-block; min-width: 60px; text-align: center; }
+        .badge-info { background: rgba(255, 255, 255, 0.1); color: #ccc; border: 1px solid #555; }
+        .badge-allow { background: rgba(0, 229, 255, 0.1); color: var(--cyan); border: 1px solid var(--cyan); }
+        .badge-block { background: rgba(255, 51, 102, 0.1); color: var(--red); border: 1px solid var(--red); }
+        
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Bento Grid */
+        .section-wrap { padding: 6rem 4rem; max-width: 1400px; margin: 0 auto; border-top: 1px solid rgba(255,255,255,0.05); }
+        .section-header { font-size: 3rem; margin-bottom: 3rem; font-weight: 600; letter-spacing: -1px; }
+        .bento-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem; }
+        .bento-card { border: 1px solid rgba(255,255,255,0.05); background: rgba(15,15,15,0.6); padding: 2rem; transition: transform 0.3s, border-color 0.3s; cursor: default; display: flex; flex-direction: column; justify-content: space-between;}
+        .bento-card:hover { transform: translateY(-5px); border-color: rgba(255,255,255,0.2); }
+        .bento-card-large { grid-column: span 2; }
+        .bento-title { font-size: 1.2rem; font-weight: 600; margin-bottom: 1rem; color: #fff; }
+        .bento-text { color: var(--text-dim); line-height: 1.6; font-size: 0.95rem; }
+        .code-block { background: #000; padding: 1.5rem; border: 1px solid #222; font-family: 'JetBrains Mono'; font-size: 0.8rem; color: var(--cyan); margin-top: 1.5rem; white-space: pre-wrap;}
+
+        /* Pricing Grid */
+        .pricing-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 2rem;}
+        .pricing-tier { border: 1px solid rgba(255,255,255,0.1); padding: 3rem; display: flex; flex-direction: column; }
+        .pricing-tier h3 { color: var(--cyan); font-family: 'JetBrains Mono'; margin-top:0;}
+        .price { font-size: 4rem; font-weight: 700; margin: 1rem 0;}
+        .price span { font-size: 1rem; color: #555; }
+        .pricing-tier ul { list-style: none; padding: 0; color: #aaa; line-height: 2;}
+        .pricing-tier ul li::before { content: '→ '; color: var(--cyan); }
+
+        /* Footer */
+        footer { margin-top: 5rem; border-top: 1px solid rgba(255,255,255,0.1); padding: 4rem; font-family: 'JetBrains Mono'; font-size: 0.85rem; color: #555;}
+        .footer-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 2rem;}
+        .footer-grid h4 { color: #fff; margin-bottom: 1.5rem;}
+        .footer-grid a { display: block; color: #888; text-decoration: none; margin-bottom: 0.5rem; transition: color 0.2s;}
+        .footer-grid a:hover { color: var(--cyan);}
+
+        @media (max-width: 1000px) {
+            .hero { flex-direction: column; height: auto; padding: 2rem;}
+            .bento-grid, .pricing-grid, .footer-grid { grid-template-columns: 1fr; }
+            .bento-card-large { grid-column: span 1; }
+            nav { padding: 1.5rem 2rem; flex-direction: column; gap: 1rem; }
+            .nav-links { margin-left: 0; }
+        }
+    </style>
 </head>
-
 <body>
-    <header class="main-header">
-        <div class="container header-container">
-            <div class="logo">
-                <img src="./logo.png" alt="Sentinel Logo" height="24" style="margin-right: 8px;">
-                SENTINEL
+    <div class="grid-bg"></div>
+
+    <nav>
+        <div class="logo">
+            <div class="sentinel-logo"></div>
+            SENTINEL V2
+        </div>
+        <div class="nav-links">
+            <a href="/docs/">Documentation</a>
+            <a href="#pricing">Pricing</a>
+            <a href="https://github.com/yuinz/sentinel">GitHub</a>
+            <a href="./login.html" class="btn-console">Enter Console →</a>
+        </div>
+    </nav>
+
+    <div class="hero">
+        <div class="hero-text">
+            <h1>Trust is<br><span>Computed.</span></h1>
+            <p>Sentinel establishes absolute trust at the edge. We bypass legacy CAPTCHA friction and probabilistic guessing, replacing them with cryptographic intent verification and structural telemetry.</p>
+            <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                <a href="#demo" class="btn-console" style="font-size: 1rem; padding: 12px 24px;">Run Live Triage</a>
+                <a href="/docs/" class="nav-links" style="margin-left: 0; padding: 12px 24px; color: var(--text-main); font-family: 'Space Grotesk'; font-size: 1rem;">Read the API Specs ↓</a>
             </div>
-            <nav class="nav-menu" id="nav-menu">
+        </div>
+
+        <div class="terminal" id="demo">
+            <div class="terminal-header">
+                <div class="dot" style="background:#ff5f56"></div>
+                <div class="dot" style="background:#ffbd2e"></div>
+                <div class="dot" style="background:#27c93f"></div>
+                <div style="color: #444; margin-left: 10px; font-size: 0.7rem; font-family: 'Space Grotesk';">INTERACTIVE EDGE TRIAGE EXECUTOR</div>
+            </div>
+            
+            <div class="interactive-triage">
+                <input type="text" id="demo-ip" placeholder="Enter IP (e.g. 8.8.8.8 for VPN demo)">
+                <button onclick="runLiveCheck()">EVALUATE</button>
+            </div>
+
+            <div id="terminal-logs">
+                <div style="color: #666; margin-bottom: 10px;">> Awaiting target transport parameters...</div>
+            </div>
+
+            <!-- Dynamic Widget Container for Demo -->
+            <div id="demo-widget-dock" style="margin-top: 2rem; display: none;">
+                <div style="color: var(--cyan); margin-bottom:10px; font-size:0.75rem;">BWT CHALLENGE ISSUED:</div>
+                <div id="sentinel-widget" data-sitekey="sk_test_demo123456789"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Features -->
+    <div id="architecture" class="section-wrap">
+        <div class="section-header">The Intelligence Perimeter</div>
+        <div class="bento-grid">
+            <div class="bento-card bento-card-large">
+                <div>
+                    <div class="bento-title">Behavioral Work Tokens (BWT) & Intent Cryptography</div>
+                    <div class="bento-text">When abstract heuristics fail, we inject a highly specific, computationally intensive SHA-256 challenge mapped directly to the User's physical DOM events. Human intent is mathematically proven through structural complexity—bots stall instantly.</div>
+                </div>
+                <div class="code-block">VERDICT: CHALLENGE
+ACTION: require_pow
+PREFIX: c8a9fc...
+DIFFICULTY: target_level_3</div>
+            </div>
+            
+            <div class="bento-card">
+                <div>
+                    <div class="bento-title">Global Threat Pub/Sub</div>
+                    <div class="bento-text">Connected directly to a Redis backbone. When a single Sentinel node isolates structural abuse, the payload signature and ASN are broadcast horizontally to every edge node globally in under 2ms.</div>
+                </div>
+            </div>
+            
+            <div class="bento-card">
+                <div>
+                    <div class="bento-title">Absolute "Humans Only" Mode</div>
+                    <div class="bento-text">A zero-tolerance logic gate. The V2 Engine instantly discards math-based risk scores, enforcing an unyielding Boolean requirement: Verified Residential Context <b>AND</b> Computated Behavioral Work. Anything else is annihilated.</div>
+                </div>
+            </div>
+            
+            <div class="bento-card bento-card-large">
+                <div>
+                    <div class="bento-title">High-Velocity DSL Evaluation</div>
+                    <div class="bento-text">Deploy granular security rules natively from the dashboard using our minimal, regex-compiled Domain Specific Language. Evaluated locally on the Edge in &lt;5ms.</div>
+                </div>
+                <div class="code-block" style="color: #E0E0E0;"><span style="color: #666;">// Synced directly via Supabase / Redis Cache</span>
+<span style="color: #FF3366;">const</span> tenantRules = [
+  <span style="color: #00E5FF;">"IF signal == 'VERIFIED_BOT' THEN ALLOW"</span>,
+  <span style="color: #00E5FF;">"IF signal == 'HIGH_VELOCITY' THEN BLOCK"</span>
+];
+
+<span style="color: #FF3366;">const</span> override = <span style="color: #FF3366;">this</span>.evaluateRules(tenantRules, rawSignals);
+<span style="color: #FF3366;">if</span> (override) <span style="color: #FF3366;">return</span> override;</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pricing -->
+    <div id="pricing" class="section-wrap">
+        <div class="section-header" style="text-align: center;">Economic Resistance</div>
+        <div style="text-align: center; color: #888; font-size: 1.2rem; margin-bottom: 4rem;">Sentinel scales from hobbyist infra to enterprise-grade API economies.<br>Pay for authority, never for friction.</div>
+        
+        <div class="pricing-grid">
+            <div class="pricing-tier" style="border-right: 1px solid rgba(255,255,255,0.1);">
+                <h3>INDIVIDUAL NODE</h3>
+                <div class="price">$0<span> /mo</span></div>
+                <p style="color:#aaa;">Basic Infrastructure Protection</p>
+                <div style="margin: 2rem 0; height: 1px; background: rgba(255,255,255,0.05);"></div>
+                <ul>
+                    <li>1,000 Edge Decisions / Month</li>
+                    <li>Unlimited BWT Widget Captchas</li>
+                    <li>Basic ASN Datacenter Segregation</li>
+                    <li>Stateless Trust Token Signatures</li>
+                </ul>
+                <a href="./login.html" class="btn-console" style="margin-top: auto; text-align: center;">Deploy Node</a>
+            </div>
+            <div class="pricing-tier" style="background: rgba(0, 229, 255, 0.02); border-color: rgba(0, 229, 255, 0.2);">
+                <h3 style="color: #fff;">FLEET COMMAND</h3>
+                <div class="price" style="color: var(--cyan);">$49<span> /mo</span></div>
+                <p style="color:#fff;">Production Deep Forensics</p>
+                <div style="margin: 2rem 0; height: 1px; background: rgba(255,255,255,0.05);"></div>
+                <ul>
+                    <li>500,000 Edge Decisions / Month</li>
+                    <li>Deep Cryptographic Carrier Enrichment</li>
+                    <li>Custom DSL Policy Routing</li>
+                    <li>Global Threat Pub/Sub Matrix Sync</li>
+                </ul>
+                <a href="./login.html" class="btn-console" style="margin-top: auto; text-align: center; background: var(--cyan); color: #000;">Authorize Fleet</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Preserved Full Footer -->
+    <footer>
+        <div class="footer-grid">
+            <div>
+                <h4>Product</h4>
+                <a href="#features">Features</a>
+                <a href="/docs/">Documentation</a>
+                <a href="#pricing">Pricing</a>
                 <a href="#integration">Integration</a>
-                <a href="./docs.html">Docs</a>
-                <a href="./login.html" class="btn btn-secondary btn-sm" id="auth-nav-btn">Sign In</a>
-            </nav>
-            <div class="header-actions">
-                <a href="#integration" class="link-compact">Integration</a>
-                <a href="./docs.html" class="link-compact">Docs</a>
             </div>
-            <button class="menu-btn" id="menu-toggle" aria-label="Toggle Menu">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <line x1="3" y1="12" x2="21" y2="12"></line>
-                    <line x1="3" y1="6" x2="21" y2="6"></line>
-                    <line x1="3" y1="18" x2="21" y2="18"></line>
-                </svg>
-            </button>
-        </div>
-    </header>
-    <section class="hero">
-        <div class="container">
-            <a href="https://app.risksignal.name.ng" class="hero-badge"
-                style="text-decoration: none; cursor: pointer;">Powered by RiskSignal Intelligence</a>
-            <div style="margin-top: 15px;"></div>
-            <a href="https://sentinel.risksignal.name.ng/v2/docs" class="hero-badge"
-                style="text-decoration: none; cursor: pointer; background: rgba(0, 255, 136, 0.1); border-color: var(--accent); color: var(--accent); display: inline-flex; margin-bottom: 20px; font-weight: 600;">🚀 Announcing Sentinel V2: Dynamic Policy DSL & Multi-Tenant Support. Upgrade Now →</a>
-            <h1 class="hero-title">Your APIs are being abused. <br /><span style="color: var(--accent)">You just don’t
-                    see it yet.</span></h1>
-            <p class="hero-subtitle">Sentinel is Turnstile for APIs. Block 92% of automated attacks in
-                <50ms without CAPTCHAs. <br />Designed by security engineers to protect your auth, signup, and payment
-                endpoints.
-            </p>
-
-            <div class="hero-cta">
-                <a href="#integration" class="btn btn-primary">Start Integrating – 5 Minutes</a>
-                <a href="#api-reference" class="btn btn-secondary">View API Reference</a>
+            <div>
+                <h4>Use Cases</h4>
+                <a href="#">Signup Abuse Mitigation</a>
+                <a href="#">Token Brute Force Protection</a>
+                <a href="#">Stop AI LLM Scrapers</a>
+                <a href="#">API Cost Containment</a>
             </div>
-
-            <div class="hero-visual">
-                <div class="flow-diagram">
-                    <div class="flow-step">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2">
-                            <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
-                        </svg>
-                        <span class="mono">SIGNAL_IN</span>
-                    </div>
-                    <div class="flow-arrow">/</div>
-                    <div class="flow-step highlight">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2">
-                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                        </svg>
-                        <span class="mono">SENTINEL_GATE</span>
-                    </div>
-                    <div class="flow-arrow">/</div>
-                    <div class="flow-step">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2">
-                            <path d="M20 6L9 17l-5-5" />
-                        </svg>
-                        <span class="mono">DECISION_PROCESSED</span>
-                    </div>
-                </div>
+            <div>
+                <h4>Compare</h4>
+                <a href="#">vs. reCAPTCHA Legacy</a>
+                <a href="#">vs. Cloudflare Turnstile</a>
+                <a href="#">vs. Legacy WAFs</a>
+            </div>
+            <div>
+                <h4>Intelligence</h4>
+                <a href="#">Ghost Traffic Tax Paper</a>
+                <a href="#">Why Visual CAPTCHA is Dead</a>
+                <a href="https://github.com/yuinz/sentinel">GitHub Monorepo</a>
+                <a href="#">Status: All Systems Operational</a>
             </div>
         </div>
-    </section>
-
-    <section class="problems-stopped" style="padding: 100px 0; background: #050505; border-top: 1px solid #111;">
-        <div class="container">
-            <h2 style="text-align: center; margin-bottom: 20px;">Problems Sentinel Stops</h2>
-            <p
-                style="text-align: center; color: var(--text-secondary); margin-bottom: 60px; max-width: 600px; margin-left: auto; margin-right: auto;">
-                Bots are cheaper to run than your infrastructure. Sentinel reverses the economics of API abuse.
-            </p>
-            <div class="features-grid" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));">
-                <div class="feature-card" style="border-color: rgba(255,0,0,0.1);">
-                    <h3 style="font-size: 1.2rem; color: #fff;">Signup & Auth Flooding</h3>
-                    <p style="font-size: 0.9rem; color: var(--text-secondary);">Stop 100k+ fake accounts from being
-                        created using automated email rotators.</p>
-                </div>
-                <div class="feature-card" style="border-color: rgba(255,0,0,0.1);">
-                    <h3 style="font-size: 1.2rem; color: #fff;">Credential Stuffing</h3>
-                    <p style="font-size: 0.9rem; color: var(--text-secondary);">Identify automated login attempts using
-                        behavioral mismatch signals before they hit your DB.</p>
-                </div>
-                <div class="feature-card" style="border-color: rgba(255,0,0,0.1);">
-                    <h3 style="font-size: 1.2rem; color: #fff;">API Scraping</h3>
-                    <p style="font-size: 0.9rem; color: var(--text-secondary);">Block bots disguised as users trying to
-                        scrape your proprietary data and pricing.</p>
-                </div>
-                <div class="feature-card" style="border-color: rgba(255,0,0,0.1);">
-                    <h3 style="font-size: 1.2rem; color: #fff;">Token Brute Force</h3>
-                    <p style="font-size: 0.9rem; color: var(--text-secondary);">Prevent attackers from enumerating API
-                        keys or password reset tokens with high-velocity detection.</p>
-                </div>
-            </div>
-            <div
-                style="text-align: center; margin-top: 40px; color: var(--text-dim); font-family: var(--font-mono); font-size: 0.8rem;">
-                TRUSTED BY BACKEND TEAMS // "Informed by real-world production bot traffic patterns"
-            </div>
-        </div>
-    </section>
-    <section class="problem">
-        <div class="container">
-            <h2>Why Traditional Security is Broken</h2>
-            <div class="problem-grid">
-                <div class="problem-card">
-                    <div class="problem-indicator" style="background: var(--accent);"></div>
-                    <h3>Legacy Blacklists</h3>
-                    <p>Brittle databases that fail against dynamic threats and automated infrastructure rotation.</p>
-                </div>
-                <div class="problem-card">
-                    <div class="problem-indicator" style="background: var(--text-dim);"></div>
-                    <h3>Naïve Rate Limiting</h3>
-                    <p>A blunt instrument that degrades legitimate user experience while failing to stop sophisticated
-                        bots.</p>
-                </div>
-                <div class="problem-card">
-                    <div class="problem-indicator" style="background: var(--accent-dim);"></div>
-                    <h3>Static CAPTCHAs</h3>
-                    <p>User-hostile challenges that are easily defeated by modern AI and low-cost labor farms.</p>
-                </div>
-            </div>
-            <p class="problem-conclusion">Stop guessing. Get <strong>99.9% verification accuracy</strong> in under 50ms.
-            </p>
-        </div>
-    </section>
-    <section class="solution">
-        <div class="container">
-            <h2>How Sentinel Works</h2>
-            <p class="solution-subtitle">A simple API check that validates requests based on infrastructure and
-                behavioral identity.</p>
-
-            <div class="solution-flow">
-                <div class="solution-step">
-                    <div class="step-number">1</div>
-                    <div class="step-content">
-                        <h3>Request</h3>
-                        <p>User hits your API</p>
-                    </div>
-                </div>
-                <div class="solution-step">
-                    <div class="step-number">2</div>
-                    <div class="step-content">
-                        <h3>Fast-Path Check</h3>
-                        <p>In-memory signals (&lt;50ms)</p>
-                    </div>
-                </div>
-                <div class="solution-step">
-                    <div class="step-number">3</div>
-                    <div class="step-content">
-                        <h3>Decision</h3>
-                        <p>Immediate PASS/BLOCK</p>
-                    </div>
-                </div>
-                <div class="solution-step optional">
-                    <div class="step-number">4</div>
-                    <div class="step-content">
-                        <h3>Enrichment</h3>
-                        <p>Async deep analytics</p>
-                    </div>
-                </div>
-                <div class="solution-step">
-                    <div class="step-number">5</div>
-                    <div class="step-content">
-                        <h3>Trust Token</h3>
-                        <p>+35 bonus for verified sessions</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="solution-tagline">One endpoint. One decision.</div>
-        </div>
-    </section>
-    <section class="features">
-        <div class="container">
-            <h2>Multi-Layer Intelligence Matrix</h2>
-            <p class="features-subtitle">Powered by RiskSignal Intelligence</p>
-
-            <div class="features-grid">
-                <div class="feature-card">
-                    <h3>Infrastructure Analysis</h3>
-                    <p class="feature-label mono">OSI-LAYER-SIGNAL</p>
-                    <ul>
-                        <li>ASN Governance Verification</li>
-                        <li>Datacenter vs. Residential Partitioning</li>
-                        <li>Mobile Carrier Identification Matrix</li>
-                    </ul>
-                    <div class="feature-badge mono">Level 0: HARD</div>
-                </div>
-
-                <div class="feature-card">
-                    <h3>Behavioral Synthesis</h3>
-                    <p class="feature-label mono">TEMPORAL-SIGNAL</p>
-                    <ul>
-                        <li>Velocity Entropy Tracking</li>
-                        <li>Sub-minute Scan Pattern Matching</li>
-                        <li>Global Threat Node Integration</li>
-                    </ul>
-                    <div class="feature-badge mono">Level 1: ENRICHED</div>
-                </div>
-
-                <div class="feature-card">
-                    <h3>Economic Resistance</h3>
-                    <p class="feature-label mono">INTENT-SIGNAL</p>
-                    <ul>
-                        <li>Behavioral Work Tokens (BWT)</li>
-                        <li>Non-interactive Proof of Intent</li>
-                        <li>Deterministic Hold Verifications</li>
-                    </ul>
-                    <div class="feature-badge mono">Level 2: ADAPTIVE</div>
-                </div>
-            </div>
-        </div>
-    </section>
-    <section class="soca">
-        <div class="container">
-            <h2>Optional, Decoupled Verification</h2>
-            <p class="soca-subtitle">Sentinel Optional Challenge Architecture (SOCA)</p>
-
-            <div class="soca-content">
-                <div class="soca-features">
-                    <div class="soca-feature">
-                        <span class="check">✓</span>
-                        <div>
-                            <h4>Recommended, Never Forced</h4>
-                            <p>You control when and how challenges appear</p>
-                        </div>
-                    </div>
-                    <div class="soca-feature">
-                        <span class="check">✓</span>
-                        <div>
-                            <h4>Stateless & Signed</h4>
-                            <p>No database persistence required</p>
-                        </div>
-                    </div>
-                    <div class="soca-feature">
-                        <span class="check">✓</span>
-                        <div>
-                            <h4>+35 Trust Bonus</h4>
-                            <p>Verified sessions get instant trust recovery</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="soca-flow">
-                    <div class="soca-step">Issue</div>
-                    <div class="soca-arrow">→</div>
-                    <div class="soca-step">Complete</div>
-                    <div class="soca-arrow">→</div>
-                    <div class="soca-step">Trust Token</div>
-                    <div class="soca-arrow">→</div>
-                    <div class="soca-step highlight">Decision Boost</div>
-                </div>
-            </div>
-
-            <div class="powered-badge">Powered by RiskSignal Intelligence</div>
-        </div>
-    </section>
-    <section class="demo">
-        <div class="container">
-            <h2>Sentinel Verify – Intent Proof in Action</h2>
-            <p class="demo-subtitle">Works on desktop (click) and mobile (touch)</p>
-
-            <div class="demo-container">
-                <div class="demo-card">
-                    <h3>Verifying this request</h3>
-                    <p class="demo-instruction">Unusual network activity detected.</p>
-
-                    <div class="demo-widget" id="demo-widget">
-                        <div class="demo-progress" id="demo-progress"></div>
-                        <svg class="demo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                            <path d="M12 2L4 5v6.09c0 5.05 3.41 9.76 8 10.91 4.59-1.15 8-5.86 8-10.91V5l-8-3z"
-                                stroke-width="2" />
-                            <circle cx="12" cy="12" r="2" fill="currentColor" stroke="none" />
-                            <path d="M12 8c2.21 0 4 1.79 4 4" stroke-width="1.5" stroke-linecap="round" />
-                        </svg>
-                        <div class="demo-text">
-                            <div class="demo-label" id="demo-label">Verify request</div>
-                            <div class="demo-sub" id="demo-sub">Click and hold to continue</div>
-                        </div>
-                    </div>
-
-                    <p class="demo-helper">This takes a few seconds</p>
-                </div>
-            </div>
-        </div>
-    </section>
-    <section class="live-demo">
-        <div class="container">
-            <h2>Live Trust Synthesis</h2>
-            <p class="demo-subtitle">See how Sentinel renders a trust decision in real-time.</p>
-
-            <div class="risk-demo-container">
-                <div class="risk-input-group">
-                    <input type="text" id="demo-ip-input" placeholder="Enter IP Address (e.g. 8.8.8.8)" value="8.8.8.8">
-                    <button id="run-demo-btn" class="btn btn-primary">Check Trust</button>
-                </div>
-
-                <div class="risk-result" id="risk-result" style="display: none;">
-                    <div class="risk-score-circle">
-                        <svg viewBox="0 0 36 36" class="circular-chart">
-                            <path class="circle-bg"
-                                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                            <path class="circle" id="risk-circle-path" stroke-dasharray="0, 100"
-                                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                            <text x="18" y="20.35" class="percentage" id="risk-percentage">0%</text>
-                        </svg>
-                    </div>
-                    <div class="risk-details">
-                        <div class="risk-header">
-                            <h3 id="risk-verdict">ANALYZING...</h3>
-                            <span class="risk-tag" id="risk-tag">STABLE</span>
-                        </div>
-                        <ul class="risk-signals" id="risk-signals">
-                            <!-- Signals injected here -->
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-    <section class="api-reference" id="api-reference">
-        <div class="container">
-            <h2>API Documentation</h2>
-
-            <div style="margin-bottom: 30px; padding: 20px; background: rgba(0, 255, 136, 0.05); border: 1px solid rgba(0,255,136,0.3); border-radius: 8px;">
-                <h3 style="color: var(--accent); margin-bottom: 5px; font-size: 1.2rem;">✨ NEW: Sentinel V2 (Policy Engine)</h3>
-                <p style="color: var(--text-secondary); margin-bottom: 15px; font-size: 0.9rem;">Multi-tenant endpoints with Custom DSL Overrides. Fully stable and production-ready.</p>
-                <div class="api-method" style="display:inline-block; margin-right:10px;">POST</div><code style="font-size:1.1rem; color:#fff; background: transparent; padding: 0;">/v2/evaluate</code>
-                <a href="https://sentinel.risksignal.name.ng/v2/docs/v1-vs-v2" class="btn btn-secondary btn-sm" style="float: right; margin-top:-5px;">Read Migration Guide</a>
-                <div style="clear:both;"></div>
-            </div>
-
-            <h3 style="margin-bottom: 20px; color: #888;">Legacy Interfaces (v1)</h3>
-
-            <div class="api-grid">
-                <div class="api-card">
-                    <div class="api-method">POST</div>
-                    <h3>/v1/check?mode=decision</h3>
-                    <p>Primary trust decision endpoint</p>
-                    <pre><code>{
-  "target": "8.4.2.1",
-  "profile": "signup"
-}</code></pre>
-                </div>
-
-                <div class="api-card">
-                    <div class="api-method">POST</div>
-                    <h3>/v1/challenge/issue</h3>
-                    <p>Generate behavioral work challenge</p>
-                    <pre><code>{
-  "target": "8.4.2.1",
-  "duration": 3.0
-}</code></pre>
-                </div>
-
-                <div class="api-card">
-                    <div class="api-method">POST</div>
-                    <h3>/v1/challenge/verify</h3>
-                    <p>Verify and issue trust token</p>
-                    <pre><code>{
-  "target": "8.4.2.1",
-  "nonce": "..."
-}</code></pre>
-                </div>
-            </div>
-
-            <a href="./docs.html" class="btn btn-primary">View Full Documentation →</a>
-        </div>
-    </section>
-    <section class="integration" id="integration">
-        <div class="container">
-            <h2>5-Minute Integration</h2>
-
-            <div class="code-example">
-                <div class="code-header">
-                    <span>Node.js / Express</span>
-                    <button class="copy-btn">Copy</button>
-                </div>
-                <pre><code>const res = await sentinel.check(ip, { profile: 'signup' });
-
-if (!res.allow) {
-    if (res.remediation?.recommended) {
-        return res.status(res.http_status).json({
-            action: "challenge",
-            challenge_url: "/verify"
-        });
-    }
-    return res.status(res.http_status).send(res.reason);
-}</code></pre>
-            </div>
-        </div>
-    </section>
-    <section class="compliance">
-        <div class="container">
-            <h2>Developer-Friendly & GDPR Ready</h2>
-
-            <div class="compliance-grid">
-                <div class="compliance-item">
-                    <span class="check">✓</span>
-                    <div>
-                        <h4>RFC1918 Auto-Fast-Track</h4>
-                        <p>Local IPs never blocked</p>
-                    </div>
-                </div>
-                <div class="compliance-item">
-                    <span class="check">✓</span>
-                    <div>
-                        <h4>CI/CD Bypass Header</h4>
-                        <p>X-Sentinel-Bypass for testing</p>
-                    </div>
-                </div>
-                <div class="compliance-item">
-                    <span class="check">✓</span>
-                    <div>
-                        <h4>Privacy Mode</h4>
-                        <p>Redact granular geo-data</p>
-                    </div>
-                </div>
-                <div class="compliance-item">
-                    <span class="check">✓</span>
-                    <div>
-                        <h4>Stateless RAM Cache</h4>
-                        <p>20-minute LRU TTL, no persistence</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-    <section class="blog-preview" style="padding: 100px 0; background: var(--bg-elevated); border-top: 1px solid #111;">
-        <div class="container">
-            <h2 style="text-align: center; margin-bottom: 50px;">Engineering Insights</h2>
-            <div class="features-grid" style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));">
-                <a href="./blog/ghost-traffic-tax.html" class="feature-card"
-                    style="text-decoration: none; transition: transform 0.3s ease; border-color: rgba(255,170,0,0.2); background: rgba(255,170,0,0.02);">
-                    <div style="color: #ffaa00; font-family: var(--font-mono); font-size: 10px; margin-bottom: 20px;">
-                        ECONOMICS // MANIFESTO</div>
-                    <h3 style="font-size: 1.4rem; margin-bottom: 15px;">The Ghost Traffic Tax</h3>
-                    <p style="color: #888; margin-bottom: 25px; line-height: 1.6;">How automated abuse is silently
-                        inflating your AWS bill and draining your SaaS runway.</p>
-                    <span style="color: #ffaa00; font-family: var(--font-mono); font-size: 11px;">READ_MANIFESTO
-                        →</span>
-                </a>
-                <a href="./blog/why-is-captcha-dead.html" class="feature-card"
-                    style="text-decoration: none; transition: transform 0.3s ease; border-color: rgba(255,0,0,0.1);">
-                    <div
-                        style="color: var(--accent); font-family: var(--font-mono); font-size: 10px; margin-bottom: 20px;">
-                        CAPTCHA_EVOLUTION // 2026</div>
-                    <h3 style="font-size: 1.4rem; margin-bottom: 15px;">Why CAPTCHA is Dead</h3>
-                    <p style="color: #888; margin-bottom: 25px; line-height: 1.6;">How AI broke traditional puzzles and
-                        why the best CAPTCHA alternative is behavioral trust.</p>
-                    <span style="color: var(--accent); font-family: var(--font-mono); font-size: 11px;">READ_ARTICLE
-                        →</span>
-                </a>
-                <a href="./blog/turnstile-for-apis.html" class="feature-card"
-                    style="text-decoration: none; transition: transform 0.3s ease; border-color: rgba(0,255,136,0.1);">
-                    <div style="color: #00ff88; font-family: var(--font-mono); font-size: 10px; margin-bottom: 20px;">
-                        STRATEGY // OPTIMIZATION</div>
-                    <h3 style="font-size: 1.4rem; margin-bottom: 15px;">Turnstile for APIs</h3>
-                    <p style="color: #888; margin-bottom: 25px; line-height: 1.6;">Bringing the invisible challenge
-                        experience to pure backend and infrastructure layers.</p>
-                    <span style="color: #00ff88; font-family: var(--font-mono); font-size: 11px;">READ_ARTICLE →</span>
-                </a>
-                <a href="./blog/stopping-ato.html" class="feature-card"
-                    style="text-decoration: none; transition: transform 0.3s ease; border-color: rgba(255,170,0,0.1);">
-                    <div style="color: #ffaa00; font-family: var(--font-mono); font-size: 10px; margin-bottom: 20px;">
-                        SECURITY // DEPTH</div>
-                    <h3 style="font-size: 1.4rem; margin-bottom: 15px;">Stopping ATO</h3>
-                    <p style="color: #888; margin-bottom: 25px; line-height: 1.6;">How to defend against credential
-                        stuffing and automated login attacks using behavioral intent.</p>
-                    <span style="color: #ffaa00; font-family: var(--font-mono); font-size: 11px;">READ_ARTICLE →</span>
-                </a>
-                <a href="./blog/secure-signup-flow.html" class="feature-card"
-                    style="text-decoration: none; transition: transform 0.3s ease; border-color: rgba(0,210,255,0.1);">
-                    <div style="color: #00d2ff; font-family: var(--font-mono); font-size: 10px; margin-bottom: 20px;">
-                        GROWTH // SAAS</div>
-                    <h3 style="font-size: 1.4rem; margin-bottom: 15px;">Secure Signup Flow</h3>
-                    <p style="color: #888; margin-bottom: 25px; line-height: 1.6;">A founder's guide to stopping bot
-                        signups and fake users without killing conversion rates.</p>
-                    <span style="color: #00d2ff; font-family: var(--font-mono); font-size: 11px;">READ_ARTICLE →</span>
-                </a>
-            </div>
-            <div style="text-align: center; margin-top: 50px;">
-                <a href="./blog.html" class="btn btn-secondary">View All Research</a>
-            </div>
-        </div>
-    </section>
-
-    <!-- SEO FAQ Schema -->
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "FAQPage",
-      "mainEntity": [{
-        "@type": "Question",
-        "name": "What is the best CAPTCHA alternative for stoping bot signups?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Sentinel is a high-performance CAPTCHA alternative that blocks 92% of bot signups using behavioral signals. It is often referred to as the 'Turnstile for APIs' due to its invisible challenge mechanism."
-        }
-      }, {
-        "@type": "Question",
-        "name": "How does Sentinel compare to Cloudflare Turnstile?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "While Cloudflare Turnstile is primarily for browser environments, Sentinel provides an identical invisible experience for pure APIs and server-side requests, making it a true 'Turnstile for APIs'."
-        }
-      }, {
-        "@type": "Question",
-        "name": "Can Sentinel stop account takeover and credential stuffing?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Yes, Sentinel uses behavioral fingerprinting and cross-session signal analysis to identify and block automated login attempts and credential stuffing attacks in real-time."
-        }
-      }, {
-        "@type": "Question",
-        "name": "How do I secure my SaaS signup flow from fake accounts?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "The most effective way to secure a SaaS signup flow is to replace legacy CAPTCHAs with invisible behavioral trust synthesis. This stops automated signups while maintaining high conversion rates."
-        }
-      }]
-    }
-    </script>
-
-    <section class="pricing-tiers" style="padding: 100px 0; border-top: 1px solid #111;">
-        <div class="container">
-            <h2 style="text-align: center; margin-bottom: 20px;">Architecture Tiers</h2>
-
-            <!-- Currency & Interval Toggle -->
-            <div style="display: flex; justify-content: center; flex-wrap: wrap; gap: 20px; margin-bottom: 50px;">
-                <div
-                    style="background: #0a0a0a; border: 1px solid #1a1a1a; padding: 4px; border-radius: 8px; display: flex; gap: 4px;">
-                    <button id="btn-usd"
-                        style="background: var(--accent); color: #000; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 11px; font-weight: 700; transition: all 0.2s;">USD</button>
-                    <button id="btn-ngn"
-                        style="background: transparent; color: #555; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 11px; font-weight: 700; transition: all 0.2s;">NGN</button>
-                </div>
-                <div
-                    style="background: #0a0a0a; border: 1px solid #1a1a1a; padding: 4px; border-radius: 8px; display: flex; gap: 4px;">
-                    <button id="btn-monthly"
-                        style="background: var(--accent); color: #000; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 11px; font-weight: 700; transition: all 0.2s;">MONTHLY</button>
-                    <button id="btn-yearly"
-                        style="background: transparent; color: #555; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 11px; font-weight: 700; transition: all 0.2s;">YEARLY
-                        <span
-                            style="color: #000; background: var(--accent); padding: 2px 4px; border-radius: 4px; font-size: 9px; margin-left: 4px;">SAVE
-                            60%</span></button>
-                </div>
-            </div>
-
-            <p style="text-align: center; color: var(--text-dim); max-width: 600px; margin: -30px auto 60px auto;">
-                Sentinel scales from hobbyist infra to enterprise-grade API economies. Pay for
-                <strong>authority</strong>, never for friction.
-            </p>
-            <div class="features-grid" style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));">
-                <div class="feature-card" style="border: 1px solid #111; background: #050505;">
-                    <div
-                        style="color: var(--accent); font-family: var(--font-mono); font-size: 10px; margin-bottom: 10px;">
-                        TIER_00 // EDGE</div>
-                    <h3 style="font-size: 1.8rem; margin-bottom: 5px;">FREE</h3>
-                    <p style="color: #666; margin-bottom: 25px;">Basic Infra Protection</p>
-                    <ul style="margin-bottom: 30px; line-height: 2;">
-                        <li>1,000 Decisions / Month</li>
-                        <li>Unlimited Widget Interaction</li>
-                        <li>Basic ASN Matrix Mapping</li>
-                        <li>Stateless Trust Tokens</li>
-                    </ul>
-                    <a href="./login.html" class="btn btn-secondary"
-                        style="width: 100%; text-align: center; display: block;">DEPLOY_FREE</a>
-                </div>
-
-                <div class="feature-card" style="border: 1px solid var(--accent); background: rgba(0, 255, 136, 0.02);">
-                    <div
-                        style="color: var(--accent); font-family: var(--font-mono); font-size: 10px; margin-bottom: 10px;">
-                        TIER_01 // AUTHORITY</div>
-                    <div
-                        style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px;">
-                        <div>
-                            <h3 style="font-size: 1.8rem; margin-bottom: 5px;">PRO</h3>
-                            <p style="color: #888; margin-bottom: 25px;">Production Forensic Decisions</p>
-                        </div>
-                        <div style="text-align: right;">
-                            <div id="pro-price"
-                                style="font-size: 2rem; font-weight: 800; color: #fff; font-family: 'JetBrains Mono';">
-                                $10</div>
-                            <div id="pro-period" style="font-size: 10px; color: #555; text-transform: uppercase;">per
-                                month</div>
-                        </div>
-                    </div>
-                    <ul style="margin-bottom: 30px; line-height: 2;">
-                        <li>500,000 Decisions / Month</li>
-                        <li><b>Cold Enrichment</b> (Deep Forensics)</li>
-                        <li>Global Velocity Matrix</li>
-                        <li>Mobile Carrier Identification</li>
-                    </ul>
-                    <a href="./login.html" class="btn btn-primary"
-                        style="width: 100%; text-align: center; display: block;">UPGRADE_PRO</a>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <script>
-        let currentCurrency = 'USD';
-        let currentBilling = 'monthly';
-
-        const prices = {
-            USD: { monthly: '$10', yearly: '$48' },
-            NGN: { monthly: '₦15,000', yearly: '₦72,000' }
-        };
-
-        function setCurrency(cur) {
-            currentCurrency = cur;
-            updatePrices();
-            document.getElementById('btn-usd').style.background = cur === 'USD' ? 'var(--accent)' : 'transparent';
-            document.getElementById('btn-usd').style.color = cur === 'USD' ? '#000' : '#555';
-            document.getElementById('btn-ngn').style.background = cur === 'NGN' ? 'var(--accent)' : 'transparent';
-            document.getElementById('btn-ngn').style.color = cur === 'NGN' ? '#000' : '#555';
-        }
-
-        function setBilling(bill) {
-            currentBilling = bill;
-            updatePrices();
-            document.getElementById('btn-monthly').style.background = bill === 'monthly' ? 'var(--accent)' : 'transparent';
-            document.getElementById('btn-monthly').style.color = bill === 'monthly' ? '#000' : '#555';
-            document.getElementById('btn-yearly').style.background = bill === 'yearly' ? 'var(--accent)' : 'transparent';
-            document.getElementById('btn-yearly').style.color = bill === 'yearly' ? '#000' : '#555';
-        }
-
-        function updatePrices() {
-            document.getElementById('pro-price').innerText = prices[currentCurrency][currentBilling];
-            document.getElementById('pro-period').innerText = currentBilling === 'monthly' ? 'per month' : 'per year';
-        }
-
-        // Initialize Listeners to satisfy CSP
-        document.getElementById('btn-usd').addEventListener('click', () => setCurrency('USD'));
-        document.getElementById('btn-ngn').addEventListener('click', () => setCurrency('NGN'));
-        document.getElementById('btn-monthly').addEventListener('click', () => setBilling('monthly'));
-        document.getElementById('btn-yearly').addEventListener('click', () => setBilling('yearly'));
-    </script>
-
-    <section class="stats">
-        <div class="container">
-            <div class="stats-grid">
-                <div class="stat">
-                    <div class="stat-number">92%</div>
-                    <div class="stat-label">Bot Signups Blocked</div>
-                </div>
-                <div class="stat">
-                    <div class="stat-number">&lt;50ms</div>
-                    <div class="stat-label">Decision Latency</div>
-                </div>
-                <div class="stat">
-                    <div class="stat-number">0</div>
-                    <div class="stat-label">User-Hostile CAPTCHAs</div>
-                </div>
-            </div>
-        </div>
-    </section>
-    <section class="cta">
-        <div class="container">
-            <h2>Start Using Sentinel Today</h2>
-            <p>Join developers protecting their APIs with clear, signal-based trust decisions.</p>
-
-            <div class="cta-buttons">
-                <a href="./login.html" class="btn btn-primary btn-large">Get Your API Key</a>
-                <a href="https://wa.me/2347030767766?text=Hi,%20I'm%20interested%20in%20Sentinel%20API"
-                    class="btn btn-secondary btn-large">Contact Sales</a>
-            </div>
-        </div>
-    </section>
-    <section class="support-contact" style="padding: 100px 0; background: #050505; border-top: 1px solid #111;">
-        <div class="container">
-            <h2 style="text-align: center; margin-bottom: 20px;">Support & Feedback</h2>
-            <p style="text-align: center; color: var(--text-secondary); margin-bottom: 50px; max-width: 600px; margin-left: auto; margin-right: auto;">
-                Have a question or feature request? Send a message directly to our engineering team.
-            </p>
-
-            <form action="https://formsubmit.co/femonla6@gmail.com" method="POST" style="max-width: 600px; margin: 0 auto; display: flex; flex-direction: column; gap: 15px;">
-                <!-- Security & Redirects for Formsubmit -->
-                <input type="hidden" name="_captcha" value="false">
-                <input type="hidden" name="_subject" value="New Sentinel Support Request!">
-                <input type="hidden" name="_next" value="https://sentinel.risksignal.name.ng">
-
-                <div style="display: flex; gap: 15px; width: 100%;">
-                    <input type="text" name="name" placeholder="Your Name" required style="flex: 1; padding: 15px; background: #0a0a0a; border: 1px solid #222; border-radius: 8px; color: #fff; font-family: 'Inter', sans-serif;">
-                    <input type="email" name="email" placeholder="Email Address" required style="flex: 1; padding: 15px; background: #0a0a0a; border: 1px solid #222; border-radius: 8px; color: #fff; font-family: 'Inter', sans-serif;">
-                </div>
-                
-                <textarea name="message" placeholder="How can we help?" required rows="5" style="width: 100%; padding: 15px; background: #0a0a0a; border: 1px solid #222; border-radius: 8px; color: #fff; font-family: 'Inter', sans-serif; resize: vertical; box-sizing: border-box;"></textarea>
-                
-                <button type="submit" class="btn btn-primary" style="align-self: center; padding: 12px 40px; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">Send Message</button>
-            </form>
-        </div>
-    </section>
-
-    <footer class="footer">
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-brand">
-                    <div class="footer-logo">
-                        <img src="./logo.png" alt="Sentinel Logo" height="20"
-                            style="margin-right: 8px; filter: grayscale(1) invert(1);">
-                        SENTINEL
-                    </div>
-                    <p><a href="https://app.risksignal.name.ng" style="color: inherit; text-decoration: none;">Powered
-                            by RiskSignal Intelligence</a></p>
-                </div>
-
-                <div class="footer-links" style="flex: 2;">
-                    <div class="footer-column">
-                        <h4>Product</h4>
-                        <a href="./index.html#features">Features</a>
-                        <a href="./docs.html">Documentation</a>
-                        <a href="./index.html#pricing">Pricing</a>
-                        <a href="./index.html#integration">Integration</a>
-                    </div>
-                    <div class="footer-column">
-                        <h4>Use Cases</h4>
-                        <a href="./use-cases/signup-abuse.html">Signup Abuse</a>
-                        <a href="./use-cases/api-bot-protection.html">API Bot Protection</a>
-                        <a href="./guides/stop-ai-bot-abuse.html">Stop AI Bot Abuse</a>
-                        <a href="./guides/agentic-ai-security.html">Agentic AI Security</a>
-                        <a href="./guides/ai-detector-bypass.html">AI Detector Bypass</a>
-                        <a href="./guides/ai-coding-security.html">AI Coding Security</a>
-                        <a href="./guides/protecting-generative-media.html">Generative Media Defense</a>
-                        <a href="./guides/securing-academic-ai.html">Academic AI Security</a>
-                        <a href="./guides/deep-intelligence-guardrails.html">LLM Guardrails</a>
-                    </div>
-                    <div class="footer-column">
-                        <h4>Compare</h4>
-                        <a href="./blog/why-is-captcha-dead.html">vs. reCAPTCHA</a>
-                        <a href="./blog/turnstile-for-apis.html">vs. Cloudflare Turnstile</a>
-                        <a href="./blog/beyond-the-bot.html">vs. Legacy WAFs</a>
-                        <a href="./blog/stopping-ato.html">vs. Auth0 BAP</a>
-                    </div>
-                    <div class="footer-column">
-                        <h4>Resources</h4>
-                        <a href="./blog.html">Blog</a>
-                        <a href="#">GitHub</a>
-                        <a href="#">Status</a>
-                        <a href="#">API Uptime</a>
-                    </div>
-                    <div class="footer-column">
-                        <h4>Legal</h4>
-                        <a href="./privacy.html">Privacy Policy</a>
-                        <a href="./terms.html">Terms of Service</a>
-                        <a href="#">DPA / GDPR</a>
-                    </div>
-                </div>
-            </div>
-
-            <!-- SEO Semantic Keywords -->
-            <div style="opacity: 0.05; font-size: 8px; margin-top: 40px; pointer-events: none;">
-                Sentinel is the leading CAPTCHA alternative and Turnstile for APIs. Stop bot signups, prevent account
-                takeover, and secure your REST API endpoints with sub-50ms behavioral trust decisions. Our behavioral
-                analytics engine replaces legacy blacklists and reCAPTCHA puzzles with deterministic infrastructure
-                signals. Built for modern DevOps and security engineers.
-                Comparison: sentinel vs cloudflare, sentinel vs captcha, cloudflare vs sentinel, bots vs humans
-                intelligence.
-            </div>
-
-            <div class="footer-bottom">
-                <p>&copy; 2026 Sentinel. <a href="https://sentinel.risksignal.name.ng"
-                        style="color: inherit; text-decoration: none;">Powered by RiskSignal Intelligence.</a></p>
+        <div style="margin-top: 4rem; padding-top: 2rem; border-top: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center;">
+            <div>© 2026 Sentinel Network. Powered by RiskSignal Intelligence.</div>
+            <div style="display:flex; gap: 1rem;">
+                <a href="/privacy" style="color: #555; text-decoration: none;">Privacy Protocol</a>
+                <a href="/terms" style="color: #555; text-decoration: none;">Terms of Service</a>
             </div>
         </div>
     </footer>
 
-    <script src="./script.js"></script>
+    <!-- INTERACTIVE DEMO SCRIPT -->
     <script>
-        const supabaseUrl = 'https://ahwkraeuotptvwvutbng.supabase.co';
-        const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFod2tyYWV1b3RwdHZ3dnV0Ym5nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcwNzYxNjIsImV4cCI6MjA4MjY1MjE2Mn0.bsB4kxE-kOx355IMXmeNGGp2rKHl1l1CcMGG_clZUos';
-        const sp = supabase.createClient(supabaseUrl, supabaseAnonKey);
+        const terminalLog = document.getElementById('terminal-logs');
+        const widgetDock = document.getElementById('demo-widget-dock');
 
-        async function updateAuthStatus() {
-            const { data } = await sp.auth.getSession();
-            const btn = document.getElementById('auth-nav-btn');
-            if (data.session) {
-                btn.innerText = 'DASHBOARD';
-                btn.href = './dashboard.html';
-                btn.classList.remove('btn-secondary');
-                btn.classList.add('btn-primary');
-                btn.style.color = '#000'; // Force black text for contrast
-            }
+        function _log(time, type, ip, msg, badgeClass) {
+            const line = document.createElement('div');
+            line.className = 'log-line';
+            line.innerHTML = `
+                <span class="log-time">${time}</span>
+                <span class="badge ${badgeClass}">${type}</span>
+                <span class="log-ip">${ip}</span>
+                <span style="color: #666;">${msg}</span>
+            `;
+            terminalLog.appendChild(line);
+            if (terminalLog.children.length > 5) terminalLog.removeChild(terminalLog.children[0]);
         }
-        updateAuthStatus();
+
+        function runLiveCheck() {
+            const ip = document.getElementById("demo-ip").value || '8.8.8.8';
+            document.getElementById("demo-ip").value = ip;
+            const time = new Date().toISOString().split('T')[1].substring(0, 11);
+            
+            // Heuristic detection purely for demo wow-factor
+            const isAbuse = ip.startsWith("8.") || ip.startsWith("3.") || ip.startsWith("18.") || ip.startsWith("104.");
+            widgetDock.style.display = 'none';
+            widgetDock.innerHTML = `<div style="color: var(--cyan); margin-bottom:10px; font-size:0.75rem;">BWT CHALLENGE ISSUED:</div><div id="sentinel-widget" data-sitekey="sk_test_demo123456789"></div>`;
+
+            _log(time, 'SYS', ip, 'Resolving ASN Context...', 'badge-info');
+
+            setTimeout(() => {
+                if (isAbuse) {
+                    _log(time, 'BLOCK', ip, '[THREAT] Hosting/VPN ASN Detected. Isolating.', 'badge-block');
+                    setTimeout(() => {
+                        _log(time, 'CHLNG', ip, 'Spawning interactive BWT token sequence...', 'badge-info');
+                        widgetDock.style.display = 'block';
+                        // Dynamically load the widget script to fire it up perfectly
+                        const script = document.createElement('script');
+                        script.src = './widget.js'; // Ensure this points to the user's local widget script
+                        document.body.appendChild(script);
+                    }, 500);
+                } else {
+                    _log(time, 'ALLOW', ip, '[PASS] Residential Node Verified. Clearance Granted.', 'badge-allow');
+                }
+            }, 800);
+        }
     </script>
 </body>
-
 </html>
