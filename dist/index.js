@@ -59,14 +59,16 @@ const limiter = (0, express_rate_limit_1.default)({
     message: { error: 'Too many requests from this IP, please try again later.' }
 });
 app.use(limiter);
-// 3. Serve Landing Page (Static Files)
+// 3. Serve V2 VitePress Documentation natively via Express (Priority Route)
+const docsPath = path_1.default.join(__dirname, '..', 'docs', '.vitepress', 'dist');
+app.use('/docs', express_1.default.static(docsPath));
+app.use('/v2/docs', express_1.default.static(docsPath));
+// 4. Serve Landing Page (Static Files)
 app.use(express_1.default.static(path_1.default.join(__dirname, '..', 'landing-page'), {
     setHeaders: (res) => {
         res.set('Cross-Origin-Resource-Policy', 'cross-origin');
     }
 }));
-// Serve V2 VitePress Documentation natively via Express
-app.use('/v2/docs', express_1.default.static(path_1.default.join(__dirname, '..', 'docs', '.vitepress', 'dist')));
 // Root route serves landing page
 app.get('/', (req, res) => {
     res.sendFile(path_1.default.join(__dirname, '..', 'landing-page', 'index.html'));

@@ -168,25 +168,27 @@ const preCheck = async (req, res) => {
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     res.setHeader('Pragma', 'no-cache');
     res.setHeader('Expires', '0');
-    // 2. Resolve IP (With Mocking support ONLY in non-prod lab testing)
-    const isProd = process.env.NODE_ENV === 'production';
-    const mockIp = !isProd ? req.headers['x-sentinel-mock-ip'] : null;
+    // 2. Resolve IP (Enable multi-channel mocking for demo flexibility)
+    const headerMock = req.headers['x-sentinel-mock-ip'];
+    const queryMock = req.query.mock_ip;
+    const mockIp = queryMock || headerMock;
     let target = mockIp ||
+        req.headers['x-forwarded-for']?.split(',')[0] ||
         req.ip ||
-        req.headers['x-forwarded-for'] ||
         '127.0.0.1';
-    if (target.startsWith('::1'))
-        target = '127.0.0.1';
     if (target.startsWith('::ffff:'))
         target = target.substring(7);
-    logger_1.default.info(`Pre-check request from: ${target} ${req.headers['x-sentinel-mock-ip'] ? '[MOCKED]' : ''}`);
+    if (target.startsWith('::1'))
+        target = '127.0.0.1';
+    logger_1.default.info(`[TRACE_PRECHECK] Target: ${target} | Mocked: ${!!mockIp} | Source: ${req.ip} | Req-UA: ${req.headers['user-agent']?.substring(0, 30)}`);
     // Run high-authority analysis with forced enrichment
     const result = await intelService_1.IntelService.analyze(target, 'full', 'api', undefined, 'PRO', true);
     return res.json({
         required: result.verdict !== 'TRUSTED',
         verdict: result.verdict,
         score: result.trust_score,
-        target: target
+        target: target,
+        trace_id: crypto_1.default.randomUUID().substring(0, 8)
     });
 };
 exports.preCheck = preCheck;
