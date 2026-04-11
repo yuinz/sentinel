@@ -22,73 +22,64 @@ const ensureSupabaseAuth = async (req: Request, res: Response, next: any) => {
     next();
 };
 
-// GET — read current saved policy for this user (first key wins as global defaults)
+// GET — return saved policy for this user
 router.get('/global', ensureSupabaseAuth, async (req: any, res) => {
     const user = req.user;
     try {
-        const { data, error } = await supabase
-            .from('tenant_policies')
+        const { data } = await supabase
+            .from('user_policies')
             .select('mode, difficulty_level, block_proxies, block_datacenters, force_bwt')
             .eq('user_id', user.id)
-            .limit(1)
-            .single();
+            .maybeSingle();
 
-        if (error || !data) return res.json(null);
-        return res.json(data);
+        return res.json(data || null);
     } catch {
         return res.json(null);
     }
 });
 
+// POST — upsert policy for this user (one row per user, no FK dependency)
 router.post('/global', ensureSupabaseAuth, async (req: any, res) => {
     const user = req.user;
     const { mode, difficulty, block_proxies, block_dc, force_bwt } = req.body;
 
     try {
-        // 1. Get all API keys belonging to this user
-        const { data: keys, error: keyError } = await supabase
-            .from('api_access')
-            .select('api_key')
-            .eq('user_id', user.id);
+        const payload = {
+            user_id: user.id,
+            mode: mode || 'BALANCED',
+            difficulty_level: difficulty || 3,
+            block_proxies: block_proxies !== undefined ? block_proxies : true,
+            block_datacenters: block_dc !== undefined ? block_dc : false,
+            force_bwt: force_bwt !== undefined ? force_bwt : true,
+            updated_at: new Date().toISOString()
+        };
 
-        if (keyError || !keys) {
-            return res.status(500).json({ error: 'Failed to access keys' });
+        const { error } = await supabase
+            .from('user_policies')
+            .upsert(payload, { onConflict: 'user_id' });
+
+        if (error) {
+            console.error('[Policy] Upsert failed:', error);
+            return res.status(500).json({ error: 'Failed to save policy', detail: error.message });
         }
 
-        if (keys.length === 0) {
-            return res.status(404).json({ error: 'No active vectors found to apply policies to' });
-        }
+        // Flush Redis cache for all API keys belonging to this user
+        if (redisClient) {
+            const { data: keys } = await supabase
+                .from('api_access')
+                .select('api_key')
+                .eq('user_id', user.id);
 
-        // 2. Upsert policy across all keys
-        for (const k of keys) {
-            const payload = {
-                api_key: k.api_key,
-                user_id: user.id,
-                mode: mode || 'BALANCED',
-                difficulty_level: difficulty || 3,
-                block_proxies: block_proxies !== undefined ? block_proxies : true,
-                block_datacenters: block_dc !== undefined ? block_dc : false,
-                force_bwt: force_bwt !== undefined ? force_bwt : true,
-                updated_at: new Date().toISOString()
-            };
-
-            const { error: upsertError } = await supabase
-                .from('tenant_policies')
-                .upsert(payload, { onConflict: 'api_key' });
-
-            if (upsertError) {
-                console.error('Failed applying policy to', k.api_key, upsertError);
-            }
-
-            // 3. Nuke Redis Cache to force Edge reload
-            if (redisClient) {
-                redisClient.del(`v2:policy:${k.api_key}`);
+            if (keys) {
+                for (const k of keys) {
+                    redisClient.del(`v2:policy:${k.api_key}`);
+                }
             }
         }
 
-        res.json({ success: true, message: 'Global Policy Synchronized to Edge' });
+        return res.json({ success: true });
     } catch (err) {
-        res.status(500).json({ error: 'Database Synchronization failed' });
+        return res.status(500).json({ error: 'Database synchronization failed' });
     }
 });
 
