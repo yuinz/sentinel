@@ -138,6 +138,10 @@
             
             footer { padding: 3rem 1.5rem; text-align: left; }
             .footer-grid { text-align: left; gap: 3rem;}
+
+            /* New section grids - stack on mobile */
+            .code-snippet-grid, .why-grid { grid-template-columns: 1fr !important; }
+            [style*="grid-template-columns: 1fr 1fr"] { grid-template-columns: 1fr !important; gap: 2rem !important; }
         }
     </style>
 </head>
@@ -151,6 +155,7 @@
         </div>
         <div class="nav-links">
             <a href="/docs/">Documentation</a>
+            <a href="./about.html">About</a>
             <a href="#pricing">Pricing</a>
             <a href="https://github.com/yuinz/sentinel">GitHub</a>
             <a href="./login.html" class="btn-console">Enter Console →</a>
@@ -192,9 +197,101 @@
         </div>
     </div>
 
+    <!-- About / Narrative Section -->
+    <div class="section-wrap" id="about-brief" style="border-top: 1px solid rgba(255,255,255,0.05);">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 5rem; align-items: center;">
+            <div>
+                <div style="font-family:'JetBrains Mono'; color: var(--cyan); font-size: 0.8rem; margin-bottom: 1rem; letter-spacing: 2px;">// ABOUT THE ENGINE</div>
+                <h2 style="font-size: clamp(2rem, 4vw, 3.5rem); line-height: 1.1; font-weight: 700; letter-spacing: -2px; margin: 0 0 2rem 0;">We built the trust layer the internet was missing.</h2>
+                <p style="color: var(--text-dim); line-height: 1.8; font-size: 1.05rem; margin-bottom: 1.5rem;">Sentinel was engineered by infrastructure security veterans who were tired of watching CAPTCHAs fail, WAFs misfire, and rate limiters punish legitimate users. We took a different approach: <strong style="color: #fff;">deterministic trust from structural data alone.</strong></p>
+                <p style="color: var(--text-dim); line-height: 1.8; font-size: 1.05rem; margin-bottom: 2rem;">Every connection to your API is a packet of raw infrastructure intelligence — ASN topology, behavioral entropy, carrier-level provenance. We parse it all in under 50ms and return a single, mathematically-grounded verdict.</p>
+                <div style="display: flex; gap: 2rem; font-family: 'JetBrains Mono'; font-size: 0.85rem;">
+                    <div><div style="font-size: 2.5rem; font-weight: 700; color: var(--cyan);">50ms</div><div style="color: #555;">Decision Latency</div></div>
+                    <div><div style="font-size: 2.5rem; font-weight: 700; color: #fff;">92%</div><div style="color: #555;">Bot Reduction Rate</div></div>
+                    <div><div style="font-size: 2.5rem; font-weight: 700; color: var(--red);">0</div><div style="color: #555;">False Positive Policy</div></div>
+                </div>
+            </div>
+            <!-- Animated Cyber Flow -->
+            <div style="position: relative; height: 420px; border: 1px solid rgba(255,255,255,0.05); overflow: hidden; background: #020202;">
+                <canvas id="cyberCanvas" style="width: 100%; height: 100%;"></canvas>
+                <div style="position: absolute; bottom: 0; left: 0; right: 0; padding: 1.5rem; background: linear-gradient(to top, #020202, transparent); font-family: 'JetBrains Mono'; font-size: 0.75rem;">
+                    <div style="color: var(--cyan);">LIVE SIGNAL TELEMETRY MESH</div>
+                    <div style="color: #444; margin-top: 5px;">Real-time structural intelligence propagation across all edge nodes.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Live Code Snippets Section -->
+    <div class="section-wrap" style="border-top: 1px solid rgba(255,255,255,0.05); padding-top: 4rem;">
+        <div style="font-family: 'JetBrains Mono'; color: var(--cyan); font-size: 0.8rem; margin-bottom: 1rem; letter-spacing: 2px;">// INTEGRATION IN 3 PATTERNS</div>
+        <h2 style="font-size: clamp(2rem, 4vw, 3rem); line-height: 1.1; font-weight: 700; letter-spacing: -2px; margin: 0 0 3rem 0;">Drop in. Five minutes. No friction.</h2>
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem;" class="code-snippet-grid">
+            <div>
+                <div style="font-family:'JetBrains Mono'; font-size: 0.75rem; color: #555; margin-bottom: 0.5rem; display:flex; justify-content:space-between;"><span>Node.js / Express</span><span id="copy1" style="cursor:pointer; color: var(--cyan);">COPY</span></div>
+                <pre class="code-block" id="snippet1" style="margin:0; font-size:0.75rem; overflow-x:auto; line-height:1.8;"><span style="color:#FF3366">const</span> result = <span style="color:#00E5FF">await</span> sentinel.check(req.ip, {
+  profile: <span style="color:#00E5FF">'signup'</span>,
+  user_agent: req.headers[<span style="color:#00E5FF">'user-agent'</span>]
+});
+
+<span style="color:#FF3366">if</span> (!result.allow) {
+  <span style="color:#FF3366">return</span> res.status(<span style="color:#00E5FF">403</span>)
+    .json({ action: <span style="color:#00E5FF">'blocked'</span> });
+}</pre>
+            </div>
+            <div>
+                <div style="font-family:'JetBrains Mono'; font-size: 0.75rem; color: #555; margin-bottom: 0.5rem; display:flex; justify-content:space-between;"><span>Next.js Edge Middleware</span><span id="copy2" style="cursor:pointer; color: var(--cyan);">COPY</span></div>
+                <pre class="code-block" id="snippet2" style="margin:0; font-size:0.75rem; overflow-x:auto; line-height:1.8;"><span style="color:#FF3366">export</span> <span style="color:#FF3366">async function</span> middleware(req) {
+  <span style="color:#FF3366">const</span> ip = req.headers.get(
+    <span style="color:#00E5FF">'x-forwarded-for'</span>
+  );
+  <span style="color:#FF3366">const</span> trust = <span style="color:#00E5FF">await</span> Sentinel.evaluate(ip);
+  <span style="color:#FF3366">if</span> (trust.verdict === <span style="color:#00E5FF">'BLOCK'</span>)
+    <span style="color:#FF3366">return</span> Response.redirect(<span style="color:#00E5FF">'/banned'</span>);
+}</pre>
+            </div>
+            <div>
+                <div style="font-family:'JetBrains Mono'; font-size: 0.75rem; color: #555; margin-bottom: 0.5rem; display:flex; justify-content:space-between;"><span>V2 Policy DSL</span><span id="copy3" style="cursor:pointer; color: var(--cyan);">COPY</span></div>
+                <pre class="code-block" id="snippet3" style="margin:0; font-size:0.75rem; overflow-x:auto; line-height:1.8;"><span style="color:#666">// Dashboard-configurable rules</span>
+<span style="color:#FF3366">const</span> config = {
+  vpn_action: <span style="color:#00E5FF">'challenge'</span>,
+  datacenter_action: <span style="color:#00E5FF">'block'</span>,
+  humans_only: <span style="color:#FF3366">true</span>,
+  exempt_server_requests: <span style="color:#FF3366">true</span>
+};
+<span style="color:#666">// POST /v2/evaluate → live verdict</span></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- Why Choose Sentinel -->
+    <div class="section-wrap" style="border-top: 1px solid rgba(255,255,255,0.05);">
+        <div style="font-family: 'JetBrains Mono'; color: var(--red); font-size: 0.8rem; margin-bottom: 1rem; letter-spacing: 2px;">// WHY SENTINEL</div>
+        <h2 style="font-size: clamp(2rem, 4vw, 3rem); font-weight: 700; letter-spacing: -2px; margin: 0 0 3rem 0;">Not another WAF. Not another CAPTCHA.</h2>
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 2rem;" class="why-grid">
+            <div style="border-left: 2px solid var(--cyan); padding-left: 1.5rem;">
+                <div style="font-family:'JetBrains Mono'; color: var(--cyan); font-size: 0.8rem; margin-bottom: 0.5rem;">ZERO USER FRICTION</div>
+                <p style="color: var(--text-dim); font-size: 0.95rem; line-height: 1.6;">No puzzles. No image grids. No interruptions. Humans pass silently. Bots get annihilated structurally.</p>
+            </div>
+            <div style="border-left: 2px solid #fff; padding-left: 1.5rem;">
+                <div style="font-family:'JetBrains Mono'; font-size: 0.8rem; margin-bottom: 0.5rem;">SUB-50MS VERDICTS</div>
+                <p style="color: var(--text-dim); font-size: 0.95rem; line-height: 1.6;">In-memory ASN matrices, LRU-cached intelligence, and a Redis-distributed velocity engine. Speed is our architecture.</p>
+            </div>
+            <div style="border-left: 2px solid var(--red); padding-left: 1.5rem;">
+                <div style="font-family:'JetBrains Mono'; color: var(--red); font-size: 0.8rem; margin-bottom: 0.5rem;">API-FIRST DESIGN</div>
+                <p style="color: var(--text-dim); font-size: 0.95rem; line-height: 1.6;">Single POST endpoint. Structured JSON verdicts. Works with any language, any framework, any infrastructure stack.</p>
+            </div>
+            <div style="border-left: 2px solid #555; padding-left: 1.5rem;">
+                <div style="font-family:'JetBrains Mono'; color: #aaa; font-size: 0.8rem; margin-bottom: 0.5rem;">GDPR NATIVE</div>
+                <p style="color: var(--text-dim); font-size: 0.95rem; line-height: 1.6;">Stateless, no PII stored. Privacy mode redacts all granular geodata. RFC1918 local IPs auto-whitelisted.</p>
+            </div>
+        </div>
+    </div>
+
     <!-- Features -->
     <div id="architecture" class="section-wrap">
         <div class="section-header">The Intelligence Perimeter</div>
+
         <div class="bento-grid">
             <div class="bento-card bento-card-large">
                 <div>
@@ -403,6 +500,81 @@ DIFFICULTY: target_level_3</div>
         // Pause ambient when executing manual runs
         document.getElementById('demo-ip').addEventListener('focus', () => { clearInterval(ambientSim); });
         document.getElementById('btn-evaluate').addEventListener('click', () => { clearInterval(ambientSim); });
+
+        // === CYBER CANVAS ANIMATION ===
+        const canvas = document.getElementById('cyberCanvas');
+        if (canvas) {
+            const ctx = canvas.getContext('2d');
+            canvas.width = canvas.offsetWidth || 500;
+            canvas.height = canvas.offsetHeight || 420;
+            const nodes = [];
+            for (let i = 0; i < 22; i++) {
+                nodes.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    vx: (Math.random() - 0.5) * 0.6,
+                    vy: (Math.random() - 0.5) * 0.6,
+                    r: Math.random() * 2 + 1,
+                    color: Math.random() > 0.5 ? '#00E5FF' : '#FF3366',
+                    pulse: Math.random() * Math.PI * 2
+                });
+            }
+            function drawCyber() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = '#020202';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                nodes.forEach(n => {
+                    n.x += n.vx;
+                    n.y += n.vy;
+                    if (n.x < 0 || n.x > canvas.width) n.vx *= -1;
+                    if (n.y < 0 || n.y > canvas.height) n.vy *= -1;
+                    n.pulse += 0.04;
+                });
+                // Draw edges
+                for (let i = 0; i < nodes.length; i++) {
+                    for (let j = i + 1; j < nodes.length; j++) {
+                        const dx = nodes[i].x - nodes[j].x;
+                        const dy = nodes[i].y - nodes[j].y;
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+                        if (dist < 130) {
+                            ctx.beginPath();
+                            ctx.moveTo(nodes[i].x, nodes[i].y);
+                            ctx.lineTo(nodes[j].x, nodes[j].y);
+                            ctx.strokeStyle = `rgba(0, 229, 255, ${(1 - dist / 130) * 0.15})`;
+                            ctx.lineWidth = 0.5;
+                            ctx.stroke();
+                        }
+                    }
+                }
+                // Draw nodes
+                nodes.forEach(n => {
+                    const glow = Math.sin(n.pulse) * 0.3 + 0.7;
+                    ctx.beginPath();
+                    ctx.arc(n.x, n.y, n.r * glow, 0, Math.PI * 2);
+                    ctx.fillStyle = n.color;
+                    ctx.shadowBlur = 8;
+                    ctx.shadowColor = n.color;
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
+                });
+                requestAnimationFrame(drawCyber);
+            }
+            drawCyber();
+        }
+
+        // === COPY BUTTONS ===
+        ['copy1','copy2','copy3'].forEach((id, i) => {
+            const btn = document.getElementById(id);
+            if (btn) {
+                btn.addEventListener('click', () => {
+                    const pre = document.getElementById('snippet' + (i+1));
+                    navigator.clipboard.writeText(pre.innerText).then(() => {
+                        btn.textContent = 'COPIED';
+                        setTimeout(() => btn.textContent = 'COPY', 2000);
+                    });
+                });
+            }
+        });
     </script>
 </body>
 </html>

@@ -1,297 +1,242 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>About Sentinel | Turnstile for APIs</title>
-    <meta name="description"
-        content="Stop 92% of bot signups without CAPTCHAs. Learn how Sentinel provides Turnstile-grade protection for the modern API economy.">
-    <meta name="keywords"
-        content="Turnstile for APIs, bot reduction metrics, API security outcomes, CAPTCHA replacement, sub-50ms security">
-
-    <!-- Open Graph / Facebook -->
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://sentinel.risksignal.name.ng/about">
-    <meta property="og:title" content="About Sentinel | Simple API Trust">
-    <meta property="og:description"
-        content="Inside the engine that replaces CAPTCHAs with simple, effective trust decisions.">
-    <meta property="og:image" content="https://sentinel.risksignal.name.ng/og-image.png">
-
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
-        rel="stylesheet">
-    <link rel="stylesheet" href="./styles.css">
-    <link rel="icon" type="image/png" href="./logo.png">
+    <title>About Sentinel | The Trust Infrastructure Company</title>
+    <meta name="description" content="Sentinel is a deterministic trust API engineered by infrastructure security veterans. Learn how we built the trust layer the internet was missing.">
+    <link rel="canonical" href="https://sentinel.risksignal.name.ng/about.html" />
+    <meta property="og:title" content="About Sentinel | The Trust Infrastructure Company">
+    <meta property="og:description" content="Deterministic trust from structural data alone. Built by engineers who refuse to accept CAPTCHAs as a security model.">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        body {
-            background: #000;
-            color: #fff;
-            overflow-x: hidden;
-        }
+        :root { --bg-dark: #050505; --grid-color: rgba(255,255,255,0.03); --cyan: #00E5FF; --red: #FF3366; --text-main: #E0E0E0; --text-dim: #888; }
+        *, *::before, *::after { box-sizing: border-box; }
+        body { margin: 0; background: var(--bg-dark); color: var(--text-main); font-family: 'Space Grotesk', sans-serif; overflow-x: hidden; }
+        .grid-bg { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1; background-size: 40px 40px; background-image: linear-gradient(to right, var(--grid-color) 1px, transparent 1px), linear-gradient(to bottom, var(--grid-color) 1px, transparent 1px); }
 
-        .hero {
-            height: 60vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            padding: 0 2rem;
-            position: relative;
-        }
+        nav { display: flex; justify-content: space-between; padding: 2rem 4rem; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .sentinel-logo { width: 24px; height: 24px; position: relative; display: inline-block; flex-shrink: 0; }
+        .sentinel-logo::before, .sentinel-logo::after { content: ''; position: absolute; border: 2px solid var(--cyan); transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
+        .sentinel-logo::before { top: 0; left: 0; width: 14px; height: 14px; }
+        .sentinel-logo::after { bottom: 0; right: 0; width: 14px; height: 14px; border-color: var(--red); }
+        .logo:hover .sentinel-logo::before { transform: translate(5px, 5px); }
+        .logo:hover .sentinel-logo::after { transform: translate(-5px, -5px); }
+        .logo { font-size: 1.2rem; font-weight: 700; display: flex; align-items: center; gap: 12px; letter-spacing: 2px; text-decoration: none; color: inherit; }
+        .nav-links a { color: var(--text-dim); text-decoration: none; margin-left: 2rem; font-size: 0.9rem; font-family: 'JetBrains Mono'; transition: color 0.3s; }
+        .nav-links a:hover { color: var(--text-main); }
+        .btn-console { border: 1px solid var(--cyan); padding: 8px 16px; color: var(--cyan); text-decoration: none; font-family: 'JetBrains Mono'; font-size: 0.8rem; background: rgba(0, 229, 255, 0.05); transition: background 0.3s; }
+        .btn-console:hover { background: rgba(0, 229, 255, 0.15); }
 
-        .hero::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: radial-gradient(circle at center, rgba(255, 0, 0, 0.05) 0%, transparent 70%);
-            z-index: -1;
-        }
+        .wrap { max-width: 1200px; margin: 0 auto; padding: 6rem 4rem; }
 
-        .hero h1 {
-            font-size: 4rem;
-            font-weight: 800;
-            letter-spacing: -0.05em;
-            margin-bottom: 1rem;
-        }
+        /* Hero */
+        .about-hero { padding: 8rem 4rem 4rem; max-width: 900px; margin: 0 auto; }
+        .about-hero .label { font-family: 'JetBrains Mono'; color: var(--cyan); font-size: 0.8rem; letter-spacing: 3px; margin-bottom: 1.5rem; }
+        .about-hero h1 { font-size: clamp(2.5rem, 6vw, 5rem); line-height: 1.05; font-weight: 700; letter-spacing: -3px; margin: 0 0 2rem; }
+        .about-hero h1 span { color: var(--cyan); }
+        .about-hero p { font-size: 1.3rem; color: var(--text-dim); line-height: 1.8; max-width: 700px; }
 
-        .hero p {
-            font-size: 1.25rem;
-            color: #888;
-            max-width: 600px;
-            line-height: 1.6;
-        }
+        /* Divider */
+        .section-divider { border: none; border-top: 1px solid rgba(255,255,255,0.05); margin: 0; }
 
-        .content-section {
-            padding: 8rem 2rem;
-            max-width: 1000px;
-            margin: 0 auto;
-        }
+        /* Mission / Two-Col */
+        .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 6rem; align-items: start; }
+        .section-label { font-family: 'JetBrains Mono'; font-size: 0.75rem; color: #555; letter-spacing: 3px; margin-bottom: 1.5rem; }
+        .section-title { font-size: clamp(1.8rem, 3vw, 2.5rem); font-weight: 700; letter-spacing: -1px; margin: 0 0 1.5rem; line-height: 1.2; }
+        .section-body { color: var(--text-dim); line-height: 1.8; font-size: 1rem; }
+        .section-body + .section-body { margin-top: 1rem; }
 
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 4rem;
-            margin-top: 4rem;
-        }
+        /* Manifesto Blocks */
+        .manifesto-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0; margin-top: 4rem; }
+        .manifesto-item { padding: 3rem; border: 1px solid rgba(255,255,255,0.05); }
+        .manifesto-item:not(:last-child) { border-right: none; }
+        .manifesto-number { font-family: 'JetBrains Mono'; font-size: 4rem; font-weight: 700; color: rgba(255,255,255,0.05); line-height: 1; margin-bottom: 1rem; }
+        .manifesto-title { font-weight: 700; font-size: 1.1rem; margin-bottom: 0.75rem; color: #fff; }
+        .manifesto-text { color: var(--text-dim); font-size: 0.9rem; line-height: 1.7; }
 
-        .feature-card h3 {
-            font-size: 1.5rem;
-            margin-bottom: 1rem;
-            color: var(--accent);
-        }
+        /* Timeline */
+        .timeline { position: relative; padding-left: 2rem; border-left: 1px solid rgba(255,255,255,0.08); }
+        .timeline-item { position: relative; padding-bottom: 3rem; }
+        .timeline-item::before { content: ''; position: absolute; left: -2.35rem; top: 6px; width: 8px; height: 8px; background: var(--cyan); }
+        .timeline-date { font-family: 'JetBrains Mono'; color: var(--cyan); font-size: 0.75rem; margin-bottom: 0.5rem; }
+        .timeline-title { font-weight: 600; font-size: 1rem; margin-bottom: 0.5rem; }
+        .timeline-text { color: var(--text-dim); font-size: 0.9rem; line-height: 1.7; }
 
-        .feature-card p {
-            color: #888;
-            line-height: 1.7;
-            font-size: 1.1rem;
-        }
+        /* Team / Values */
+        .values-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 3rem; margin-top: 3rem; }
+        .value-item { border-top: 1px solid rgba(255,255,255,0.08); padding-top: 2rem; }
+        .value-title { font-family: 'JetBrains Mono'; font-size: 0.8rem; margin-bottom: 1rem; color: #fff; }
+        .value-text { color: var(--text-dim); font-size: 0.95rem; line-height: 1.7; }
 
-        .big-quote {
-            font-size: 2.5rem;
-            font-weight: 700;
-            line-height: 1.2;
-            letter-spacing: -0.02em;
-            margin: 4rem 0;
-            color: #fff;
-            padding-left: 2rem;
-            border-left: 4px solid var(--accent);
-        }
+        /* CTA */
+        .cta-block { text-align: center; padding: 8rem 4rem; border-top: 1px solid rgba(255,255,255,0.05); }
+        .cta-block h2 { font-size: clamp(2rem, 4vw, 3.5rem); font-weight: 700; letter-spacing: -2px; margin-bottom: 1.5rem; }
+        .cta-block p { color: var(--text-dim); margin-bottom: 3rem; font-size: 1.1rem; }
+        .cta-buttons { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
 
-        .stat-line {
-            display: flex;
-            gap: 4rem;
-            margin-top: 6rem;
-            border-top: 1px solid #111;
-            padding-top: 3rem;
-        }
+        footer { padding: 4rem; border-top: 1px solid rgba(255,255,255,0.05); font-family: 'JetBrains Mono'; font-size: 0.8rem; color: #555; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 1rem; }
+        footer a { color: #555; text-decoration: none; }
 
-        .stat-item .val {
-            font-size: 2.5rem;
-            font-weight: 700;
-            font-family: 'JetBrains Mono';
-            color: #fff;
-        }
-
-        .stat-item .lbl {
-            font-size: 0.8rem;
-            color: #444;
-            text-transform: uppercase;
-            margin-top: 0.5rem;
-        }
-
-        .cta-box {
-            background: #070707;
-            border: 1px solid #111;
-            padding: 4rem;
-            text-align: center;
-            border-radius: 12px;
-            margin-top: 6rem;
-        }
-
-        .nav-minimal {
-            padding: 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .nav-minimal a {
-            color: #888;
-            text-decoration: none;
-            font-size: 14px;
-            margin-left: 2rem;
-        }
-
-        .nav-minimal a:hover {
-            color: var(--accent);
+        @media (max-width: 900px) {
+            nav { padding: 1.5rem; flex-direction: column; align-items: flex-start; gap: 1rem; }
+            .about-hero { padding: 4rem 1.5rem 2rem; }
+            .wrap { padding: 4rem 1.5rem; }
+            .two-col { grid-template-columns: 1fr; gap: 3rem; }
+            .manifesto-grid { grid-template-columns: 1fr; }
+            .manifesto-item { border-right: 1px solid rgba(255,255,255,0.05) !important; }
+            .values-grid { grid-template-columns: 1fr; }
+            .cta-block { padding: 4rem 1.5rem; }
+            footer { padding: 3rem 1.5rem; flex-direction: column; }
         }
     </style>
 </head>
-
 <body>
-    <nav class="nav-minimal">
-        <div class="logo-text"
-            style="color: var(--accent); font-family: 'JetBrains Mono'; font-weight: 700; font-size: 1.25rem; display: flex; align-items: center;">
-            <img src="./logo.png" alt="Sentinel Logo" height="24" style="margin-right: 8px;">
-            SENTINEL
-        </div>
-        <div>
-            <a href="./index.html">Home</a>
-            <a href="./blog.html">Blog</a>
-            <a href="./demo.html">Demo</a>
-            <a href="./docs.html">Docs</a>
-            <a href="./dashboard.html"
-                style="color: #fff; border: 1px solid #333; padding: 0.5rem 1rem; border-radius: 4px;">Console</a>
+    <div class="grid-bg"></div>
+
+    <nav>
+        <a href="/" class="logo">
+            <div class="sentinel-logo"></div>
+            SENTINEL V2
+        </a>
+        <div class="nav-links">
+            <a href="/">Home</a>
+            <a href="/docs/">Documentation</a>
+            <a href="./login.html" class="btn-console">Enter Console →</a>
         </div>
     </nav>
 
-    <header class="hero">
-        <h1>Turnstile for APIs.</h1>
-        <p>Blocked 92% of bot signups without CAPTCHAs. Render sub-50ms trust decisions using infrastructure and
-            behavioral signals. No friction, just results.</p>
-    </header>
+    <!-- Hero -->
+    <div class="about-hero">
+        <div class="label">// THE TRUST INFRASTRUCTURE COMPANY</div>
+        <h1>The internet runs on <span>unverified trust.</span> We fix that.</h1>
+        <p>Sentinel is a deterministic behavioral trust API. We do not guess. We do not score probabilistically. We analyze structural network data and return a mathematically-grounded verdict in under 50 milliseconds.</p>
+    </div>
 
-    <main class="content-section">
-        <div class="big-quote">
-            "The internet was built on trust. Today, trust is a signal that must be verified at scale."
-        </div>
+    <hr class="section-divider">
 
-        <div class="grid">
-            <div class="feature-card">
-                <h3>The ASN Matrix</h3>
-                <p>We monitor the governance and economic behavior of over 100,000 Autonomous Systems. If a request
-                    comes from infrastructure designed for abuse, Sentinel knows.</p>
+    <!-- Mission -->
+    <div class="wrap">
+        <div class="two-col">
+            <div>
+                <div class="section-label">// ORIGIN & MISSION</div>
+                <h2 class="section-title">Built because every existing solution was broken.</h2>
+                <p class="section-body">CAPTCHAs became obsolete the moment AI could solve them faster than humans. WAFs became brittle the moment attackers learned to rotate IPs. Rate limiters became hostile the moment legitimate users shared infrastructure.</p>
+                <p class="section-body">We spent years watching these hacks compound into systems that simultaneously failed against real attackers while punishing real users. Sentinel is the answer we wished existed.</p>
+                <p class="section-body">Our approach is radical in its simplicity: every IP address is a compressed packet of structural truth about its origin. We decode that packet, cross-reference it against real-time ASN topology and behavioral entropy matrices, and return a verdict that no CAPTCHA solver, VPN rotation, or residential proxy farm can fake.</p>
             </div>
-            <div class="feature-card">
-                <h3>Behavioral Entropy</h3>
-                <p>Humans are beautifully chaotic. Bots are precisely robotic. Our engine analyzes the timing and
-                    velocity entropy of every interaction to spot the difference in milliseconds.</p>
-            </div>
-            <div class="feature-card">
-                <h3>Economic Defenses</h3>
-                <p>We don't block; we challenge. By forcing clients to perform cryptographic work, we make automated
-                    attacks economically impossible while keeping humans flowing seamlessly.</p>
-            </div>
-            <div class="feature-card">
-                <h3>Dark Intelligence</h3>
-                <p>Integration with global honeypots and abuse telemetry allows us to predict threats before they hit
-                    your load balancers.</p>
-            </div>
-        </div>
-
-        <div class="stat-line">
-            <div class="stat-item">
-                <div class="val">92%</div>
-                <div class="lbl">Reduction in Bot Signups</div>
-            </div>
-            <div class="stat-item">
-                <div class="val">&lt;50ms</div>
-                <div class="lbl">Decision Latency</div>
-            </div>
-            <div class="stat-item">
-                <div class="val">100%</div>
-                <div class="lbl">CAPTCHA-Free Experience</div>
+            <div>
+                <div class="section-label">// ENGINEERING PHILOSOPHY</div>
+                <h2 class="section-title">Structure over heuristics. Speed over completeness.</h2>
+                <p class="section-body">Most security systems gather evidence, delay, and then guess. Sentinel decodes. The ASN, the carrier type, the infrastructure class, the velocity signature — these are deterministic facts, not probabilistic guesses.</p>
+                <p class="section-body">We made a conscious trade-off: Sentinel's FastPath runs in under 50ms with no external API call. Deep enrichment runs async and never blocks your users. You get a real verdict, at wire speed, every time.</p>
+                <div style="margin-top: 2.5rem; display: flex; gap: 3rem; font-family: 'JetBrains Mono'; font-size: 0.85rem;">
+                    <div><div style="font-size:2.5rem; font-weight:700; color: var(--cyan);">50ms</div><div style="color:#555;">P99 Decision Latency</div></div>
+                    <div><div style="font-size:2.5rem; font-weight:700;">92%</div><div style="color:#555;">Automated Threat Reduction</div></div>
+                    <div><div style="font-size:2.5rem; font-weight:700; color: var(--red);">0</div><div style="color:#555;">False Positive Target</div></div>
+                </div>
             </div>
         </div>
 
-        <section style="margin-top: 8rem; border-top: 1px solid #111; padding-top: 6rem;">
-            <h2 style="font-size: 2.5rem; margin-bottom: 2rem; text-align: center;">Why not reCAPTCHA or Turnstile?</h2>
-            <p style="color: #888; text-align: center; max-width: 700px; margin: 0 auto 4rem auto; line-height: 1.6;">
-                Traditional solutions are built for browsers. Sentinel is built for <strong>APIs</strong>. While widgets
-                protect pages, Sentinel protects the logic layer.
-            </p>
-
-            <div style="overflow-x: auto;">
-                <table
-                    style="width: 100%; border-collapse: collapse; font-family: 'JetBrains Mono'; font-size: 0.9rem;">
-                    <thead>
-                        <tr style="border-bottom: 1px solid #222; text-align: left;">
-                            <th style="padding: 1.5rem; color: #444;">FEATURE</th>
-                            <th style="padding: 1.5rem; color: #444;">reCAPTCHA</th>
-                            <th style="padding: 1.5rem; color: #444;">TURNSTILE</th>
-                            <th style="padding: 1.5rem; color: var(--accent);">SENTINEL</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr style="border-bottom: 1px solid #111;">
-                            <td style="padding: 1.5rem; font-weight: 600;">Primary Target</td>
-                            <td style="padding: 1.5rem; color: #666;">Browser/Web</td>
-                            <td style="padding: 1.5rem; color: #666;">Browser/Web</td>
-                            <td style="padding: 1.5rem; color: #fff;">Modern APIs & Mobile</td>
-                        </tr>
-                        <tr style="border-bottom: 1px solid #111;">
-                            <td style="padding: 1.5rem; font-weight: 600;">User Friction</td>
-                            <td style="padding: 1.5rem; color: #666;">High (Clicking pictures)</td>
-                            <td style="padding: 1.5rem; color: #666;">Low (Invisible)</td>
-                            <td style="padding: 1.5rem; color: #fff;">None (Deterministic)</td>
-                        </tr>
-                        <tr style="border-bottom: 1px solid #111;">
-                            <td style="padding: 1.5rem; font-weight: 600;">Decision Latency</td>
-                            <td style="padding: 1.5rem; color: #666;">Variable (Depends on UI)</td>
-                            <td style="padding: 1.5rem; color: #666;">Fast (Widget-based)</td>
-                            <td style="padding: 1.5rem; color: var(--accent); font-weight: 700;">Sub-50ms (Edge Cache)
-                            </td>
-                        </tr>
-                        <tr style="border-bottom: 1px solid #111;">
-                            <td style="padding: 1.5rem; font-weight: 600;">Infrastructure Guard</td>
-                            <td style="padding: 1.5rem; color: #666;">Limited Base</td>
-                            <td style="padding: 1.5rem; color: #666;">Network History</td>
-                            <td style="padding: 1.5rem; color: #fff;">Live ASN Matrix + Shodan</td>
-                        </tr>
-                        <tr style="border-bottom: 1px solid #111;">
-                            <td style="padding: 1.5rem; font-weight: 600;">Data Privacy</td>
-                            <td style="padding: 1.5rem; color: #666;">Google Tracking</td>
-                            <td style="padding: 1.5rem; color: #666;">Private (CF Privacy)</td>
-                            <td style="padding: 1.5rem; color: #fff;">Zero PII / Stateless</td>
-                        </tr>
-                    </tbody>
-                </table>
+        <!-- Manifesto -->
+        <div class="manifesto-grid">
+            <div class="manifesto-item">
+                <div class="manifesto-number">01</div>
+                <div class="manifesto-title">Structural truth over behavioral prediction.</div>
+                <div class="manifesto-text">We do not guess what a user might do. We analyze what their network infrastructure already is. A datacenter IP is a datacenter IP. A residential connection is a residential connection. The data does not lie.</div>
             </div>
-        </section>
-
-        <div class="cta-box">
-            <h2 style="font-size: 2.5rem; margin-bottom: 1rem;">Ready for Inevitable Security?</h2>
-            <p style="margin-bottom: 2rem;">Join the organizations using Sentinel to secure their API economy.</p>
-            <a href="./dashboard.html" class="btn btn-primary"
-                style="display: inline-block; padding: 1rem 2.5rem; font-size: 1rem;">Deploy Your Vector</a>
+            <div class="manifesto-item">
+                <div class="manifesto-number">02</div>
+                <div class="manifesto-title">Speed is a security property.</div>
+                <div class="manifesto-text">A 2-second security check is a broken security check. Attackers probe at machine speed. Your defense must respond at machine speed. Sub-50ms is non-negotiable, not a performance optimization.</div>
+            </div>
+            <div class="manifesto-item" style="border-right: 1px solid rgba(255,255,255,0.05);">
+                <div class="manifesto-number">03</div>
+                <div class="manifesto-title">The user is never the problem.</div>
+                <div class="manifesto-text">Legacy security models treat all users as suspects and ask them to prove innocence by solving puzzles. We reverse that model entirely. Legitimate users pass invisibly. Only structural anomalies are challenged.</div>
+            </div>
         </div>
-    </main>
+    </div>
 
-    <footer
-        style="padding: 4rem 0; text-align: center; color: #333; font-family: 'JetBrains Mono'; font-size: 12px; border-top: 1px solid #111; margin-top: 4rem;">
-        SENTINEL INTELLIGENCE SYSTEM // 2026 // POWERED BY RISKSIGNAL<br>
-        <a href="./privacy.html"
-            style="color: inherit; text-decoration: none; margin-top: 10px; display: inline-block;">PRIVACY</a> //
-        <a href="./terms.html"
-            style="color: inherit; text-decoration: none; margin-top: 10px; display: inline-block;">TERMS</a>
+    <hr class="section-divider">
+
+    <!-- History / Timeline -->
+    <div class="wrap">
+        <div class="two-col">
+            <div>
+                <div class="section-label">// THE ROADMAP</div>
+                <h2 class="section-title">From research to production infrastructure.</h2>
+                <p class="section-body">Sentinel V2 is a ground-up rebuild of the original RiskSignal intelligence engine, redesigned for multi-tenant deployments, enterprise SLAs, and deterministic behavioral cryptography.</p>
+            </div>
+            <div class="timeline">
+                <div class="timeline-item">
+                    <div class="timeline-date">2024 — Q4</div>
+                    <div class="timeline-title">V1 Engine: Public Launch</div>
+                    <div class="timeline-text">Released the original Sentinel API. Single-tenant trust scoring with ASN matrix lookups and behavioral signals. Proven in early API abuse scenarios.</div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-date">2025 — Q1</div>
+                    <div class="timeline-title">Behavioral Work Tokens (BWT)</div>
+                    <div class="timeline-text">Introduced cryptographic Proof-of-Work challenges mapped to real DOM interaction — the first CAPTCHA alternative verifiable without visual puzzles.</div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-date">2025 — Q3</div>
+                    <div class="timeline-title">Global Threat Pub/Sub Layer</div>
+                    <div class="timeline-text">Deployed the Redis-backed broadcast mesh. Block verdicts from any node propagate globally to all edge nodes within 2ms. Network effects now protect every tenant.</div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-date">2026 — Q2</div>
+                    <div class="timeline-title">V2 Engine: Multi-Tenant + Policy DSL</div>
+                    <div class="timeline-text">Full V2 deployment with per-tenant 3-state policy routing, dashboard-driven DSL rules, and "Humans Only" isolation mode. Enterprise-grade with zero V1 migration disruption.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <hr class="section-divider">
+
+    <!-- Values -->
+    <div class="wrap">
+        <div class="section-label">// ENGINEERING VALUES</div>
+        <h2 class="section-title">The constraints we operate under.</h2>
+        <div class="values-grid">
+            <div class="value-item">
+                <div class="value-title">ZERO TOLERANCE FOR REGRESSIONS</div>
+                <div class="value-text">V1 users are never affected by V2 development. Engine namespaces are fully isolated at the routing layer. Legacy contracts are honored unconditionally.</div>
+            </div>
+            <div class="value-item">
+                <div class="value-title">GDPR & PRIVACY BY ARCHITECTURE</div>
+                <div class="value-text">No PII is stored. All analysis is structural. Privacy mode redacts all granular geodata. Stateless RAM cache with 20-minute LRU TTL means no persistent tracking.</div>
+            </div>
+            <div class="value-item">
+                <div class="value-title">CONTEXT-AWARE SECURITY</div>
+                <div class="value-text">Server-to-server traffic is automatically exempt from BWT challenges. RFC1918 IPs are auto-trusted. CI/CD bypass headers work at the middleware layer. We never break your infra.</div>
+            </div>
+            <div class="value-item">
+                <div class="value-title">OPEN TELEMETRY</div>
+                <div class="value-text">Every verdict is logged to your tenant dashboard in real-time. Full signal breakdown per decision. You always know exactly why a verdict was issued and which signals drove it.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CTA -->
+    <div class="cta-block">
+        <h2>Deploy the intelligence layer.</h2>
+        <p>One API key. Five minutes. 92% fewer automated attacks from day one.</p>
+        <div class="cta-buttons">
+            <a href="./login.html" class="btn-console" style="font-size: 1rem; padding: 14px 28px;">Get Your API Key</a>
+            <a href="/docs/" class="btn-console" style="font-size: 1rem; padding: 14px 28px; border-color: #333; color: var(--text-dim);">Read the V2 Docs</a>
+        </div>
+    </div>
+
+    <footer>
+        <div>© 2026 Sentinel Network. Powered by RiskSignal Intelligence.</div>
+        <div style="display: flex; gap: 2rem;">
+            <a href="/">Home</a>
+            <a href="/docs/">Docs</a>
+            <a href="/privacy.html">Privacy</a>
+            <a href="/terms.html">Terms</a>
+        </div>
     </footer>
 </body>
-
 </html>
