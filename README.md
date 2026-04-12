@@ -1,4 +1,5 @@
-# Sentinel | The Deterministic Trust Layer for APIs
+# Sentinel V2 | The Deterministic Trust Layer for APIs
+**todo: update api-turnstile to adapt to v2**
 
 <div align="center">
   <img src="https://sentinel.risksignal.name.ng/sentinel-logo.png" alt="Sentinel Logo" width="120" />
@@ -12,7 +13,7 @@
 
 ---
 
-**Sentinel** is a high-velocity decision engine designed to secure modern APIs against automation, fraud, and abuse. It replaces user-hostile CAPTCHAs with infrastructure forensics and cryptographic work tokens, blocking bots while letting humans pass instantly.
+**Sentinel V2** is a high-velocity, deterministic trust engine designed to secure modern APIs. It replaces probabilistic bot guessing and user-hostile CAPTCHAs with **Intent Cryptography** and deep infrastructure forensics, blocking 92% of automated threats in under 50ms while letting humans pass silently.
 
 ## 🚫 Problems Sentinel Stops
 - **Signup & Auth Flooding**: Prevent fake account creation and form abuse.
@@ -26,9 +27,10 @@ Every bot request costs you money in AWS cycles, database queries, and bandwidth
 ## ⚡ Core Architecture
 Sentinel builds a "Global Shield" using a decoupled intelligence model.
 
-1.  **Fast-Path Decision Engine (<50ms)**: Eval against in-memory ASN Matrix + local Velocity tracking.
-2.  **Behavioral Work Tokens (BWT)**: Cryptographic PoW challenges for "Unstable" signals.
-3.  **Global Edge Propagation**: Blocked IPs are broadcast to Global KV stores for sub-2ms rejection at the internet's edge.
+1.  **Fast-Path Decision Engine (<50ms)**: Real-time evaluation against structural ASN topology, carrier-level provenance, and behavioral entropy.
+2.  **Intent Cryptography (BWT)**: A SHA-256 challenge mapped directly to physical DOM events, proving human intent through computational complexity.
+3.  **V2 Policy DSL**: Run granular, dashboard-configurable security rules natively at the edge using our minimal, regex-compiled Domain Specific Language.
+4.  **Global Edge Propagation**: Local signals are broadcast horizontally to every edge node globally in <2ms via a Redis-distributed backbone.
 
 [Read the Decision & Propagation Flow (engineflow.md) →](./engineflow.md)
 
@@ -141,10 +143,10 @@ Manage your security posture via the [Sentinel Dashboard](https://sentinel.risks
 
 | Component | Status | Version |
 | :--- | :--- | :--- |
-| **Decision Engine** | 🟢 Online | v1.2.0-ALPHA |
+| **Decision Engine (V2)** | 🟢 Online | v2.0.0-PROD |
 | **Telemetry System** | 🟢 Online | Stable |
-| **Edge Network** | 🟢 Online | Global |
-| **SDK Adapter** | 🟢 Compatible | v0.1.4 |
+| **Edge Network** | 🟢 Online | Global (Redis Matrix) |
+| **SDK Adapter** | 🟢 Online | v1.0.1 |
 
 ---
 
