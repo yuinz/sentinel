@@ -95,36 +95,68 @@ if (res.status === 401) {
 
 ## Global Framework Integration
 
-Sentinel provides first-class support for Edge computing and Node.js frameworks. The V2 Engine delegates border control directly to the tenant's API key.
+Sentinel provides first-class support for standard Node.js applications, as well as zero-latency Edge computing runtimes. The Engine naturally delegates validation to the API key associated with your Tenant Dashboard.
 
-### Configuration
+### 1. Node.js / Express Middleware
 
-Drop this into any Express or Next.js edge middleware.
+For traditional servers, use the `api-turnstile` package. It automatically intercepts requests, validates Trust Tokens, and restricts access based on your dashboard rules.
+
+```bash
+npm install api-turnstile
+```
+
+```javascript
+import { sentinel } from 'api-turnstile';
+import express from 'express';
+
+const app = express();
+
+app.use(sentinel({
+  apiKey: process.env.SENTINEL_TENANT_KEY,
+  protect: ['/api/auth/*', '/v1/payments'],
+  verifyToken: true, // Auto-validates x-sentinel-trust headers from the frontend widget
+  onBlock: (req, res, decision) => {
+    // Optionally override default 403 response
+    return res.status(403).json({ error: "Infrastructure blocked" });
+  }
+}));
+```
+
+### 2. Edge Adapters (Cloudflare Workers / Vercel Edge)
+
+For high-traffic applications, Sentinel offers a specialized **Edge Adapter** that moves enforcement natively to the CDN layer. This delegates decision latency to under 5ms using KV caches.
+
+```bash
+npm install sentinel-sdk
+```
 
 ```javascript
 import { SentinelEdge } from 'sentinel-sdk';
 
-export async function middleware(req) {
-  const ip = req.headers.get('x-forwarded-for') || req.ip;
-  const token = req.headers.get('x-sentinel-trust');
+export default {
+  async fetch(request, env, ctx) {
+    const ip = request.headers.get('cf-connecting-ip') || request.headers.get('x-forwarded-for');
+    const token = request.headers.get('x-sentinel-trust');
 
-  const trust = await SentinelEdge.evaluate(ip, {
-    apiKey: process.env.SENTINEL_TENANT_KEY,
-    trustToken: token,
-    userAgent: req.headers.get('user-agent')
-  });
+    const trust = await SentinelEdge.evaluate(ip, {
+      apiKey: env.SENTINEL_TENANT_KEY,
+      trustToken: token,
+      userAgent: request.headers.get('user-agent'),
+      cache: env.SENTINEL_KV // Cloudflare KV for sub-5ms caching
+    });
 
-  // Strict enforcement
-  if (trust.verdict === 'BLOCK') {
-    return new Response(JSON.stringify({ error: 'Infrastructure blocked' }), { status: 403 });
+    if (trust.verdict === 'BLOCK') {
+      return new Response('Infrastructure Denied', { status: 403 });
+    }
+    
+    if (trust.verdict === 'CHALLENGE') {
+      return new Response(JSON.stringify({ action_required: 'solve_bwt' }), { status: 401 });
+    }
+
+    // ALLOWED -> Pass to Origin
+    return await fetch(request);
   }
-
-  if (trust.verdict === 'CHALLENGE') {
-    return new Response(JSON.stringify({ action_required: 'solve_bwt' }), { status: 401 });
-  }
-
-  // ALLOWED -> Proceed
-}
+};
 ```
 
-By connecting your API key to the Engine, your routing logic perfectly inherits all rules engineered in your Sentinel Dashboard (VPN actions, Datacenter restrictions, and Human Only modes).
+By connecting your `api_key` to the Engine, your routing logic automatically enforces all security rules engineered in your Sentinel Dashboard (VPN Drop, Datacenter Blocks, Human Only execution, etc).
