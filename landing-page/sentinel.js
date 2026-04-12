@@ -7,6 +7,11 @@ class SentinelEngine {
     constructor(config = {}) {
         this.endpoint = config.endpoint || 'https://sentinel.risksignal.name.ng';
         this.debug = config.debug || false;
+        this.siteKey = config.siteKey || null;
+    }
+
+    init(siteKey) {
+        this.siteKey = siteKey;
     }
 
     log(...msgs) {
@@ -62,9 +67,13 @@ class SentinelEngine {
         try {
             // 1. Request the challenge from the Sentinel node
             this.log(`Requesting challenge for target: ${targetIp}`);
+            
+            const headers = { 'Content-Type': 'application/json' };
+            if (this.siteKey) headers['Authorization'] = `Bearer ${this.siteKey}`;
+            
             const issueRes = await fetch(`${this.endpoint}/v1/challenge/issue`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers,
                 body: JSON.stringify({ target: targetIp, context })
             });
 
@@ -80,9 +89,13 @@ class SentinelEngine {
 
             // 3. Submit solution to receive Trust Token
             this.log('Submitting solved nonce...');
+            
+            const verifyHeaders = { 'Content-Type': 'application/json' };
+            if (this.siteKey) verifyHeaders['Authorization'] = `Bearer ${this.siteKey}`;
+
             const verifyRes = await fetch(`${this.endpoint}/v1/challenge/verify`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: verifyHeaders,
                 body: JSON.stringify({ target: targetIp, nonce: solvedNonce })
             });
 

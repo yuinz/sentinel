@@ -60,6 +60,8 @@ When your API returns a `CHALLENGE` verdict, your frontend must resolve it. We p
 ### Option A: The Visual Widget (Recommended)
 Instead of forcing users to identify crosswalks, Sentinel provides a beautiful, interactive "Click and hold to verify" overlay. Place the empty container where you want the widget to render, and load the script.
 
+> **For SPAs (React, Vue, Vite):** Keep your primary submit button visible initially. If your API returns a `401 CHALLENGE` or `403 FORBIDDEN` due to a Trust mismatch, hide your submit button and render the `<div id="sentinel-widget">` dynamically in its place. Once the user solves it, listen for the `sentinelSuccess` event and automatically retry your API call.
+
 ```html
 <!-- 1. The container -->
 <div id="sentinel-widget" data-sitekey="sz_live_your_key_here"></div>
@@ -96,6 +98,9 @@ If you are protecting background REST operations or multi-step API flows, you ca
 Catch the 401/403 failure in your fetch interceptor and let the SDK handle the rest:
 
 ```javascript
+// Initialize the Headless SDK with your tenant key
+window.Sentinel.init('sl_live_your_key_here');
+
 const res = await fetch('/api/checkout', { method: 'POST' });
 
 if (res.status === 401) {
