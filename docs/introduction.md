@@ -53,39 +53,47 @@ The client submits the solved nonce. If valid, Sentinel issues a **Trust Token**
 
 ---
 
-## Frontend Interaction SDK
+## Frontend Integration 
 
-When your API routes return a `CHALLENGE` verdict, your frontend must seamlessly invoke the Sentinel JS SDK to resolve it.
+When your API returns a `CHALLENGE` verdict, your frontend must resolve it. We provide two distinct ways to handle this depending on your UX requirements.
 
-::: info Zero-UI Cryptography
-Unlike CAPTCHAs, the Sentinel SDK operates entirely in the background. It silently fetches the challenge, computes the Proof-of-Work locally using WebCrypto, and generates a verified Trust Token.
-:::
-
-### 1. Installation
-Include the Sentinel client script on your page.
+### Option A: The Visual Widget (Recommended)
+Instead of forcing users to identify crosswalks, Sentinel provides a beautiful, interactive "Click and hold to verify" overlay. Place the empty container where you want the widget to render, and load the script.
 
 ```html
-<!-- Add to your head or before body close -->
+<!-- 1. The container -->
+<div id="sentinel-widget" data-sitekey="sz_live_your_key_here"></div>
+
+<!-- 2. The script -->
+<script src="https://sentinel.risksignal.name.ng/widget.js" async defer></script>
+```
+When the user holds the button, the widget silently solves the cryptographic BWT and injects a hidden `sentinel-token` input field into your parent form automatically.
+
+---
+
+### Option B: Zero-UI Headless SDK
+
+If you are protecting background REST operations or multi-step API flows, you can solve the challenge entirely invisibly using our background SDK.
+
+```html
 <script src="https://sentinel.risksignal.name.ng/sentinel.js"></script>
 ```
 
-### 2. Handling Verification
-If your API returns a 401 or 403 due to an unresolved challenge, invoke the engine to automatically clear the restriction before retrying.
+Catch the 401/403 failure in your fetch interceptor and let the SDK handle the rest:
 
 ```javascript
-// 1. API Call gets Challenged/Blocked
 const res = await fetch('/api/checkout', { method: 'POST' });
 
 if (res.status === 401) {
-    // 2. Automatically solve the Behavioral Work Token (BWT)
+    // 1. Automatically solve the Behavioral Work Token (BWT) in the background
     const verification = await window.Sentinel.verify(USER_IP);
     
     if (verification.success) {
-        // 3. Retry the request! SDK auto-saves Trust Token to localStorage
+        // 2. Retry the original request!
         const headers = window.Sentinel.getAuthHeaders();
         const retryRes = await fetch('/api/checkout', { 
             method: 'POST', 
-            headers: { ...headers } // Injects x-sentinel-trust natively
+            headers: { ...headers } // Auto-injects 'x-sentinel-trust'
         });
     }
 }
