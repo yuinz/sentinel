@@ -9,7 +9,7 @@ export default defineConfig({
     nav: [
       { text: 'Home', link: '/' },
       { text: 'V2 Docs', link: '/introduction' },
-      { text: 'Legacy V1 Docs', link: '/docs.html' }
+      { text: '← V1 Legacy Docs', link: 'https://sentinel.risksignal.name.ng/docs.html' }
     ],
     sidebar: [
       {
@@ -29,7 +29,7 @@ export default defineConfig({
       {
         text: 'Legacy Archive',
         items: [
-          { text: 'V1 Engine (Legacy)', link: '/docs.html' }
+          { text: 'V1 Engine (Legacy Docs)', link: 'https://sentinel.risksignal.name.ng/docs.html' }
         ]
       }
     ],
