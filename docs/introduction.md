@@ -67,7 +67,21 @@ Instead of forcing users to identify crosswalks, Sentinel provides a beautiful, 
 <!-- 2. The script -->
 <script src="https://sentinel.risksignal.name.ng/widget.js" async defer></script>
 ```
-When the user holds the button, the widget silently solves the cryptographic BWT and injects a hidden `sentinel-token` input field into your parent form automatically.
+When the user holds the button, the widget silently solves the cryptographic BWT and injects a hidden `<input name="sentinel-token">` field into your parent form automatically.
+
+### Modern SPAs (React, Vue)
+
+If you are not using a traditional `<form>` submission, you can capture the token programmatically by listening to the global `sentinelSuccess` event fired by the Document object:
+
+```javascript
+document.addEventListener('sentinelSuccess', (e) => {
+    // The Trust Token JWT is delivered directly in the event payload
+    const trustToken = e.detail.trust_token;
+    
+    // Pass this token in the headers of your API calls
+    // Headers: { 'x-sentinel-trust': trustToken }
+});
+```
 
 ---
 
