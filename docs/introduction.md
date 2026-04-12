@@ -53,6 +53,46 @@ The client submits the solved nonce. If valid, Sentinel issues a **Trust Token**
 
 ---
 
+## Frontend Interaction SDK
+
+When your API routes return a `CHALLENGE` verdict, your frontend must seamlessly invoke the Sentinel JS SDK to resolve it.
+
+::: info Zero-UI Cryptography
+Unlike CAPTCHAs, the Sentinel SDK operates entirely in the background. It silently fetches the challenge, computes the Proof-of-Work locally using WebCrypto, and generates a verified Trust Token.
+:::
+
+### 1. Installation
+Include the Sentinel client script on your page.
+
+```html
+<!-- Add to your head or before body close -->
+<script src="https://sentinel.risksignal.name.ng/sentinel.js"></script>
+```
+
+### 2. Handling Verification
+If your API returns a 401 or 403 due to an unresolved challenge, invoke the engine to automatically clear the restriction before retrying.
+
+```javascript
+// 1. API Call gets Challenged/Blocked
+const res = await fetch('/api/checkout', { method: 'POST' });
+
+if (res.status === 401) {
+    // 2. Automatically solve the Behavioral Work Token (BWT)
+    const verification = await window.Sentinel.verify(USER_IP);
+    
+    if (verification.success) {
+        // 3. Retry the request! SDK auto-saves Trust Token to localStorage
+        const headers = window.Sentinel.getAuthHeaders();
+        const retryRes = await fetch('/api/checkout', { 
+            method: 'POST', 
+            headers: { ...headers } // Injects x-sentinel-trust natively
+        });
+    }
+}
+```
+
+---
+
 ## Global Framework Integration
 
 Sentinel provides first-class support for Edge computing and Node.js frameworks. The V2 Engine delegates border control directly to the tenant's API key.
