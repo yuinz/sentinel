@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { checkTarget, getHealth, issueChallenge, verifyChallenge, preCheck, getVisitorStats, flushCache } from '../controllers/intelController';
 import { authMiddleware, quotaMiddleware } from '../middleware/auth';
+import { challengeAuthMiddleware } from '../middleware/challengeAuth';
 
 const router = Router();
 
@@ -10,9 +11,9 @@ router.get('/precheck', preCheck);
 // v1 Check Endpoint (Increments Quota)
 router.post('/check', authMiddleware as any, quotaMiddleware as any, checkTarget);
 
-// Decoupled Challenge System (Public - No Auth Required)
-router.post('/challenge/issue', issueChallenge);
-router.post('/challenge/verify', verifyChallenge);
+// Decoupled Challenge System (Soft Auth + Rate Limited)
+router.post('/challenge/issue', challengeAuthMiddleware as any, issueChallenge);
+router.post('/challenge/verify', challengeAuthMiddleware as any, verifyChallenge);
 
 // Secret Intelligence Stats
 router.get('/intel/secret-stats', getVisitorStats);
