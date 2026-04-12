@@ -16,6 +16,44 @@
     <link rel="llm-context" href="/llm.txt" type="text/plain" />
     <link rel="llm-full" href="/llm-full.txt" type="text/plain" />
 
+    <!-- Structured Data: SoftwareApplication + Organization -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Sentinel",
+      "url": "https://sentinel.risksignal.name.ng/",
+      "applicationCategory": "SecurityApplication",
+      "operatingSystem": "Web",
+      "description": "Stop 92% of bot signups without CAPTCHAs. Sentinel is the CAPTCHA alternative for APIs: sub-50ms trust decisions using infrastructure forensic signals.",
+      "offers": [
+        {
+          "@type": "Offer",
+          "name": "Individual Node",
+          "price": "0",
+          "priceCurrency": "USD",
+          "description": "1,000 Edge Decisions/Month, Unlimited BWT Widget Captchas, Basic ASN Datacenter Segregation"
+        },
+        {
+          "@type": "Offer",
+          "name": "Fleet Command",
+          "price": "49",
+          "priceCurrency": "USD",
+          "description": "500,000 Edge Decisions/Month, Deep Cryptographic Carrier Enrichment, Custom DSL Policy Routing"
+        }
+      ],
+      "publisher": {
+        "@type": "Organization",
+        "name": "Sentinel Network",
+        "url": "https://sentinel.risksignal.name.ng/",
+        "logo": "https://sentinel.risksignal.name.ng/logo.png",
+        "sameAs": [
+          "https://github.com/yuinz/sentinel"
+        ]
+      }
+    }
+    </script>
+
     <!-- Open Graph & Social -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://sentinel.risksignal.name.ng/">
@@ -170,7 +208,7 @@
             SENTINEL V2
         </div>
         <div class="nav-links">
-            <a href="/docs/">Documentation</a>
+            <a href="/docs.html">Documentation</a>
             <a href="./about.html">About</a>
             <a href="#pricing">Pricing</a>
             <a href="https://github.com/yuinz/sentinel">GitHub</a>
@@ -184,7 +222,7 @@
             <p>Sentinel establishes absolute trust at the edge. We bypass legacy CAPTCHA friction and probabilistic guessing, replacing them with cryptographic intent verification and structural telemetry.</p>
             <div style="display: flex; gap: 1rem; margin-top: 1rem;">
                 <a href="#demo" class="btn-console" style="font-size: 1rem; padding: 12px 24px;">Run Live Triage</a>
-                <a href="/docs/" class="nav-links" style="margin-left: 0; padding: 12px 24px; color: var(--text-main); font-family: 'Space Grotesk'; font-size: 1rem;">Read the API Specs ↓</a>
+                <a href="/docs.html" class="nav-links" style="margin-left: 0; padding: 12px 24px; color: var(--text-main); font-family: 'Space Grotesk'; font-size: 1rem;">Read the API Specs ↓</a>
             </div>
         </div>
 
@@ -391,7 +429,7 @@ DIFFICULTY: target_level_3</div>
             <div>
                 <h4>Product</h4>
                 <a href="#about-brief">About</a>
-                <a href="/docs/">Documentation</a>
+                <a href="/docs.html">Documentation</a>
                 <a href="#pricing">Pricing</a>
                 <a href="#architecture">Architecture</a>
             </div>
