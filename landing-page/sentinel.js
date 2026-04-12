@@ -52,9 +52,13 @@ class SentinelEngine {
 
     /**
      * Completes an invisible intent verification.
-     * Required when an IP receives an 'UNSTABLE' verdict.
+     * Required when an IP receives an 'UNSTABLE' or 'CHALLENGE' verdict.
+     * 
+     * @param {string} targetIp - IP to verify. Defaults to 'detect' which lets the backend
+     *                             resolve the real client IP from connection headers automatically.
+     * @param {string} context  - Context label for telemetry (e.g. 'browser', 'checkout').
      */
-    async verify(targetIp, context = 'browser') {
+    async verify(targetIp = 'detect', context = 'browser') {
         try {
             // 1. Request the challenge from the Sentinel node
             this.log(`Requesting challenge for target: ${targetIp}`);

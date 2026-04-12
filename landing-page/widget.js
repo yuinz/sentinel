@@ -7,7 +7,6 @@
         constructor(container) {
             this.container = container;
             this.siteKey = container.getAttribute('data-sitekey');
-            this.target = 'client-ip'; // Backend will resolve
             this.state = 'idle'; // idle, issuing, holding, verifying, success, error
             this.challenge = null;
             this.isHolding = false;

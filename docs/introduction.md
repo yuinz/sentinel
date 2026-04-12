@@ -85,8 +85,8 @@ Catch the 401/403 failure in your fetch interceptor and let the SDK handle the r
 const res = await fetch('/api/checkout', { method: 'POST' });
 
 if (res.status === 401) {
-    // 1. Automatically solve the Behavioral Work Token (BWT) in the background
-    const verification = await window.Sentinel.verify(USER_IP);
+    // 1. Solve the BWT in the background (IP auto-detected by the backend)
+    const verification = await window.Sentinel.verify();
     
     if (verification.success) {
         // 2. Retry the original request!
