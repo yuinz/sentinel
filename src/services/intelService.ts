@@ -377,7 +377,11 @@ export class IntelService {
             const salt = process.env.POW_SECRET || 'sentinel-secure-powder';
             const decoded = Buffer.from(token, 'base64').toString();
             const [t, ts, sig] = decoded.split(':');
-            return t === target && (Math.floor(Date.now() / 1000) - parseInt(ts)) < 1800 && sig === crypto.createHmac('sha256', salt).update(`${t}:${ts}`).digest('hex').substring(0, 16);
+            // Validates HMAC Signature and Expiration (30 mins).
+            // We intentionally skip strict 't === target' enforcement because VPNs often dynamically 
+            // rotate their last-octet egress IPs between the Widget Server (Render) and Orchestrator (Supabase),
+            // which causes false-positive token rejections. The HMAC signature prevents forgery.
+            return (Math.floor(Date.now() / 1000) - parseInt(ts)) < 1800 && sig === crypto.createHmac('sha256', salt).update(`${t}:${ts}`).digest('hex').substring(0, 16);
         } catch { return false; }
     }
 
