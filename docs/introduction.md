@@ -1,132 +1,221 @@
 # The Deterministic Trust Layer
 
-Sentinel Engine represents a paradigm shift in threat protection. It balances ruthless security against automated vectors alongside an entirely frictionless experience for legitimate human users.
+Sentinel Engine is a high-velocity decision engine that renders sub-50ms trust decisions for your API traffic. It replaces user-hostile CAPTCHAs with infrastructure forensics and cryptographic Proof-of-Work — blocking automated attacks without ever interrupting a legitimate user.
 
-Cloudflare Turnstile is for browsers. **Sentinel is for APIs.**
-
-Sentinel is a high-velocity decision engine engineered to render sub-50ms trust decisions for your API traffic at the network edge. It replaces user-hostile CAPTCHAs with infrastructure forensics and cryptographic Proof-of-Work, blocking automated attacks without ever interrupting a legitimate user.
+> **Cloudflare Turnstile is for browsers. Sentinel is for APIs.**
 
 ::: info Outcome-Based Security
-We measure success in blocked automation and reduced fraud, not just traffic volume. Sentinel is built to protect your bottom line by reducing infrastructure costs and preventing revenue loss from ghost traffic.
+We measure success in blocked automation and reduced fraud, not traffic volume. Sentinel protects your bottom line by reducing infrastructure costs and preventing revenue loss from ghost traffic.
 :::
-
-## Core Architecture
-
-Sentinel operates on a Zero-Friction, Zero-Trust philosophy using three distinct layers of defense:
-
-### 1. Fast-Path Matrix (< 50ms latency)
-Incoming API requests are instantly vetted against a globally distributed in-memory matrix of over 100 known-bad hosting providers, proxy networks, and datacenter IP blocks. This handles the majority of primitive bot traffic instantly, returning a `BLOCK` verdict without external database lookups.
-
-### 2. Behavioral Work Tokens (BWT)
-When an IP is identified as "Unstable" (suspicious signals found or ambiguous infrastructure), Sentinel issues a cryptographic challenge. Legitimate clients solve this in milliseconds via the background SDK engine, while primitive scripts and automated tools fail to generate a valid solution. We do not use visual puzzle grids.
-
-### 3. Infrastructure Forensics
-For high-sensitivity endpoints, Sentinel performs real-time forensic signatures on the requested environment. We detect headless browsers (Puppeteer, Playwright), automated runtimes, and masking attempts (VPN/Tor) with high confidence.
 
 ---
 
-## Agentic Security & AI Governance
+## Core Architecture
 
-::: warning 2026 META // AI AGENT PROTECTION
-The web is no longer just for humans. AI Agents (AutoGPT, ChatGPT Browse, Perplexity) consume your resources without buying subscriptions. Sentinel is the first engine built specifically to govern the **Agentic Web**.
-:::
+Sentinel operates on a **Zero-Friction, Zero-Trust** philosophy using three distinct layers of defense:
 
-Traditional "Human-only" filters are too binary. Sentinel allows you to configure your tenant policy to categorize traffic into three tiers:
-- **Verified Human**: Full unconditional access to high-compute resources.
-- **Verified Agent**: Allowed via configuration for limited access (text-only endpoints, API interfaces).
-- **Malicious Bot**: Hard rejection via structural IP intelligence.
+### 1. Fast-Path Matrix (< 50ms)
+Incoming requests are instantly checked against an in-memory matrix of known-bad hosting providers, proxy networks, and datacenter IP blocks. The majority of primitive bot traffic is blocked here without any external database lookup.
+
+### 2. Behavioral Work Tokens (BWT)
+When an IP is flagged as "Unstable" (ambiguous signals), Sentinel issues a cryptographic challenge. Legitimate clients solve it via the Sentinel Widget while their browser computes a SHA-256 Proof-of-Work in the background. Primitive scripts fail to produce a valid solution.
+
+### 3. Infrastructure Forensics
+For high-sensitivity endpoints, Sentinel performs real-time analysis: headless browser detection (Puppeteer, Playwright), VPN/Tor masking, automated runtime signatures, and request velocity anomalies.
+
+---
+
+## Verdict Reference
+
+Every Sentinel response contains a `verdict` field. Here is what each value means and what action to take:
+
+| Verdict | Meaning | Your Action |
+|---------|---------|-------------|
+| `TRUSTED` | Clean residential IP, no risk signals. | Allow the request. |
+| `UNSTABLE` | Ambiguous signals (shared ISP, high velocity). | Serve the widget challenge. |
+| `UNTRUSTED` | VPN, datacenter, known-bad infrastructure. | Hard block (403) or serve the widget depending on your policy. |
 
 ---
 
 ## The Verification Lifecycle
 
-Implementing Sentinel's behavioral gate on the frontend follows a deterministic three-stage lifecycle.
+When your API decides a challenge is required, the flow is always the same three steps:
 
-### Phase 1: Challenge Issuance
-Your API returns a `CHALLENGE` verdict. The client frontend requests a new cryptographic challenge from the Sentinel infrastructure, unique to the user's IP and session.
+**1. Challenge Issuance** — Your backend calls `/v1/challenge/issue` (authenticated with your site key) to obtain a cryptographic nonce tied to the user's IP.
 
-### Phase 2: Intent Demonstration
-The user demonstrates "Proof of Intent" (via the Sentinel SDK Widget) while their browser computes a complex SHA-256 solution in the background.
+**2. Intent Demonstration** — The Sentinel Widget renders in the user's browser. The user clicks and holds for 2–4 seconds while the browser computes the SHA-256 Proof-of-Work.
 
-### Phase 3: Verification & Token
-The client submits the solved nonce. If valid, Sentinel issues a **Trust Token**. This token serves as a cryptographic "passport" that bypasses the engine on subsequent requests.
+**3. Token Issuance** — Your backend calls `/v1/challenge/verify`. If the nonce is valid, Sentinel returns a `trust_token`. Pass this as `x-sentinel-trust` on the retried request. The backend checks it and allows through.
 
 ---
 
-## Frontend Integration 
+## Public Pre-check Endpoint
 
-When your API returns a `CHALLENGE` verdict, your frontend must resolve it. We provide two distinct ways to handle this depending on your UX requirements.
+Before rendering any widget, you should check whether a challenge is actually needed. Use the **public pre-check endpoint** — it requires no auth and is specifically designed for this purpose.
+
+```
+GET /v1/precheck
+```
+
+Forward the real client IP via `x-forwarded-for`. The response tells you whether to show the widget or proceed immediately:
+
+```json
+{
+  "required": true,
+  "verdict": "UNTRUSTED",
+  "score": 5,
+  "target": "104.21.0.1",
+  "trace_id": "a1b2c3d4"
+}
+```
+
+- `required: false` → clean IP, proceed with your action immediately.
+- `required: true` → show the widget before allowing the action.
+
+::: tip Testing
+You can mock any IP for local development using the query parameter:
+`GET /v1/precheck?mock_ip=104.21.0.1`
+:::
+
+---
+
+## Frontend Integration
 
 ### Option A: The Visual Widget (Recommended)
-Instead of forcing users to identify crosswalks, Sentinel provides a beautiful, interactive "Click and hold to verify" overlay. Place the empty container where you want the widget to render, and load the script.
 
-> **For SPAs (React, Vue, Vite):** Keep your primary submit button visible initially. If your API returns a `401 CHALLENGE` or `403 FORBIDDEN` due to a Trust mismatch, hide your submit button and render the `<div id="sentinel-widget">` dynamically in its place. Once the user solves it, listen for the `sentinelSuccess` event and automatically retry your API call.
+Load the widget script **directly from the Sentinel CDN** — this is critical. The widget resolves its API base URL from its own `src`, so self-hosting it will break all challenge requests.
 
 ```html
-<!-- 1. The container -->
-<div id="sentinel-widget" data-sitekey="sz_live_your_key_here"></div>
+<!-- 1. Place the container where you want the widget to appear -->
+<div id="sentinel-widget" data-sitekey="sl_your_site_key_here"></div>
 
-<!-- 2. The script -->
+<!-- 2. Load the script from the Sentinel CDN (not self-hosted) -->
 <script src="https://sentinel.risksignal.name.ng/widget.js" async defer></script>
 ```
-When the user holds the button, the widget silently solves the cryptographic BWT and injects a hidden `<input name="sentinel-token">` field into your parent form automatically.
 
-### Modern SPAs (React, Vue)
+::: warning Key format
+Site keys always start with `sl_`. Do **not** use your billing API key (which starts with `sl_` but is longer) as the site key — they are different credentials. Get your site key from the Sentinel Dashboard.
+:::
 
-If you are not using a traditional `<form>` submission, you can capture the token programmatically by listening to the global `sentinelSuccess` event fired by the Document object:
+When the user completes the hold, the widget fires a `sentinelSuccess` event on `document`. Listen for it to get the trust token:
 
 ```javascript
-document.addEventListener('sentinelSuccess', (e) => {
-    // The Trust Token JWT is delivered directly in the event payload
-    const trustToken = e.detail.trust_token;
-    
-    // Pass this token in the headers of your API calls
-    // Headers: { 'x-sentinel-trust': trustToken }
+document.addEventListener('sentinelSuccess', (event) => {
+  const trustToken = event.detail.trust_token;
+
+  // Retry your API call with the token attached
+  await fetch('/api/your-endpoint', {
+    method: 'POST',
+    headers: {
+      'x-sentinel-trust': trustToken,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ /* your payload */ }),
+  });
 });
 ```
 
----
+If the widget is inside a `<form>`, the token is also automatically injected as a hidden `<input name="sentinel-token">` field — no extra code needed for traditional form submissions.
 
-### Option B: Zero-UI Headless SDK
+### SPA Integration Pattern (React / Vue / Svelte)
 
-If you are protecting background REST operations or multi-step API flows, you can solve the challenge entirely invisibly using our background SDK.
+The recommended pattern for SPAs:
 
-```html
-<script src="https://sentinel.risksignal.name.ng/sentinel.js"></script>
-```
-
-Catch the 401/403 failure in your fetch interceptor and let the SDK handle the rest:
+1. On page/action load, call `GET /v1/precheck` from your backend (forwarding the client IP).
+2. If `required: false`, proceed immediately.
+3. If `required: true`, render the widget div and hide your action button.
+4. Listen for `sentinelSuccess`, capture the token from `event.detail.trust_token`, and re-fire your original action with the token in the `x-sentinel-trust` header.
 
 ```javascript
-// Initialize the Headless SDK with your tenant key
-window.Sentinel.init('sl_live_your_key_here');
+// On component mount or before a sensitive action:
+async function checkAndProceed(payload) {
+  const check = await fetch('/api/sentinel-precheck'); // your backend calls /v1/precheck
+  const { required } = await check.json();
 
-const res = await fetch('/api/checkout', { method: 'POST' });
+  if (!required) {
+    // Clean IP — proceed directly
+    return doAction(payload);
+  }
 
-if (res.status === 401) {
-    // 1. Solve the BWT in the background (IP auto-detected by the backend)
-    const verification = await window.Sentinel.verify();
-    
-    if (verification.success) {
-        // 2. Retry the original request!
-        const headers = window.Sentinel.getAuthHeaders();
-        const retryRes = await fetch('/api/checkout', { 
-            method: 'POST', 
-            headers: { ...headers } // Auto-injects 'x-sentinel-trust'
-        });
-    }
+  // High-risk IP — show widget, wait for solve
+  showWidget();
+  document.addEventListener('sentinelSuccess', async (e) => {
+    hideWidget();
+    return doAction(payload, e.detail.trust_token);
+  }, { once: true });
+}
+
+async function doAction(payload, trustToken) {
+  const headers = { 'Content-Type': 'application/json' };
+  if (trustToken) headers['x-sentinel-trust'] = trustToken;
+
+  const res = await fetch('/api/your-endpoint', {
+    method: 'POST',
+    headers,
+    body: JSON.stringify(payload),
+  });
+  // handle response...
 }
 ```
 
 ---
 
-## Global Framework Integration
+## Backend Integration
 
-Sentinel provides first-class support for standard Node.js applications, as well as zero-latency Edge computing runtimes. The Engine naturally delegates validation to the API key associated with your Tenant Dashboard.
+### Supabase Edge Functions (Deno)
 
-### 1. Node.js / Express Middleware
+Call `/v1/precheck` and forward the real client IP. Do **not** call `/v2/evaluate` for gateway enforcement — that endpoint requires a billing API key and will return 403 for site keys, silently passing all traffic through.
 
-For traditional servers, use the `api-turnstile` package. It automatically intercepts requests, validates Trust Tokens, and restricts access based on your dashboard rules.
+```typescript
+async function sentinelGate(req: Request): Promise<Response | null> {
+  const ip =
+    req.headers.get('cf-connecting-ip') ||
+    (req.headers.get('x-forwarded-for') || '').split(',')[0].trim() ||
+    '127.0.0.1';
+
+  const trustToken = req.headers.get('x-sentinel-trust');
+
+  // If caller already has a valid trust token, let them through immediately.
+  if (trustToken) return null;
+
+  const res = await fetch('https://sentinel.risksignal.name.ng/v1/precheck', {
+    method: 'GET',
+    headers: { 'x-forwarded-for': ip },
+  });
+
+  if (!res.ok) return null; // Fail open — never block on Sentinel downtime
+
+  const trust = await res.json();
+
+  if (trust.required) {
+    if (trust.verdict === 'UNTRUSTED') {
+      return new Response(
+        JSON.stringify({ error: 'Infrastructure Denied.' }),
+        { status: 403, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
+    // UNSTABLE — issue a challenge
+    return new Response(
+      JSON.stringify({ action_required: 'solve_bwt', error: 'Challenge Required' }),
+      { status: 401, headers: { 'Content-Type': 'application/json' } }
+    );
+  }
+
+  return null; // Trusted — let the request proceed
+}
+
+// Usage in your serve handler:
+serve(async (req) => {
+  const block = await sentinelGate(req);
+  if (block) return block;
+
+  // ... your actual handler logic
+});
+```
+
+### Node.js / Express
+
+Use the `api-turnstile` npm package. Install it and import it as follows:
 
 ```bash
 npm install api-turnstile
@@ -138,52 +227,83 @@ import express from 'express';
 
 const app = express();
 
-app.use(sentinel({
-  apiKey: process.env.SENTINEL_TENANT_KEY,
-  protect: ['/api/auth/*', '/v1/payments'],
-  verifyToken: true, // Auto-validates x-sentinel-trust headers from the frontend widget
-  onBlock: (req, res, decision) => {
-    // Optionally override default 403 response
-    return res.status(403).json({ error: "Infrastructure blocked" });
-  }
+app.use('/api', sentinel({
+  apiKey: process.env.SENTINEL_API_KEY, // your sl_... API key
+  onBlock: (req, res) => {
+    res.status(403).json({ error: 'Infrastructure blocked' });
+  },
+  onChallenge: (req, res) => {
+    res.status(401).json({ action_required: 'solve_bwt', error: 'Challenge Required' });
+  },
 }));
 ```
 
-### 2. Edge Adapters (Cloudflare Workers / Vercel Edge)
+The middleware automatically reads `x-sentinel-trust` from incoming headers and bypasses the challenge flow if a valid token is present.
 
-For high-traffic applications, Sentinel offers a specialized **Edge Adapter** that moves enforcement natively to the CDN layer. This delegates decision latency to under 5ms using KV caches.
+### Cloudflare Workers / Vercel Edge
 
-```bash
-npm install sentinel-sdk
-```
+For edge deployments where you need sub-10ms performance and zero dependencies, you can natively verify traffic using the V2 Evaluate endpoint. The engine evaluates both the IP and the Token sequentially, rendering a verdict instantly.
 
 ```javascript
-import { SentinelEdge } from 'sentinel-sdk';
-
 export default {
   async fetch(request, env, ctx) {
-    const ip = request.headers.get('cf-connecting-ip') || request.headers.get('x-forwarded-for');
-    const token = request.headers.get('x-sentinel-trust');
+    const ip =
+      request.headers.get('cf-connecting-ip') ||
+      request.headers.get('x-forwarded-for') ||
+      '0.0.0.0';
 
-    const trust = await SentinelEdge.evaluate(ip, {
-      apiKey: env.SENTINEL_TENANT_KEY,
-      trustToken: token,
-      userAgent: request.headers.get('user-agent'),
-      cache: env.SENTINEL_KV // Cloudflare KV for sub-5ms caching
-    });
+    const trustToken = request.headers.get('x-sentinel-trust');
 
-    if (trust.verdict === 'BLOCK') {
-      return new Response('Infrastructure Denied', { status: 403 });
+    // 1. Send the metadata AND the Token directly to the V2 Engine
+    try {
+      const edgeQuery = await fetch('https://sentinel.risksignal.name.ng/v2/evaluate', {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${env.SENTINEL_API_KEY}`,
+            'Content-Type': 'application/json',
+            ...(trustToken ? { 'x-sentinel-trust': trustToken } : {})
+        },
+        body: JSON.stringify({ target: ip })
+      });
+
+      if (edgeQuery.ok) {
+        const { decision } = await edgeQuery.json();
+        
+        // 2. Enforce the verdict natively at the edge
+        if (decision.verdict === 'BLOCK') {
+            return new Response('Infrastructure Denied', { status: 403 });
+        }
+        if (decision.verdict === 'CHALLENGE') {
+            return new Response(JSON.stringify({ action_required: 'solve_bwt' }), { 
+                status: 401, 
+                headers: { 'Content-Type': 'application/json' } 
+            });
+        }
+      }
+    } catch(e) {
+      // Sentinel timeout — gracefully fallback to origin
     }
-    
-    if (trust.verdict === 'CHALLENGE') {
-      return new Response(JSON.stringify({ action_required: 'solve_bwt' }), { status: 401 });
-    }
 
-    // ALLOWED -> Pass to Origin
-    return await fetch(request);
-  }
+    // 3. Trusted or allowed via valid cryptographic token — pass to your origin
+    return fetch(request);
+  },
 };
 ```
 
-By connecting your `api_key` to the Engine, your routing logic automatically enforces all security rules engineered in your Sentinel Dashboard (VPN Drop, Datacenter Blocks, Human Only execution, etc).
+This guarantees that user tokens are crypto-verified natively by the Sentinel V2 API, preventing any client-side spoofing, without needing to import any V1 legacy libraries.
+
+::: tip Fail-Open Design
+Every integration above follows the **fail-open** principle: if Sentinel is unreachable (timeout, network error), the gate returns `null` / proceeds normally. This ensures your service stays online even if Sentinel has an outage. Never block legitimate traffic because of a dependency failure.
+:::
+
+---
+
+## Trust Token Reference
+
+A trust token is a **base64-encoded HMAC string** issued by `/v1/challenge/verify` after a successful widget solve. It is:
+
+- **IP-bound** — tied to the exact IP that solved the challenge.
+- **Time-limited** — expires 30 minutes after issuance (`expires_in: 1800`).
+- **Header-delivered** — send it as `x-sentinel-trust: <token>` on subsequent requests.
+
+Pass it through as-is. You do not need to decode or validate it on your end — Sentinel's backend verifies the HMAC on every evaluation.
