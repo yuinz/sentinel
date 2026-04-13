@@ -100,8 +100,15 @@ class IntelServiceV2 {
         }
         // ── PHASE 2: POLICY ENFORCEMENT ────────────────────────────────────────
         // All signals are now collected. Apply hard policy overrides in order of severity.
-        // Hard blocks always take precedence over soft challenges.
+        // Hard blocks always take precedence over soft challenges, UNLESS the user has a valid Trust Token.
         const hasValidToken = signals.some(s => s.id === 'TOKEN_VALID');
+        // ── Human Bypass Logic ────────────────────────────────────────────────
+        // If a valid HMAC token is present (meaning they just solved the widget), 
+        // they have proven they are human. We immediately short-circuit all infrastructure blocks.
+        if (hasValidToken) {
+            signals.push({ id: 'BYPASS_AUTHORIZED', weight: 100, label: 'Authorized via Cryptographic Token' });
+            return this.finalizeCalculations(signals, policy, start);
+        }
         // 2a. VPN / Proxy Enforcement
         if (isAsyncVpn) {
             const action = policy.vpn_action || 'allow';
