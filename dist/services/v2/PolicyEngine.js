@@ -20,6 +20,11 @@ class PolicyEngine {
         const dslOverride = this.evaluateRules(policy.rules || [], signals);
         if (dslOverride)
             return dslOverride;
+        // 1b. Honor explicit "Force Challenge" from the dashboard UI
+        const hasExplicitChallenge = signals.some(s => s.id === 'POLICY_CHALLENGE_PROXY' || s.id === 'POLICY_CHALLENGE_DC');
+        const hasValidToken = signals.some(s => s.id === 'TOKEN_VALID');
+        if (hasExplicitChallenge && !hasValidToken)
+            return 'CHALLENGE';
         // 2. Fallback to Mathematical Score Thresholds
         switch (policy.mode) {
             case 'PASSIVE':
