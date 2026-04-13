@@ -5,6 +5,14 @@ export class PolicyEngine {
      * Determines the final verdict based purely on the calculated score,
      * mapped against the tenant's exact policy mode.
      * KISS Rule Enforced: No complex nested "if/else" logic here.
+     *
+     * Signal weights (source of truth in TrustCalculator.ts):
+     *   RESIDENTIAL_IP:  +10
+     *   TOKEN_VALID:     +30
+     *   VPN_DETECTED:    -10
+     *   DATACENTER_IP:   -20
+     *   HIGH_VELOCITY:   -30
+     *   SCANNER_PATTERN: -60
      */
     static decideVerdict(score: number, policy: V2PolicyConfig, signals: TrustSignal[]): Verdict {
         
@@ -13,49 +21,57 @@ export class PolicyEngine {
         if (dslOverride) return dslOverride;
 
         // 2. Fallback to Mathematical Score Thresholds
-        // Max achievable score for a verified browser user: RESIDENTIAL_IP(+10) + TOKEN_VALID(+30) = 40
-        // All ALLOW thresholds are calibrated against this ceiling.
         switch (policy.mode) {
             case 'PASSIVE':
                 // Near-permissive. Only hard blocks for explicitly malicious IPs.
+                // Clean residential (+10)  → ALLOW
+                // VPN (-10)               → CHALLENGE
+                // High velocity (-30)      → CHALLENGE
+                // Scanner (-60)           → BLOCK
                 if (score >= 10) return 'ALLOW';
                 if (score >= -40) return 'CHALLENGE';
                 return 'BLOCK';
 
             case 'STRICT':
-                // Requires residential IP + valid token to pass (score 40 ≥ 38).
-                // VPN + token (score 20) gets CHALLENGE. Datacenter alone (score -20) gets BLOCK.
+                // Strict enforcement. Residential + Token (40) required to ALLOW.
+                // VPN alone (-10)         → CHALLENGE (let them try to verify)
+                // Datacenter alone (-20)  → BLOCK
+                // VPN + Token (20)        → CHALLENGE (token alone not enough in STRICT)
                 if (score >= 38) return 'ALLOW';
-                if (score >= 5) return 'CHALLENGE';
+                if (score >= -10) return 'CHALLENGE';
                 return 'BLOCK';
 
             case 'DRACONIAN':
-                // Maximum lockdown. Only residential + verified token passes (score 40 ≥ 38).
-                // VPN + token (score 20) gets BLOCK. Residential without token (score 10) gets BLOCK.
-                // Anything with both RESIDENTIAL_IP and TOKEN_VALID clears the threshold.
+                // Maximum lockdown. Only residential + token passes (score 40 ≥ 38).
+                // VPN + token (20)        → BLOCK
+                // Residential alone (10)  → BLOCK (token mandatory)
                 if (score >= 38) return 'ALLOW';
                 if (score >= 25) return 'CHALLENGE';
                 return 'BLOCK';
 
             case 'HUMAN_ONLY':
                 // Absolute Zero-Trust: score doesn't matter, signals do.
-                // 1. Must NOT be an automated script or velocity abuser
+                // Must NOT be an automated script or velocity abuser
                 if (signals.some(s => s.id === 'SCANNER_PATTERN' || s.id === 'HIGH_VELOCITY')) {
                     return 'BLOCK';
                 }
-                // 2. Must be a residential IP and must have a valid token
+                // Must be residential AND have a valid token
                 const hasResidential = signals.some(s => s.id === 'RESIDENTIAL_IP');
                 const hasToken = signals.some(s => s.id === 'TOKEN_VALID');
-                
                 if (hasResidential && hasToken) return 'ALLOW';
-                if (hasToken) return 'CHALLENGE'; // Has token but bad network (e.g., VPN)
+                if (hasToken) return 'CHALLENGE'; // Token present but bad network
                 return 'BLOCK'; // No token, no entry
 
             case 'BALANCED':
             default:
-                // Standard. Residential IP (+10) + Token (+30) = 40 → ALLOW.
-                if (score >= 30) return 'ALLOW';
-                if (score >= 0) return 'CHALLENGE';
+                // Standard balanced policy aligned with actual signal weights.
+                // Clean residential (+10) → ALLOW  (no token needed for clean traffic)
+                // VPN (-10)              → CHALLENGE
+                // Datacenter (-20)       → CHALLENGE
+                // High velocity (-30)    → BLOCK
+                // Scanner (-60)          → BLOCK
+                if (score >= 10) return 'ALLOW';
+                if (score >= -20) return 'CHALLENGE';
                 return 'BLOCK';
         }
     }
@@ -66,13 +82,10 @@ export class PolicyEngine {
      */
     private static evaluateRules(rules: string[], signals: TrustSignal[]): Verdict | null {
         for (const rule of rules) {
-            // Very fast Regex evaluation for the DSL syntax
             const match = rule.match(/IF\s+signal\s*==\s*['"]([A-Z_]+)['"]\s+THEN\s+(ALLOW|CHALLENGE|BLOCK)/i);
             if (match) {
                 const targetSignal = match[1];
                 const action = match[2].toUpperCase() as Verdict;
-                
-                // If the user's traffic contains the signal mentioned in the rule, obey the rule immediately.
                 if (signals.some(s => s.id === targetSignal)) {
                     return action;
                 }
