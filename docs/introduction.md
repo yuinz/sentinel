@@ -119,42 +119,49 @@ If the widget is inside a `<form>`, the token is also automatically injected as 
 
 ### SPA Integration Pattern (React / Vue / Svelte)
 
-The recommended pattern for SPAs:
+The most robust pattern for modern frameworks is the "Optimistic Action" approach. You assume the user's IP is trusted, attempt the secure action, and only unhide the widget if your backend issues a `401 Challenge Required`.
 
-1. On page/action load, call `GET /v1/precheck` from your backend (forwarding the client IP).
-2. If `required: false`, proceed immediately.
-3. If `required: true`, render the widget div and hide your action button.
-4. Listen for `sentinelSuccess`, capture the token from `event.detail.trust_token`, and re-fire your original action with the token in the `x-sentinel-trust` header.
+**1. Include the hidden widget container in your UI:**
+```html
+<div id="sentinel-widget-container" style="display: none;">
+  <div id="sentinel-widget" data-sitekey="sl_your_site_key_here"></div>
+</div>
+```
 
+**2. Implement the try/catch logic:**
 ```javascript
-// On component mount or before a sensitive action:
-async function checkAndProceed(payload) {
-  const check = await fetch('/api/sentinel-precheck'); // your backend calls /v1/precheck
-  const { required } = await check.json();
-
-  if (!required) {
-    // Clean IP — proceed directly
-    return doAction(payload);
-  }
-
-  // High-risk IP — show widget, wait for solve
-  showWidget();
-  document.addEventListener('sentinelSuccess', async (e) => {
-    hideWidget();
-    return doAction(payload, e.detail.trust_token);
-  }, { once: true });
-}
-
-async function doAction(payload, trustToken) {
+async function doAction(payload, token = null) {
   const headers = { 'Content-Type': 'application/json' };
-  if (trustToken) headers['x-sentinel-trust'] = trustToken;
+  if (token) headers['x-sentinel-trust'] = token;
 
   const res = await fetch('/api/your-endpoint', {
     method: 'POST',
     headers,
     body: JSON.stringify(payload),
   });
-  // handle response...
+
+  // 1. The backend evaluates the IP. If it's unstable and lacks a token, it returns 401.
+  if (res.status === 401) {
+    const data = await res.json();
+    if (data.action_required === 'solve_bwt') {
+      
+      // 2. Unhide the widget container to force the user to verify
+      document.getElementById('sentinel-widget-container').style.display = 'block';
+      
+      // 3. Wait for the user to hold the button
+      document.addEventListener('sentinelSuccess', async (event) => {
+        // Hide the widget again
+        document.getElementById('sentinel-widget-container').style.display = 'none';
+        
+        // Retry the exact same action, this time attaching the cryptographically verified token
+        await doAction(payload, event.detail.trust_token);
+      }, { once: true });
+      
+      return;
+    }
+  }
+
+  // Handle success...
 }
 ```
 
