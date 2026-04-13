@@ -24,11 +24,12 @@ export class PolicyEngine {
         switch (policy.mode) {
             case 'PASSIVE':
                 // Near-permissive. Only hard blocks for explicitly malicious IPs.
-                // Clean residential (+10)  → ALLOW
-                // VPN (-10)               → CHALLENGE
-                // High velocity (-30)      → CHALLENGE
-                // Scanner (-60)           → BLOCK
-                if (score >= 10) return 'ALLOW';
+                // Clean (+10)           → ALLOW
+                // VPN (-10)             → ALLOW
+                // Datacenter (-20)      → ALLOW
+                // High velocity (-30)   → CHALLENGE
+                // Scanner (-60)         → BLOCK
+                if (score >= -20) return 'ALLOW';
                 if (score >= -40) return 'CHALLENGE';
                 return 'BLOCK';
 
