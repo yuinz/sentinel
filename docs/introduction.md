@@ -117,13 +117,19 @@ document.addEventListener('sentinelSuccess', (event) => {
 
 If the widget is inside a `<form>`, the token is also automatically injected as a hidden `<input name="sentinel-token">` field — no extra code needed for traditional form submissions.
 
-### SPA Integration Pattern (React / Vue / Svelte)
+### SPA Integration (React / Vue / Svelte)
 
-The most robust pattern for modern frameworks is the "Optimistic Action" approach. You assume the user's IP is trusted, attempt the secure action, and only unhide the widget if your backend issues a `401 Challenge Required`.
+There are two distinct patterns for integrating Sentinel into a modern SPA. Choose the pattern that best fits your application's architecture.
+
+#### Pattern 1: Optimistic Action (Reactive)
+**Best for:** Low-frequency, high-value actions (login, checkout, single form submissions).  
+**Flow:** Try the action → Catch 401 → Show Widget → Solve → Retry Action.
+
+This approach assumes the user is trusted. It only unhides the widget if your backend denies the request with a `401 Challenge Required`.
 
 **1. Include the hidden widget container in your UI:**
 ```html
-<div id="sentinel-widget-container" style="display: none;">
+<div id="sentinel-global-modal" style="display: none;">
   <div id="sentinel-widget" data-sitekey="sl_your_site_key_here"></div>
 </div>
 ```
@@ -140,28 +146,80 @@ async function doAction(payload, token = null) {
     body: JSON.stringify(payload),
   });
 
-  // 1. The backend evaluates the IP. If it's unstable and lacks a token, it returns 401.
+  // 1. Backend evaluates the IP. Unstable IP without a token gets a 401.
   if (res.status === 401) {
     const data = await res.json();
     if (data.action_required === 'solve_bwt') {
+      // 2. Unhide widget to force verification
+      document.getElementById('sentinel-global-modal').style.display = 'flex';
       
-      // 2. Unhide the widget container to force the user to verify
-      document.getElementById('sentinel-widget-container').style.display = 'block';
-      
-      // 3. Wait for the user to hold the button
+      // 3. Wait for user to hold the button
       document.addEventListener('sentinelSuccess', async (event) => {
-        // Hide the widget again
-        document.getElementById('sentinel-widget-container').style.display = 'none';
+        document.getElementById('sentinel-global-modal').style.display = 'none';
         
-        // Retry the exact same action, this time attaching the cryptographically verified token
+        // Retry the exact same action with the token
         await doAction(payload, event.detail.trust_token);
       }, { once: true });
-      
       return;
     }
   }
 
   // Handle success...
+}
+```
+
+#### Pattern 2: Proactive Precheck (Interactive Apps)
+**Best for:** Complex dashboards, interactive tools (e.g., node graphs), and any application where the user performs *multiple actions in rapid succession*.  
+**Flow:** Page Load → `/v1/precheck` → Show Widget if risky → Store Token → User interacts normally.
+
+If a user naturally performs many quick actions (like expanding nodes on a graph), Pattern 1 would trigger velocity rate limits, mistaking the user for a script. Pattern 2 avoids this by quietly verifying the IP *before* the user clicks anything, and keeping the resulting token in state.
+
+**1. Run Precheck on Mount:**
+```javascript
+import { useEffect, useRef, useState } from 'react';
+
+function Dashboard() {
+  const [challengeRequired, setChallengeRequired] = useState(false);
+  const trustTokenRef = useRef(null);
+
+  // Silently check user IP on page load
+  useEffect(() => {
+    fetch('https://sentinel.risksignal.name.ng/v1/precheck')
+      .then(res => res.json())
+      .then(data => {
+        if (data.required) setChallengeRequired(true); // Risky IP, show widget
+      })
+      .catch(() => {}); // Fail open
+  }, []);
+
+  // Listen for the widget solve
+  useEffect(() => {
+    const handler = (e) => {
+      trustTokenRef.current = e.detail.trust_token; // Store token for future actions
+      setChallengeRequired(false); // Hide widget
+    };
+    document.addEventListener('sentinelSuccess', handler);
+    return () => document.removeEventListener('sentinelSuccess', handler);
+  }, []);
+
+  // Use the token proactively on actions
+  const handleAction = async () => {
+    const headers = { 'Content-Type': 'application/json' };
+    if (trustTokenRef.current) {
+       headers['x-sentinel-trust'] = trustTokenRef.current;
+    }
+    
+    await fetch('/api/secure-action', { method: 'POST', headers });
+  };
+
+  return (
+    <>
+      <div id="sentinel-global-modal" style={{ display: challengeRequired ? 'flex' : 'none' }}>
+        <div id="sentinel-widget" data-sitekey="sl_..."/>
+      </div>
+      <button onClick={handleAction}>Execute Action</button>
+    </>
+  );
 }
 ```
 
