@@ -34,9 +34,10 @@ const strictLimiter = (0, express_rate_limit_1.default)({
     limit: 10,
     standardHeaders: true,
     legacyHeaders: false,
-    keyGenerator: (req) => req.headers['x-forwarded-for']?.split(',')[0].trim()
-        || req.ip
-        || 'unknown',
+    keyGenerator: (req) => {
+        const ip = req.headers['x-forwarded-for']?.split(',')[0].trim() || req.ip || 'unknown';
+        return ip.replace(/:/g, '_');
+    },
     handler: (_req, res) => {
         logger_1.default.warn('[ChallengeAuth] Rate limit exceeded (unauthenticated/unknown key)');
         res.status(429).json({
@@ -55,10 +56,13 @@ const tenantLimiter = (0, express_rate_limit_1.default)({
     limit: 120,
     standardHeaders: true,
     legacyHeaders: false,
-    keyGenerator: (req) => req.__challengeTenantId?.toString()
-        || req.headers['x-forwarded-for']?.split(',')[0].trim()
-        || req.ip
-        || 'unknown',
+    keyGenerator: (req) => {
+        const tenantId = req.__challengeTenantId?.toString();
+        if (tenantId)
+            return tenantId;
+        const ip = req.headers['x-forwarded-for']?.split(',')[0].trim() || req.ip || 'unknown';
+        return ip.replace(/:/g, '_');
+    },
     handler: (_req, res) => {
         logger_1.default.warn('[ChallengeAuth] Tenant challenge rate limit exceeded');
         res.status(429).json({
