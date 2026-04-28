@@ -21,23 +21,33 @@
             this.shadow = this.container.attachShadow({ mode: 'open' });
             this.styles = document.createElement('style');
             this.styles.textContent = `
+                @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
                 :host {
                     display: block;
                     width: 300px;
-                    font-family: 'Inter', -apple-system, sans-serif;
+                    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
                 }
+
+                /* ── Card ─────────────────────────────────────── */
                 .widget-box {
-                    background: #0a0a0a;
-                    border: 1px solid #1a1a1a;
-                    border-radius: 8px;
-                    padding: 12px 16px;
+                    background: #0d0d0d;
+                    border: 1px solid #1f1f1f;
+                    border-radius: 10px;
+                    padding: 14px 16px 10px;
                     position: relative;
                     overflow: hidden;
                     cursor: pointer;
                     user-select: none;
-                    transition: border-color 0.3s, background 0.3s;
+                    transition: border-color 0.25s ease, box-shadow 0.25s ease;
+                    box-shadow: 0 1px 3px rgba(0,0,0,0.4);
                 }
-                .widget-box:hover { border-color: #333; }
+                .widget-box:hover {
+                    border-color: #2a2a2a;
+                    box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+                }
+
+                /* ── Main row ─────────────────────────────────── */
                 .widget-content {
                     display: flex;
                     align-items: center;
@@ -45,50 +55,149 @@
                     position: relative;
                     z-index: 2;
                 }
+
+                /* ── Checkbox ─────────────────────────────────── */
                 .status-icon {
-                    width: 20px;
-                    height: 20px;
-                    border: 2px solid #333;
-                    border-radius: 4px;
+                    flex-shrink: 0;
+                    width: 22px;
+                    height: 22px;
+                    border: 2px solid #2d2d2d;
+                    border-radius: 5px;
                     display: flex;
                     align-items: center;
                     justify-content: center;
-                    font-size: 10px;
+                    font-size: 13px;
                     color: transparent;
-                    transition: all 0.3s;
+                    transition: border-color 0.3s, background 0.3s, color 0.3s;
+                    background: #111;
                 }
-                .status-icon.active { border-color: #00ff88; color: #00ff88; }
-                .text-payload { flex: 1; }
+                .status-icon.active {
+                    border-color: #00e87a;
+                    color: #00e87a;
+                    background: rgba(0, 232, 122, 0.08);
+                }
+
+                /* ── Text ─────────────────────────────────────── */
+                .text-payload { flex: 1; min-width: 0; }
                 .label {
                     font-size: 13px;
                     font-weight: 600;
-                    color: #eee;
+                    color: #e8e8e8;
                     margin-bottom: 2px;
+                    letter-spacing: -0.01em;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
                 }
                 .sub-label {
                     font-size: 10px;
-                    color: #555;
+                    font-weight: 500;
+                    color: #484848;
                     text-transform: uppercase;
-                    letter-spacing: 0.05em;
+                    letter-spacing: 0.07em;
+                    transition: color 0.2s;
                 }
+
+                /* ── Logo / Brand ─────────────────────────────── */
+                .brand {
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    gap: 3px;
+                    flex-shrink: 0;
+                }
+                .brand-icon svg {
+                    display: block;
+                    width: 20px;
+                    height: 20px;
+                    opacity: 0.45;
+                    transition: opacity 0.2s;
+                }
+                .widget-box:hover .brand-icon svg { opacity: 0.7; }
+                .brand-name {
+                    font-size: 8px;
+                    font-weight: 700;
+                    color: #363636;
+                    text-transform: uppercase;
+                    letter-spacing: 0.12em;
+                    transition: color 0.2s;
+                }
+                .widget-box:hover .brand-name { color: #484848; }
+
+                /* ── Progress bar ─────────────────────────────── */
                 .progress-bar {
                     position: absolute;
                     bottom: 0;
                     left: 0;
                     height: 2px;
-                    background: #00ff88;
+                    background: linear-gradient(90deg, #00e87a, #00bfff);
                     width: 0%;
-                    transition: width 0.1s linear;
+                    transition: width 0.08s linear;
+                    z-index: 3;
                 }
-                .logo {
-                    font-family: monospace;
-                    font-size: 10px;
-                    color: #333;
-                    font-weight: bold;
+                .progress-bar::after {
+                    content: '';
+                    position: absolute;
+                    top: 0; right: 0;
+                    width: 40px; height: 100%;
+                    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.35));
+                    animation: shimmer 1s ease infinite;
                 }
-                .success-check { color: #00ff88; display: none; }
-                [data-state="success"] .success-check { display: block; }
-                [data-state="success"] .status-icon { border-color: #00ff88; background: rgba(0, 255, 136, 0.1); }
+                @keyframes shimmer {
+                    0%   { opacity: 0; }
+                    50%  { opacity: 1; }
+                    100% { opacity: 0; }
+                }
+
+                /* ── Divider ──────────────────────────────────── */
+                .divider {
+                    height: 1px;
+                    background: #181818;
+                    margin: 10px -16px 8px;
+                }
+
+                /* ── Footer ───────────────────────────────────── */
+                .footer {
+                    display: flex;
+                    align-items: center;
+                    justify-content: flex-end;
+                    gap: 10px;
+                    position: relative;
+                    z-index: 2;
+                }
+                .footer a {
+                    font-size: 9.5px;
+                    font-weight: 500;
+                    color: #343434;
+                    text-decoration: none;
+                    text-transform: uppercase;
+                    letter-spacing: 0.06em;
+                    transition: color 0.2s;
+                    pointer-events: auto;
+                    cursor: pointer;
+                }
+                .footer a:hover { color: #666; }
+                .footer-sep {
+                    font-size: 9px;
+                    color: #252525;
+                }
+
+                /* ── Success state ────────────────────────────── */
+                [data-state="success"] .status-icon {
+                    border-color: #00e87a;
+                    background: rgba(0, 232, 122, 0.08);
+                    color: #00e87a;
+                }
+                [data-state="success"] .widget-box {
+                    border-color: rgba(0, 232, 122, 0.25);
+                }
+
+                /* ── Error state ──────────────────────────────── */
+                [data-state="error"] .status-icon {
+                    border-color: #ff4444;
+                    background: rgba(255, 68, 68, 0.08);
+                    color: #ff4444;
+                }
             `;
             this.shadow.appendChild(this.styles);
         }
@@ -98,12 +207,26 @@
             this.wrapper.className = 'widget-box';
             this.wrapper.innerHTML = `
                 <div class="widget-content">
-                    <div class="status-icon" id="icon">✓</div>
+                    <div class="status-icon" id="icon">&#10003;</div>
                     <div class="text-payload">
-                        <div class="label" id="label">Verify Intent</div>
-                        <div class="sub-label" id="sub">Click and hold to secure</div>
+                        <div class="label" id="label">Verify you're human</div>
+                        <div class="sub-label" id="sub">Hold to verify</div>
                     </div>
-                    <div class="logo">SENTINEL</div>
+                    <div class="brand">
+                        <div class="brand-icon">
+                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M12 2L4 6v6c0 5.25 3.4 10.15 8 11.35C16.6 22.15 20 17.25 20 12V6l-8-4z" fill="#00e87a" opacity="0.9"/>
+                                <path d="M9 12l2 2 4-4" stroke="#0d0d0d" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </div>
+                        <div class="brand-name">Sentinel</div>
+                    </div>
+                </div>
+                <div class="divider"></div>
+                <div class="footer">
+                    <a href="https://sentinel.risksignal.name.ng/privacy.html" target="_blank" rel="noopener">Privacy</a>
+                    <span class="footer-sep">·</span>
+                    <a href="https://sentinel.risksignal.name.ng/terms.html" target="_blank" rel="noopener">Terms</a>
                 </div>
                 <div class="progress-bar" id="progress"></div>
             `;
@@ -115,6 +238,7 @@
             this.wrapper.addEventListener('touchstart', (e) => this.startHold(e));
             window.addEventListener('touchend', () => this.stopHold());
         }
+
 
         async startHold(e) {
             if (this.state === 'success' || this.state === 'issuing') return;
