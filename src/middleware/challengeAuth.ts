@@ -16,7 +16,7 @@
  */
 
 import { Request, Response, NextFunction } from 'express';
-import rateLimit from 'express-rate-limit';
+import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
 import { supabase } from '../config/supabase';
 import logger from '../utils/logger';
 
@@ -26,16 +26,22 @@ import logger from '../utils/logger';
  * Strict limiter: for anonymous callers, demo-key callers, or unknown keys.
  * 10 challenges per minute per IP. Kills bot farming while keeping human
  * widget users (who won't hit the widget 10x/min) completely unaffected.
+ *
+ * ipKeyGenerator is required by express-rate-limit v7+ to correctly normalise
+ * IPv6 addresses — without it the library throws ERR_ERL_KEY_GEN_IPV6 on boot.
  */
 const strictLimiter = rateLimit({
     windowMs: 60 * 1000,
     limit: 10,
     standardHeaders: true,
     legacyHeaders: false,
-    keyGenerator: (req: Request) =>
-        (req.headers['x-forwarded-for'] as string)?.split(',')[0].trim()
-        || req.ip
-        || 'unknown',
+    keyGenerator: (req: Request) => {
+        const rawIp =
+            (req.headers['x-forwarded-for'] as string)?.split(',')[0].trim()
+            || req.ip
+            || 'unknown';
+        return ipKeyGenerator(rawIp);
+    },
     handler: (_req: Request, res: Response) => {
         logger.warn('[ChallengeAuth] Rate limit exceeded (unauthenticated/unknown key)');
         res.status(429).json({
@@ -49,17 +55,24 @@ const strictLimiter = rateLimit({
  * Lenient limiter: for verified tenant keys.
  * 120 challenges per minute, keyed by the tenant's DB record ID — not IP.
  * This correctly handles tenants behind CDNs or shared egress IPs.
+ *
+ * Falls back through ipKeyGenerator so IPv6 normalisation is always applied
+ * when we do need the IP as the key.
  */
 const tenantLimiter = rateLimit({
     windowMs: 60 * 1000,
     limit: 120,
     standardHeaders: true,
     legacyHeaders: false,
-    keyGenerator: (req: Request) =>
-        (req as any).__challengeTenantId?.toString()
-        || (req.headers['x-forwarded-for'] as string)?.split(',')[0].trim()
-        || req.ip
-        || 'unknown',
+    keyGenerator: (req: Request) => {
+        const tenantId = (req as any).__challengeTenantId?.toString();
+        if (tenantId) return tenantId;
+        const rawIp =
+            (req.headers['x-forwarded-for'] as string)?.split(',')[0].trim()
+            || req.ip
+            || 'unknown';
+        return ipKeyGenerator(rawIp);
+    },
     handler: (_req: Request, res: Response) => {
         logger.warn('[ChallengeAuth] Tenant challenge rate limit exceeded');
         res.status(429).json({
