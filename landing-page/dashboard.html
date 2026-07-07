@@ -802,7 +802,7 @@
                         <h4 style="color: var(--accent); margin: 0 0 5px 0; font-size: 14px; font-family: 'JetBrains Mono', monospace;">AVAILABLE NOW: Sentinel Engine V2</h4>
                         <p style="margin: 0; color: #aaa; font-size: 13px;">You are currently viewing the V1 Telemetry console. Professionally upgrade to V2 for Custom B2B Policies and multi-tenant zero-latency routing.</p>
                     </div>
-                    <a href="https://sentinel.risksignal.name.ng/v2/docs" style="text-decoration: none; padding: 10px 20px; border-radius: 6px; font-weight: 600; color: #000; background: var(--accent);">Start V2 Migration</a>
+                    <a href="/docs/introduction.html" style="text-decoration: none; padding: 10px 20px; border-radius: 6px; font-weight: 600; color: #000; background: var(--accent);">Start V2 Migration</a>
                 </div>
 
                 <header class="page-header">
@@ -1593,7 +1593,7 @@
         }
 
         // Navigation
-        document.getElementById('nav-docs').onclick = () => window.location.href = '/docs/'; // Point to the Vitepress V2 Docs completely.
+        document.getElementById('nav-docs').onclick = () => window.location.href = '/docs/introduction.html';
 
         const baitBtn = document.getElementById('bait-upgrade-btn');
         if (baitBtn && openBtn) baitBtn.onclick = () => openBtn.click();

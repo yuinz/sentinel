@@ -22,5 +22,5 @@ app.use(sentinel({ apiKey: 'sz_live_...', protect: ['/api/auth/*'] }));
 3. Keys are generated via the Sentinel Dashboard.
 
 ## Documentation
-- [Full Documentation](https://sentinel.risksignal.name.ng/docs)
+- [Full Documentation](https://sentinel.risksignal.name.ng/docs.html)
 - [Detailed LLM Context](https://sentinel.risksignal.name.ng/llms-full.txt)
