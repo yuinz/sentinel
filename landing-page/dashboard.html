@@ -379,6 +379,57 @@
         }
         .verdict-btn:hover { text-decoration-color: currentColor; }
 
+        /* Device probe */
+        .probe-card {
+            border: 1px solid #1a1a1a;
+            background: #070707;
+            border-radius: 8px;
+            padding: 16px 18px;
+            margin-bottom: 1.5rem;
+        }
+        .probe-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+        .probe-meta {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            color: #888;
+            line-height: 1.6;
+        }
+        .probe-meta .ip {
+            color: #fff;
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+        }
+        .probe-meta .label {
+            color: #555;
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 4px;
+        }
+        .probe-actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .probe-result {
+            margin-top: 14px;
+            padding-top: 14px;
+            border-top: 1px solid #151515;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            color: #888;
+            display: none;
+        }
+        .probe-result.show { display: block; }
+
         @media (max-width: 900px) {
             .policy-grid-2 {
                 grid-template-columns: 1fr !important;
@@ -1130,6 +1181,25 @@
                         <button type="button" class="btn-primary" id="onboard-goto-keys">Create API key</button>
                     </div>
 
+                    <div class="probe-card" id="device-probe">
+                        <div class="probe-top">
+                            <div class="probe-meta">
+                                <div class="label">Device probe</div>
+                                <div class="ip" id="probe-ip">Detecting…</div>
+                                <div id="probe-ua" style="max-width: 520px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color:#555;">—</div>
+                                <div style="margin-top:6px;color:#555;font-size:10px;">Runs real <code style="color:#666;">POST /v2/evaluate</code> for this egress IP · counts against quota · appears in Decision Feed</div>
+                            </div>
+                            <div class="probe-actions">
+                                <select id="probe-key" style="background:#0a0a0a;border:1px solid #222;color:#ccc;padding:8px 10px;border-radius:6px;font-family:'JetBrains Mono';font-size:11px;max-width:200px;">
+                                    <option value="">No keys</option>
+                                </select>
+                                <button type="button" class="btn-action" id="probe-refresh-ip">Refresh IP</button>
+                                <button type="button" class="btn-primary" id="probe-run">Run probe</button>
+                            </div>
+                        </div>
+                        <div class="probe-result" id="probe-result"></div>
+                    </div>
+
                     <div class="section-label">Mitigation</div>
                     <div class="stats-grid">
                         <div class="stat-card">
@@ -1635,11 +1705,12 @@
                 updateQuotaUI(used, max);
 
                 const simKey = document.getElementById('sim-key');
-                if (simKey) {
-                    simKey.innerHTML = keys.length === 0
-                        ? '<option value="">No keys — create one first</option>'
-                        : keys.map(k => `<option value="${k.api_key}">${(k.name || 'key').slice(0, 24)} · ${(k.api_key || '').slice(0, 12)}…</option>`).join('');
-                }
+                const probeKey = document.getElementById('probe-key');
+                const keyOpts = keys.length === 0
+                    ? '<option value="">No keys — create one first</option>'
+                    : keys.map(k => `<option value="${k.api_key}">${(k.name || 'key').slice(0, 24)} · ${(k.api_key || '').slice(0, 12)}…</option>`).join('');
+                if (simKey) simKey.innerHTML = keyOpts;
+                if (probeKey) probeKey.innerHTML = keyOpts;
 
                 if (list) {
                     list.innerHTML = keys.length === 0
@@ -1961,6 +2032,119 @@
         })();
 
         DossierUI.bind();
+
+        // ── Device probe (this machine → real /v2/evaluate → feed) ───────────
+        const DeviceProbe = (() => {
+            let currentIp = null;
+
+            async function detectIp() {
+                const el = document.getElementById('probe-ip');
+                const uaEl = document.getElementById('probe-ua');
+                if (uaEl) uaEl.textContent = (navigator.userAgent || '').slice(0, 120);
+                if (el) el.textContent = 'Detecting…';
+                try {
+                    const res = await fetch('/api/my-ip');
+                    const data = await res.json();
+                    currentIp = data.ip || null;
+                    if (el) el.textContent = currentIp || 'unavailable';
+                } catch {
+                    currentIp = null;
+                    if (el) el.textContent = 'unavailable';
+                }
+                return currentIp;
+            }
+
+            function showResult(html) {
+                const box = document.getElementById('probe-result');
+                if (!box) return;
+                box.innerHTML = html;
+                box.classList.add('show');
+            }
+
+            async function run() {
+                const key = document.getElementById('probe-key')?.value;
+                if (!key) {
+                    showResult('Create an API key first (API Keys), then run again.');
+                    return;
+                }
+                if (!currentIp) await detectIp();
+
+                const btn = document.getElementById('probe-run');
+                const prev = btn?.innerText;
+                if (btn) { btn.disabled = true; btn.innerText = 'Probing…'; }
+                showResult('Calling POST /v2/evaluate…');
+
+                try {
+                    const res = await fetch('/v2/evaluate', {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${key}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            target: 'detect',
+                            path: '/dashboard/device-probe'
+                        })
+                    });
+                    const body = await res.json();
+                    if (!res.ok) {
+                        showResult(`HTTP ${res.status}: ${body.error || JSON.stringify(body)}`);
+                        return;
+                    }
+
+                    const d = body.decision || {};
+                    const mapped = mapVerdict(d.verdict);
+                    const ip = currentIp || 'detect';
+                    const signals = (d.signals || []).map(s => s.id).join(', ') || 'none';
+
+                    showResult(`
+                        <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
+                            <div>
+                                <span class="dossier-badge ${mapped.filter === 'ALLOW' ? 'allow' : mapped.filter === 'BLOCK' ? 'block' : 'challenge'}">${mapped.label}</span>
+                                <span style="margin-left:10px;color:#ccc;">score ${d.score ?? '—'}</span>
+                                <span style="margin-left:10px;color:#666;">${d.latency_ms ?? '—'}ms</span>
+                                <span style="margin-left:10px;color:#555;">${body.tenant?.policy_engaged || ''}</span>
+                                <div style="margin-top:8px;color:#666;">signals · ${signals}</div>
+                                <div style="margin-top:4px;color:#444;">Logged to telemetry · refresh feed below</div>
+                            </div>
+                            <button type="button" class="btn-action" id="probe-inspect">Inspect</button>
+                        </div>
+                    `);
+
+                    document.getElementById('probe-inspect')?.addEventListener('click', () => {
+                        DossierUI.open({
+                            target: ip,
+                            verdict: d.verdict,
+                            score: d.score,
+                            reason: `[/dashboard/device-probe] ${(d.signals || [])[0]?.id || ''}`,
+                            latency: d.latency_ms,
+                            profile: 'v2_global',
+                            bwt: (d.signals || []).some(s => s.id === 'TOKEN_VALID'),
+                            time: new Date().toISOString()
+                        });
+                    });
+
+                    // Telemetry batches every ~5s — refresh after flush windows
+                    setTimeout(() => { renderCharts(); loadApiKeys(); }, 1200);
+                    setTimeout(() => { renderCharts(); }, 5500);
+                    setTimeout(() => { renderCharts(); }, 7500);
+                } catch (e) {
+                    showResult('Network error: ' + (e.message || e));
+                } finally {
+                    if (btn) { btn.disabled = false; btn.innerText = prev || 'Run probe'; }
+                }
+            }
+
+            function bind() {
+                document.getElementById('probe-refresh-ip')?.addEventListener('click', () => detectIp());
+                document.getElementById('probe-run')?.addEventListener('click', () => run());
+                detectIp();
+            }
+
+            return { bind, detectIp, run };
+        })();
+
+        DeviceProbe.bind();
 
         document.querySelectorAll('.nav-item[data-view]').forEach(a => {
             a.addEventListener('click', (e) => {
