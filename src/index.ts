@@ -13,6 +13,7 @@ import { TelemetryService } from './services/telemetryService';
 import authRoutes from './routes/authRoutes';
 import policyRoutes from './routes/policyRoutes';
 import payRoutes from './routes/payRoutes';
+import dossierRoutes from './routes/dossierRoutes';
 import { errorHandler } from './middleware/error';
 import { visitorTracker } from './middleware/visitor';
 
@@ -113,6 +114,7 @@ app.use('/v2', v2Routes);
 app.use('/auth', authRoutes);
 app.use('/api', authRoutes);
 app.use('/api/policy', policyRoutes);
+app.use('/api/intel', dossierRoutes);
 app.use('/v1/pay', payRoutes);
 
 // 7. 404 & Error Handling
