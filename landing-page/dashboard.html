@@ -1,7 +1,18 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 
 <head>
+    <script>
+        (function () {
+            try {
+                var t = localStorage.getItem('sentinel.theme');
+                if (t !== 'light' && t !== 'dark') t = 'dark';
+                document.documentElement.setAttribute('data-theme', t);
+            } catch (e) {
+                document.documentElement.setAttribute('data-theme', 'dark');
+            }
+        })();
+    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Console | Manage Trust API Security & Bot Mitigation</title>
@@ -19,23 +30,102 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
     <style>
-        :root {
-            --sidebar-width: 220px;
+        :root,
+        html[data-theme="dark"] {
+            --sidebar-width: 240px;
             --card-padding: 1.5rem;
             --input-height: 36px;
             --accent: #00ff88;
             --accent-glow: rgba(0, 255, 136, 0.2);
+            --accent-soft: rgba(0, 255, 136, 0.08);
             --danger: #ff4444;
             --warning: #ffcc00;
-            --glass: rgba(10, 10, 10, 0.7);
-            --chart-grid: #111;
+            --on-accent: #000;
+            --bg: #000000;
+            --surface: #050505;
+            --surface-2: #070707;
+            --surface-3: #0a0a0a;
+            --surface-deep: #030303;
+            --surface-inset: #080808;
+            --border: #111111;
+            --border-mid: #151515;
+            --border-strong: #1a1a1a;
+            --border-hover: #222222;
+            --text: #eeeeee;
+            --text-bright: #ffffff;
+            --text-secondary: #bbbbbb;
+            --text-soft: #888888;
+            --text-muted: #666666;
+            --text-faint: #555555;
+            --text-dim: #444444;
+            --text-ghost: #333333;
+            --glass: rgba(10, 10, 10, 0.72);
+            --topbar: rgba(5, 5, 5, 0.82);
+            --chart-grid: #111111;
+            --row-hover: rgba(255, 255, 255, 0.02);
+            --overlay: rgba(0, 0, 0, 0.55);
+            --overlay-strong: rgba(0, 0, 0, 0.9);
+            --scrollbar: #1a1a1a;
+            --nav-hover-bg: #111111;
+            --input-bg: #0a0a0a;
+            --input-border: #222222;
+            --input-text: #ffffff;
+            --slider-track: #222222;
+            --slider-knob: #444444;
+            --color-scheme: dark;
+        }
+
+        html[data-theme="light"] {
+            --accent: #00ff88;
+            --accent-glow: rgba(0, 180, 100, 0.18);
+            --accent-soft: rgba(0, 180, 100, 0.1);
+            --danger: #ff4444;
+            --warning: #ffcc00;
+            --on-accent: #000;
+            --bg: #f4f5f7;
+            --surface: #ffffff;
+            --surface-2: #f8f9fb;
+            --surface-3: #ffffff;
+            --surface-deep: #eef0f3;
+            --surface-inset: #e8eaee;
+            --border: #e5e7eb;
+            --border-mid: #e8eaed;
+            --border-strong: #d8dbe0;
+            --border-hover: #c5c9d0;
+            --text: #1c1f24;
+            --text-bright: #0b0d10;
+            --text-secondary: #3d424a;
+            --text-soft: #5c636e;
+            --text-muted: #6b7280;
+            --text-faint: #7a828e;
+            --text-dim: #8b939e;
+            --text-ghost: #9aa1ab;
+            --glass: rgba(255, 255, 255, 0.92);
+            --topbar: rgba(255, 255, 255, 0.88);
+            --chart-grid: #e5e7eb;
+            --row-hover: rgba(15, 23, 42, 0.035);
+            --overlay: rgba(15, 23, 42, 0.35);
+            --overlay-strong: rgba(15, 23, 42, 0.55);
+            --scrollbar: #c9ced6;
+            --nav-hover-bg: #f0f2f5;
+            --input-bg: #ffffff;
+            --input-border: #d8dbe0;
+            --input-text: #1c1f24;
+            --slider-track: #d8dbe0;
+            --slider-knob: #ffffff;
+            --color-scheme: light;
+        }
+
+        html {
+            color-scheme: var(--color-scheme);
         }
 
         body {
-            background: #000;
+            background: var(--bg);
             font-family: 'Inter', sans-serif;
             font-size: 13px;
-            color: #eee;
+            color: var(--text);
+            transition: background-color 0.18s ease, color 0.18s ease;
         }
 
         /* Top Bar */
@@ -45,9 +135,9 @@
             left: var(--sidebar-width);
             right: 0;
             height: 48px;
-            background: rgba(5, 5, 5, 0.8);
+            background: var(--topbar);
             backdrop-filter: blur(20px);
-            border-bottom: 1px solid #111;
+            border-bottom: 1px solid var(--border);
             z-index: 1000;
             display: flex;
             align-items: center;
@@ -68,20 +158,20 @@
             height: 8px;
             background: var(--accent);
             border-radius: 50%;
-            box-shadow: 0 0 10px var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-glow);
         }
 
         .metric-item {
-            color: #666;
+            color: var(--text-muted);
         }
 
         .metric-item span {
-            color: #fff;
+            color: var(--text-bright);
             margin-left: 4px;
         }
 
         .metric-item.is-empty span {
-            color: #555;
+            color: var(--text-faint);
         }
 
         .dash-view { display: none; }
@@ -90,13 +180,13 @@
         .empty-state {
             text-align: center;
             padding: 2.5rem 1.5rem;
-            color: #666;
-            border: 1px dashed #222;
+            color: var(--text-muted);
+            border: 1px dashed var(--border-hover);
             border-radius: 8px;
-            background: #050505;
+            background: var(--surface);
         }
         .empty-state h3 {
-            color: #eee;
+            color: var(--text);
             font-size: 14px;
             margin: 0 0 8px;
             font-family: 'JetBrains Mono', monospace;
@@ -105,7 +195,7 @@
             margin: 0 0 1rem;
             font-size: 12px;
             line-height: 1.5;
-            color: #777;
+            color: var(--text-muted);
         }
         .empty-state ol {
             text-align: left;
@@ -125,8 +215,8 @@
         .quota-bar-wrap {
             margin: 0 0 1.25rem;
             padding: 12px 14px;
-            background: #070707;
-            border: 1px solid #151515;
+            background: var(--surface-2);
+            border: 1px solid var(--border-mid);
             border-radius: 8px;
         }
         .quota-bar-meta {
@@ -134,12 +224,12 @@
             justify-content: space-between;
             font-family: 'JetBrains Mono', monospace;
             font-size: 10px;
-            color: #666;
+            color: var(--text-muted);
             margin-bottom: 8px;
         }
         .quota-bar-track {
             height: 6px;
-            background: #111;
+            background: var(--nav-hover-bg);
             border-radius: 3px;
             overflow: hidden;
         }
@@ -155,7 +245,7 @@
         .policy-preview {
             margin-bottom: 1.5rem;
             padding: 14px 16px;
-            background: rgba(0, 255, 136, 0.04);
+            background: var(--accent-soft);
             border: 1px solid rgba(0, 255, 136, 0.2);
             border-radius: 8px;
             font-family: 'JetBrains Mono', monospace;
@@ -163,12 +253,12 @@
             line-height: 1.6;
             color: #aaa;
         }
-        .policy-preview strong { color: #fff; }
+        .policy-preview strong { color: var(--text-bright); }
         .policy-preview .tag {
             display: inline-block;
             padding: 1px 6px;
             border-radius: 3px;
-            background: rgba(0,255,136,0.12);
+            background: var(--accent-soft);
             color: var(--accent);
             margin-right: 4px;
         }
@@ -176,8 +266,8 @@
         .sim-panel {
             margin-top: 1.5rem;
             padding: 16px;
-            background: #050505;
-            border: 1px solid #1a1a1a;
+            background: var(--surface);
+            border: 1px solid var(--border-strong);
             border-radius: 8px;
         }
         .sim-row {
@@ -189,16 +279,16 @@
         .sim-field label {
             display: block;
             font-size: 10px;
-            color: #666;
+            color: var(--text-muted);
             text-transform: uppercase;
             margin-bottom: 6px;
             font-family: 'JetBrains Mono', monospace;
         }
         .sim-field input, .sim-field select {
             width: 100%;
-            background: #0a0a0a;
-            border: 1px solid #222;
-            color: #fff;
+            background: var(--input-bg);
+            border: 1px solid var(--input-border);
+            color: var(--input-text);
             padding: 10px;
             border-radius: 6px;
             font-size: 12px;
@@ -210,14 +300,14 @@
             margin-top: 12px;
             font-family: 'JetBrains Mono', monospace;
             font-size: 11px;
-            color: #888;
+            color: var(--text-soft);
             display: none;
         }
         .sim-result.show { display: block; }
 
         .upgrade-quiet {
-            border: 1px solid #1a1a1a;
-            background: #070707;
+            border: 1px solid var(--border-strong);
+            background: var(--surface-2);
             padding: 1rem 1.25rem;
             border-radius: 8px;
             display: flex;
@@ -228,7 +318,7 @@
         }
         .upgrade-quiet p {
             margin: 4px 0 0;
-            color: #666;
+            color: var(--text-muted);
             font-size: 12px;
         }
 
@@ -236,7 +326,7 @@
         .dossier-overlay {
             position: fixed;
             inset: 0;
-            background: rgba(0,0,0,0.55);
+            background: var(--overlay);
             z-index: 3000;
             opacity: 0;
             pointer-events: none;
@@ -247,8 +337,8 @@
             position: fixed;
             top: 0; right: 0; bottom: 0;
             width: min(480px, 100vw);
-            background: #050505;
-            border-left: 1px solid #1a1a1a;
+            background: var(--surface);
+            border-left: 1px solid var(--border-strong);
             z-index: 3001;
             transform: translateX(100%);
             transition: transform 0.18s ease;
@@ -259,7 +349,7 @@
         .dossier-drawer.open { transform: translateX(0); }
         .dossier-head {
             padding: 16px 18px;
-            border-bottom: 1px solid #151515;
+            border-bottom: 1px solid var(--border-mid);
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
@@ -269,26 +359,26 @@
         .dossier-head h2 {
             margin: 0;
             font-size: 14px;
-            color: #fff;
+            color: var(--text-bright);
             letter-spacing: 0.02em;
             word-break: break-all;
         }
         .dossier-head .sub {
             margin-top: 6px;
             font-size: 10px;
-            color: #666;
+            color: var(--text-muted);
         }
         .dossier-close {
             background: transparent;
-            border: 1px solid #222;
-            color: #888;
+            border: 1px solid var(--border-hover);
+            color: var(--text-soft);
             width: 32px; height: 32px;
             border-radius: 4px;
             cursor: pointer;
             font-size: 16px;
             flex-shrink: 0;
         }
-        .dossier-close:hover { color: #fff; border-color: #444; }
+        .dossier-close:hover { color: var(--text-bright); border-color: var(--text-dim); }
         .dossier-body {
             overflow-y: auto;
             padding: 0 0 32px;
@@ -297,20 +387,20 @@
         .dossier-loading, .dossier-error {
             padding: 40px 20px;
             text-align: center;
-            color: #666;
+            color: var(--text-muted);
             font-size: 11px;
         }
         .dossier-error { color: var(--danger); }
         .dossier-sec {
             padding: 14px 18px;
-            border-bottom: 1px solid #111;
+            border-bottom: 1px solid var(--border);
         }
         .dossier-sec h3 {
             margin: 0 0 10px;
             font-size: 9px;
             text-transform: uppercase;
             letter-spacing: 0.12em;
-            color: #555;
+            color: var(--text-faint);
             font-weight: 600;
         }
         .dossier-kv {
@@ -320,9 +410,9 @@
             font-size: 11px;
             line-height: 1.45;
         }
-        .dossier-kv .k { color: #555; }
-        .dossier-kv .v { color: #ddd; word-break: break-word; }
-        .dossier-kv .v.muted { color: #666; }
+        .dossier-kv .k { color: var(--text-faint); }
+        .dossier-kv .v { color: var(--text-secondary); word-break: break-word; }
+        .dossier-kv .v.muted { color: var(--text-muted); }
         .dossier-badge {
             display: inline-block;
             padding: 2px 8px;
@@ -331,7 +421,7 @@
             font-weight: 700;
             letter-spacing: 0.04em;
         }
-        .dossier-badge.allow { background: rgba(0,255,136,0.12); color: var(--accent); }
+        .dossier-badge.allow { background: var(--accent-soft); color: var(--accent); }
         .dossier-badge.challenge { background: rgba(255,204,0,0.12); color: var(--warning); }
         .dossier-badge.block { background: rgba(255,68,68,0.12); color: var(--danger); }
         .dossier-signals {
@@ -341,30 +431,30 @@
         }
         .dossier-signals th {
             text-align: left;
-            color: #444;
+            color: var(--text-dim);
             padding: 4px 0;
-            border-bottom: 1px solid #151515;
+            border-bottom: 1px solid var(--border-mid);
             font-weight: 500;
         }
         .dossier-signals td {
             padding: 5px 0;
-            border-bottom: 1px solid #0d0d0d;
-            color: #bbb;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-secondary);
         }
         .dossier-signals .w-pos { color: var(--accent); }
         .dossier-signals .w-neg { color: var(--danger); }
         .dossier-hist {
             font-size: 10px;
-            color: #888;
+            color: var(--text-soft);
             padding: 4px 0;
-            border-bottom: 1px solid #0d0d0d;
+            border-bottom: 1px solid var(--border);
             display: flex;
             justify-content: space-between;
             gap: 8px;
         }
         .dossier-sources {
             font-size: 9px;
-            color: #444;
+            color: var(--text-dim);
             padding: 12px 18px;
         }
         .verdict-btn {
@@ -381,8 +471,8 @@
 
         /* Device probe */
         .probe-card {
-            border: 1px solid #1a1a1a;
-            background: #070707;
+            border: 1px solid var(--border-strong);
+            background: var(--surface-2);
             border-radius: 8px;
             padding: 16px 18px;
             margin-bottom: 1.5rem;
@@ -397,17 +487,17 @@
         .probe-meta {
             font-family: 'JetBrains Mono', monospace;
             font-size: 11px;
-            color: #888;
+            color: var(--text-soft);
             line-height: 1.6;
         }
         .probe-meta .ip {
-            color: #fff;
+            color: var(--text-bright);
             font-size: 14px;
             font-weight: 600;
             letter-spacing: 0.02em;
         }
         .probe-meta .label {
-            color: #555;
+            color: var(--text-faint);
             font-size: 9px;
             text-transform: uppercase;
             letter-spacing: 0.1em;
@@ -422,10 +512,10 @@
         .probe-result {
             margin-top: 14px;
             padding-top: 14px;
-            border-top: 1px solid #151515;
+            border-top: 1px solid var(--border-mid);
             font-family: 'JetBrains Mono', monospace;
             font-size: 11px;
-            color: #888;
+            color: var(--text-soft);
             display: none;
         }
         .probe-result.show { display: block; }
@@ -450,8 +540,8 @@
         /* Compact Sidebar */
         .sidebar {
             width: var(--sidebar-width);
-            background: #050505;
-            border-right: 1px solid #111;
+            background: var(--surface);
+            border-right: 1px solid var(--border);
             display: flex;
             flex-direction: column;
             position: fixed;
@@ -461,7 +551,7 @@
 
         .sidebar-header {
             padding: 1.5rem 1.25rem;
-            border-bottom: 1px solid #111;
+            border-bottom: 1px solid var(--border);
         }
 
         .logo-text {
@@ -469,12 +559,15 @@
             font-weight: 700;
             font-size: 1.1rem;
             letter-spacing: -0.04em;
-            color: #fff;
+            color: var(--text-bright);
         }
 
         .sidebar-nav {
-            padding: 1rem 0.75rem;
+            padding: 0.75rem 0.65rem 1rem;
             flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
         }
 
         .nav-item {
@@ -482,7 +575,7 @@
             align-items: center;
             gap: 0.75rem;
             padding: 0.7rem 0.8rem;
-            color: #666;
+            color: var(--text-muted);
             text-decoration: none;
             border-radius: 6px;
             margin-bottom: 4px;
@@ -491,19 +584,19 @@
 
         .nav-item:hover,
         .nav-item.active {
-            color: #fff;
-            background: #111;
+            color: var(--text-bright);
+            background: var(--nav-hover-bg);
         }
 
         .nav-item.active {
-            background: rgba(0, 255, 136, 0.05);
+            background: var(--accent-soft);
             color: var(--accent);
             border-right: 2px solid var(--accent);
         }
 
         .sidebar-footer {
             padding: 1rem;
-            border-top: 1px solid #111;
+            border-top: 1px solid var(--border);
         }
 
         /* Main Content */
@@ -536,14 +629,14 @@
         }
 
         .page-header p {
-            color: #666;
+            color: var(--text-muted);
             font-size: 0.95rem;
         }
 
         /* Cards & Glassmorphism */
         .card {
             background: var(--glass);
-            border: 1px solid #1a1a1a;
+            border: 1px solid var(--border-strong);
             border-radius: 12px;
             padding: var(--card-padding);
             margin-bottom: 1.5rem;
@@ -551,7 +644,7 @@
         }
 
         .card:hover {
-            border-color: #222;
+            border-color: var(--border-hover);
         }
 
         .card-title {
@@ -559,7 +652,7 @@
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.1em;
-            color: #444;
+            color: var(--text-dim);
             margin-bottom: 1.5rem;
             display: flex;
             justify-content: space-between;
@@ -579,7 +672,7 @@
             font-family: 'JetBrains Mono', monospace;
             font-size: 10px;
             color: var(--accent);
-            background: rgba(0, 255, 136, 0.1);
+            background: var(--accent-soft);
             padding: 2px 6px;
             border-radius: 4px;
             margin-bottom: 1rem;
@@ -595,14 +688,14 @@
         }
 
         .stat-card {
-            background: #070707;
-            border: 1px solid #151515;
+            background: var(--surface-2);
+            border: 1px solid var(--border-mid);
             padding: 1.25rem;
             border-radius: 8px;
         }
 
         .stat-label {
-            color: #555;
+            color: var(--text-faint);
             font-size: 10px;
             text-transform: uppercase;
             letter-spacing: 0.05em;
@@ -613,13 +706,13 @@
             font-family: 'JetBrains Mono', monospace;
             font-size: 1.5rem;
             font-weight: 700;
-            color: #fff;
+            color: var(--text-bright);
         }
 
         .stat-meta {
             font-size: 10px;
             margin-top: 0.5rem;
-            color: #333;
+            color: var(--text-ghost);
         }
 
         /* Tables */
@@ -633,18 +726,18 @@
         .sentinel-table th {
             text-align: left;
             padding: 1rem;
-            color: #444;
-            border-bottom: 1px solid #111;
+            color: var(--text-dim);
+            border-bottom: 1px solid var(--border);
             text-transform: uppercase;
         }
 
         .sentinel-table td {
             padding: 1rem;
-            border-bottom: 1px solid #080808;
+            border-bottom: 1px solid var(--border);
         }
 
         .row-hover:hover {
-            background: rgba(255, 255, 255, 0.02);
+            background: var(--row-hover);
             cursor: pointer;
         }
 
@@ -667,7 +760,7 @@
         /* Expandable Area */
         .expanded-details {
             display: none;
-            background: #030303;
+            background: var(--surface-deep);
             border-left: 2px solid var(--accent);
         }
 
@@ -685,14 +778,14 @@
         .detail-box label {
             display: block;
             font-size: 9px;
-            color: #333;
+            color: var(--text-ghost);
             text-transform: uppercase;
             margin-bottom: 6px;
         }
 
         .detail-box p {
             font-size: 13px;
-            color: #bbb;
+            color: var(--text-secondary);
             margin: 0;
             font-family: 'Inter', sans-serif;
         }
@@ -706,14 +799,14 @@
 
         .perf-item {
             padding: 1rem;
-            background: #050505;
-            border: 1px solid #111;
+            background: var(--surface);
+            border: 1px solid var(--border);
             border-radius: 6px;
         }
 
         .perf-label {
             font-size: 10px;
-            color: #444;
+            color: var(--text-dim);
             margin-bottom: 8px;
         }
 
@@ -725,7 +818,7 @@
 
         .perf-caption {
             font-size: 10px;
-            color: #333;
+            color: var(--text-ghost);
             margin-top: 1rem;
             font-style: italic;
         }
@@ -734,9 +827,9 @@
         .eng-mode-box {
             margin-top: 4rem;
             padding: 2rem;
-            border: 1px dashed #222;
+            border: 1px dashed var(--border-hover);
             border-radius: 12px;
-            background: rgba(255, 255, 255, 0.01);
+            background: var(--row-hover);
         }
 
         .toggle-container {
@@ -765,7 +858,7 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background-color: #222;
+            background-color: var(--slider-track);
             transition: .4s;
             border-radius: 20px;
         }
@@ -777,7 +870,7 @@
             width: 14px;
             left: 3px;
             bottom: 3px;
-            background-color: #444;
+            background-color: var(--slider-knob);
             transition: .4s;
             border-radius: 50%;
         }
@@ -788,14 +881,14 @@
 
         input:checked+.slider:before {
             transform: translateX(16px);
-            background-color: #000;
+            background-color: var(--on-accent);
         }
 
         /* Upgrade Bait */
         .bait-card {
-            background: linear-gradient(135deg, #111 0%, #050505 100%);
-            border-color: #222;
-            color: #fff;
+            background: linear-gradient(135deg, var(--nav-hover-bg) 0%, var(--surface) 100%);
+            border-color: var(--border-hover);
+            color: var(--text-bright);
         }
 
         .bait-card h3 {
@@ -805,7 +898,7 @@
         }
 
         .bait-card p {
-            color: #666;
+            color: var(--text-muted);
             margin-bottom: 1.5rem;
             line-height: 1.6;
         }
@@ -818,7 +911,7 @@
 
         .bait-list li {
             font-size: 11px;
-            color: #888;
+            color: var(--text-soft);
             margin-bottom: 0.75rem;
             display: flex;
             align-items: center;
@@ -833,19 +926,19 @@
         /* API Key Styling */
         .key-mono {
             font-family: 'JetBrains Mono', monospace;
-            color: #555;
+            color: var(--text-faint);
             font-size: 11px;
-            background: #050505;
+            background: var(--surface);
             padding: 4px 8px;
             border-radius: 4px;
-            border: 1px solid #111;
+            border: 1px solid var(--border);
         }
 
         .btn-action {
             padding: 4px 10px;
-            background: #111;
-            border: 1px solid #222;
-            color: #666;
+            background: var(--nav-hover-bg);
+            border: 1px solid var(--border-hover);
+            color: var(--text-muted);
             border-radius: 4px;
             cursor: pointer;
             font-size: 11px;
@@ -853,13 +946,13 @@
         }
 
         .btn-action:hover {
-            color: #fff;
-            border-color: #444;
+            color: var(--text-bright);
+            border-color: var(--text-dim);
         }
 
         .btn-primary {
             background: var(--accent);
-            color: #000;
+            color: var(--on-accent);
             border: none;
             padding: 8px 16px;
             font-weight: 700;
@@ -874,9 +967,9 @@
             gap: 10px;
             padding: 6px;
             padding-right: 14px;
-            background: #0a0a0a;
+            background: var(--surface-3);
             border-radius: 30px;
-            border: 1px solid #111;
+            border: 1px solid var(--border);
         }
 
         .user-pill img {
@@ -889,8 +982,8 @@
             font-size: 10px;
             padding: 2px 8px;
             border-radius: 4px;
-            background: #111;
-            color: #666;
+            background: var(--nav-hover-bg);
+            color: var(--text-muted);
             margin-left: 10px;
             text-transform: uppercase;
             font-weight: 700;
@@ -898,7 +991,7 @@
 
         .tier-badge.pro {
             background: var(--accent);
-            color: #000;
+            color: var(--on-accent);
         }
 
         /* Scrollbar */
@@ -911,12 +1004,12 @@
         }
 
         ::-webkit-scrollbar-thumb {
-            background: #111;
+            background: var(--nav-hover-bg);
             border-radius: 10px;
         }
 
         ::-webkit-scrollbar-thumb:hover {
-            background: #222;
+            background: var(--border-hover);
         }
 
         /* Upgrade Modal */
@@ -926,7 +1019,7 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0, 0, 0, 0.9);
+            background: var(--overlay-strong);
             display: none;
             align-items: center;
             justify-content: center;
@@ -935,8 +1028,8 @@
         }
 
         .modal-card {
-            background: #050505;
-            border: 1px solid #111;
+            background: var(--surface);
+            border: 1px solid var(--border);
             width: 450px;
             max-width: 95vw;
             border-radius: 12px;
@@ -945,7 +1038,7 @@
 
         .modal-header {
             padding: 1.5rem;
-            border-bottom: 1px solid #111;
+            border-bottom: 1px solid var(--border);
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -954,7 +1047,7 @@
         .close-modal {
             background: transparent;
             border: none;
-            color: #444;
+            color: var(--text-dim);
             cursor: pointer;
             font-size: 1.5rem;
         }
@@ -966,7 +1059,7 @@
             gap: 12px;
             height: 140px;
             padding-bottom: 2rem;
-            border-bottom: 1px solid #111;
+            border-bottom: 1px solid var(--border);
         }
 
         .chart-bar-container {
@@ -979,7 +1072,7 @@
 
         .chart-bar {
             width: 100%;
-            background: #080808;
+            background: var(--surface-inset);
             border-radius: 2px 2px 0 0;
             transition: height 0.3s ease, background 0.3s;
         }
@@ -990,7 +1083,7 @@
 
         .chart-label {
             font-size: 10px;
-            color: #333;
+            color: var(--text-ghost);
             font-family: 'JetBrains Mono';
         }
 
@@ -1001,8 +1094,8 @@
             top: 10px;
             left: 10px;
             z-index: 2000;
-            background: #050505;
-            border: 1px solid #111;
+            background: var(--surface);
+            border: 1px solid var(--border);
             padding: 8px;
             border-radius: 6px;
             color: var(--accent);
@@ -1015,7 +1108,7 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0, 0, 0, 0.8);
+            background: var(--overlay-strong);
             z-index: 1050;
         }
 
@@ -1090,6 +1183,159 @@
                 padding: 1rem;
             }
         }
+
+        /* Theme toggle */
+        .theme-toggle {
+            display: inline-flex;
+            align-items: center;
+            padding: 2px;
+            border: 1px solid var(--border-strong);
+            border-radius: 8px;
+            background: var(--surface-2);
+            gap: 0;
+        }
+        .theme-toggle button {
+            appearance: none;
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+            font-family: 'Inter', sans-serif;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 6px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            line-height: 1;
+            transition: background 0.15s ease, color 0.15s ease;
+        }
+        .theme-toggle button[aria-pressed="true"] {
+            background: var(--surface);
+            color: var(--text-bright);
+            box-shadow: 0 0 0 1px var(--border);
+        }
+        .theme-toggle button:hover {
+            color: var(--text-bright);
+        }
+        .theme-toggle.sidebar-theme {
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        .theme-toggle.sidebar-theme button {
+            flex: 1;
+            text-align: center;
+        }
+
+        /* CF-style sidebar polish */
+        .sidebar-header {
+            padding: 1.1rem 1.15rem;
+            min-height: 56px;
+            display: flex;
+            align-items: center;
+        }
+        .sidebar-brand {
+            text-decoration: none;
+            color: var(--text-bright);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .sidebar-brand img {
+            height: 20px;
+            width: auto;
+        }
+        .nav-section {
+            margin: 1.25rem 0.75rem 0.5rem;
+            padding: 0 0.35rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 9px;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--text-ghost);
+        }
+        .nav-item {
+            border-radius: 6px;
+            border-right: 2px solid transparent;
+            margin-bottom: 2px;
+            font-size: 13px;
+            font-weight: 500;
+        }
+        .nav-item .icon {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            width: 18px;
+            color: var(--text-faint);
+            flex-shrink: 0;
+        }
+        .nav-item:hover .icon,
+        .nav-item.active .icon {
+            color: inherit;
+        }
+        .nav-item:hover {
+            color: var(--text-bright);
+            background: var(--nav-hover-bg);
+        }
+        .nav-item.active {
+            background: var(--accent-soft);
+            color: var(--accent);
+            border-right-color: var(--accent);
+        }
+        .sidebar-plan {
+            margin-top: auto;
+            padding: 0.75rem;
+        }
+        .btn-upgrade {
+            display: block;
+            width: 100%;
+            text-align: center;
+            text-decoration: none;
+            background: transparent;
+            border: 1px solid var(--border-strong);
+            color: var(--text);
+            padding: 0.65rem 0.75rem;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+        }
+        .btn-upgrade:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+            background: var(--accent-soft);
+        }
+        .sidebar-footer .nav-item {
+            border: 1px solid rgba(255, 68, 68, 0.15);
+            color: var(--danger);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+        }
+        html[data-theme="light"] .sidebar-footer .nav-item {
+            border-color: rgba(255, 68, 68, 0.25);
+        }
+        html[data-theme="light"] .online-dot {
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+        html[data-theme="light"] .card {
+            box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+        }
+        html[data-theme="light"] .stat-card,
+        html[data-theme="light"] .probe-card,
+        html[data-theme="light"] .perf-item {
+            box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
+        }
+        .form-control {
+            background: var(--input-bg);
+            border: 1px solid var(--input-border);
+            color: var(--input-text);
+            padding: 8px 10px;
+            border-radius: 6px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            outline: none;
+        }
+        .form-control:focus {
+            border-color: var(--accent);
+        }
+
     </style>
 </head>
 
@@ -1110,35 +1356,45 @@
             <div class="online-dot"></div>
             <span>Sentinel Engine Online</span>
         </div>
-        <div style="display: flex; gap: 24px;">
+        <div style="display: flex; align-items: center; gap: 20px;">
             <div class="metric-item is-empty" id="metric-p95-wrap">p95 Latency: <span id="p95-latency">—</span></div>
             <div class="metric-item is-empty" id="metric-avg-wrap">Avg Latency: <span id="avg-latency">—</span></div>
             <div class="metric-item is-empty" id="metric-quota-wrap">Quota: <span id="top-quota">—</span></div>
+            <div class="theme-toggle" role="group" aria-label="Color theme">
+                <button type="button" data-theme-set="light" aria-pressed="false">Light</button>
+                <button type="button" data-theme-set="dark" aria-pressed="true">Dark</button>
+            </div>
         </div>
     </div>
 
     <div class="dashboard-container">
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
-                <a href="/" class="logo-text" style="text-decoration: none; color: #fff; display: flex; align-items: center;">
-                    <img src="./logo.png" alt="S" height="20" style="margin-right: 10px;">
+                <a href="/" class="logo-text sidebar-brand">
+                    <img src="./logo.png" alt="S">
                     SENTINEL
                 </a>
             </div>
             <nav class="sidebar-nav">
+                <div class="nav-section">Console</div>
                 <a href="#" class="nav-item active" data-view="overview" id="nav-overview"><span class="icon">//</span> Overview</a>
                 <a href="#" class="nav-item" data-view="keys" id="nav-keys"><span class="icon">-></span> API Keys</a>
                 <a href="#" class="nav-item" data-view="policies" id="nav-policies"><span class="icon">*=</span> Policies</a>
+                <div class="nav-section">Resources</div>
                 <a href="/docs/introduction.html" class="nav-item" id="nav-docs"><span class="icon">[]</span> Documentation</a>
-                <div style="margin-top: 2rem; padding: 0 0.75rem;">
-                    <div style="color: #333; font-family: 'JetBrains Mono'; font-size: 9px; text-transform: uppercase; margin-bottom: 1rem;">Plan</div>
+                <div class="sidebar-plan">
+                    <div class="nav-section" style="margin: 0 0 0.65rem; padding: 0;">Plan</div>
                     <div id="tier-status-container">
-                        <a href="#" class="btn-upgrade" id="open-upgrade-btn" style="width: 100%; text-align: center;">Upgrade to Pro</a>
+                        <a href="#" class="btn-upgrade" id="open-upgrade-btn">Upgrade to Pro</a>
                     </div>
                 </div>
             </nav>
             <div class="sidebar-footer">
-                <a href="#" id="logout-btn" class="nav-item" style="color: var(--danger); border: 1px solid rgba(255,0,0,0.1); font-family: var(--font-mono); font-size: 11px;">
+                <div class="theme-toggle sidebar-theme" role="group" aria-label="Color theme">
+                    <button type="button" data-theme-set="light" aria-pressed="false">Light</button>
+                    <button type="button" data-theme-set="dark" aria-pressed="true">Dark</button>
+                </div>
+                <a href="#" id="logout-btn" class="nav-item">
                     <span class="icon">!</span> Sign out
                 </a>
             </div>
@@ -1146,10 +1402,10 @@
 
         <main class="main-content">
             <div class="content-scroll">
-                <div id="status-banner" style="background: rgba(0, 255, 136, 0.05); border: 1px solid rgba(0, 255, 136, 0.25); padding: 14px 18px; border-radius: 8px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;">
+                <div id="status-banner" style="background: var(--accent-soft); border: 1px solid rgba(0, 255, 136, 0.25); padding: 14px 18px; border-radius: 8px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;">
                     <div>
                         <h4 style="color: var(--accent); margin: 0 0 4px 0; font-size: 13px; font-family: 'JetBrains Mono', monospace;">V2 Global Master Policies · active</h4>
-                        <p style="margin: 0; color: #888; font-size: 12px;">Mode, VPN/DC actions, Force BWT, PoW difficulty — enforced on <code style="color:var(--accent);">POST /v2/evaluate</code> for every key under this account.</p>
+                        <p style="margin: 0; color: var(--text-soft); font-size: 12px;">Mode, VPN/DC actions, Force BWT, PoW difficulty — enforced on <code style="color:var(--accent);">POST /v2/evaluate</code> for every key under this account.</p>
                     </div>
                     <button type="button" class="btn-primary" id="goto-policies-btn" style="white-space: nowrap;">Open Policies</button>
                 </div>
@@ -1186,11 +1442,11 @@
                             <div class="probe-meta">
                                 <div class="label">Device probe</div>
                                 <div class="ip" id="probe-ip">Detecting…</div>
-                                <div id="probe-ua" style="max-width: 520px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color:#555;">—</div>
-                                <div style="margin-top:6px;color:#555;font-size:10px;">Runs real <code style="color:#666;">POST /v2/evaluate</code> for this egress IP · counts against quota · appears in Decision Feed</div>
+                                <div id="probe-ua" style="max-width: 520px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color:var(--text-faint);">—</div>
+                                <div style="margin-top:6px;color:var(--text-faint);font-size:10px;">Runs real <code style="color:var(--text-muted);">POST /v2/evaluate</code> for this egress IP · counts against quota · appears in Decision Feed</div>
                             </div>
                             <div class="probe-actions">
-                                <select id="probe-key" style="background:#0a0a0a;border:1px solid #222;color:#ccc;padding:8px 10px;border-radius:6px;font-family:'JetBrains Mono';font-size:11px;max-width:200px;">
+                                <select id="probe-key" class="form-control" style="max-width:200px;">
                                     <option value="">No keys</option>
                                 </select>
                                 <button type="button" class="btn-action" id="probe-refresh-ip">Refresh IP</button>
@@ -1224,7 +1480,7 @@
                         </div>
                     </div>
 
-                    <div class="card" style="padding-bottom: 0.5rem; overflow: hidden; border-color: #1a1a1a;">
+                    <div class="card" style="padding-bottom: 0.5rem; overflow: hidden; border-color: var(--border-strong);">
                         <div class="section-label" style="display: flex; justify-content: space-between; width: 100%; box-sizing: border-box;">
                             <span>Trust Score Stream</span>
                             <span id="streaming-indicator" style="display: flex; align-items: center; gap: 6px;">
@@ -1236,7 +1492,7 @@
                     </div>
 
                     <div class="card" style="padding: 0; overflow: hidden;">
-                        <div style="padding: 1rem 1.5rem; border-bottom: 1px solid #111; display:flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.02); flex-wrap: wrap; gap: 12px;">
+                        <div style="padding: 1rem 1.5rem; border-bottom: 1px solid var(--border); display:flex; justify-content: space-between; align-items: center; background: var(--row-hover); flex-wrap: wrap; gap: 12px;">
                             <div style="display: flex; gap: 1.5rem; align-items: center; flex-wrap: wrap;">
                                 <div class="card-title" style="margin:0;">Decision Feed</div>
                                 <div style="display: flex; gap: 6px; flex-wrap: wrap;">
@@ -1246,11 +1502,11 @@
                                     <button class="btn-action filter-btn" data-filter="BLOCK" style="font-size: 9px; padding: 2px 8px; color: var(--danger);">BLOCK</button>
                                 </div>
                             </div>
-                            <input type="text" id="ip-search" placeholder="Filter by IP..." style="background: #000; border: 1px solid #222; color: #fff; border-radius: 4px; padding: 5px 12px; font-size: 11px; width: 160px; outline: none; font-family: 'JetBrains Mono';">
+                            <input type="text" id="ip-search" placeholder="Filter by IP..." class="form-control" style="width: 160px; padding: 5px 12px; border-radius: 4px;">
                         </div>
                         <div style="max-height: 320px; overflow-y: auto;">
                             <table class="sentinel-table">
-                                <thead style="position: sticky; top: 0; background: #0a0a0a; z-index: 10;">
+                                <thead style="position: sticky; top: 0; background: var(--surface-3); z-index: 10;">
                                     <tr>
                                         <th style="width: 100px;">VERDICT</th>
                                         <th>TARGET</th>
@@ -1262,7 +1518,7 @@
                                     </tr>
                                 </thead>
                                 <tbody id="decisions-feed">
-                                    <tr><td colspan="7" style="text-align:center; padding: 2rem; color: #333;">Loading telemetry…</td></tr>
+                                    <tr><td colspan="7" style="text-align:center; padding: 2rem; color: var(--text-ghost);">Loading telemetry…</td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -1275,12 +1531,12 @@
                                 <div class="perf-item">
                                     <div class="perf-label">Average Latency</div>
                                     <div class="perf-val" style="color: var(--accent);"><span id="perf-avg">—</span></div>
-                                    <div style="font-size: 10px; color: #444; margin-top: 4px;">From last 7 days of logs</div>
+                                    <div style="font-size: 10px; color: var(--text-dim); margin-top: 4px;">From last 7 days of logs</div>
                                 </div>
                                 <div class="perf-item">
                                     <div class="perf-label">p95 Latency</div>
                                     <div class="perf-val"><span id="perf-p95">—</span></div>
-                                    <div style="font-size: 10px; color: #333; margin-top: 4px;">95th percentile</div>
+                                    <div style="font-size: 10px; color: var(--text-ghost); margin-top: 4px;">95th percentile</div>
                                 </div>
                             </div>
                             <div class="perf-caption">Values update from your telemetry — not placeholders.</div>
@@ -1301,16 +1557,16 @@
                                     <span id="risk-untrusted" style="font-weight: 700;">—</span>
                                 </div>
                             </div>
-                            <div style="margin-top: 2rem; padding-top: 1rem; border-top: 1px solid #111;">
-                                <div style="font-size: 9px; color: #444; text-transform: uppercase; margin-bottom: 4px;">Challenges (7d)</div>
-                                <div id="risk-challenges" style="color: #eee; font-family: 'JetBrains Mono'; font-size: 11px;">—</div>
+                            <div style="margin-top: 2rem; padding-top: 1rem; border-top: 1px solid var(--border);">
+                                <div style="font-size: 9px; color: var(--text-dim); text-transform: uppercase; margin-bottom: 4px;">Challenges (7d)</div>
+                                <div id="risk-challenges" style="color: var(--text); font-family: 'JetBrains Mono'; font-size: 11px;">—</div>
                             </div>
                         </div>
                     </div>
 
                     <div class="upgrade-quiet" id="quiet-upgrade">
                         <div>
-                            <div style="font-family: 'JetBrains Mono'; font-size: 12px; color: #ccc;">Need higher quota?</div>
+                            <div style="font-family: 'JetBrains Mono'; font-size: 12px; color: var(--text-soft);">Need higher quota?</div>
                             <p>Pro raises monthly decision limits and unlocks deeper enrichment.</p>
                         </div>
                         <button type="button" class="btn-action" id="bait-upgrade-btn">View Pro</button>
@@ -1324,8 +1580,8 @@
                             <span id="quota-label">0 / 0</span>
                         </div>
                         <div class="quota-bar-track"><div class="quota-bar-fill" id="quota-fill"></div></div>
-                        <div style="margin-top: 8px; font-size: 10px; color: #555; font-family: 'JetBrains Mono';">
-                            When a key hits <code style="color:#888;">max_usage</code>, authenticated evaluate/check returns quota errors for that key.
+                        <div style="margin-top: 8px; font-size: 10px; color: var(--text-faint); font-family: 'JetBrains Mono';">
+                            When a key hits <code style="color:var(--text-soft);">max_usage</code>, authenticated evaluate/check returns quota errors for that key.
                         </div>
                     </div>
                     <div id="api-keys-section" class="card">
@@ -1352,79 +1608,79 @@
                     <div class="card" style="border-color: rgba(0, 255, 136, 0.35); position: relative; overflow: hidden; margin-bottom: 2rem;">
                         <div class="card-title" style="color: var(--accent); margin-bottom: 0.75rem; display: flex; align-items: center; gap: 10px; justify-content: space-between; flex-wrap: wrap;">
                             <span>Global Master Policies</span>
-                            <span id="policy-meta" style="font-size: 10px; color: #666; font-weight: 400; font-family: 'JetBrains Mono';">Not loaded</span>
+                            <span id="policy-meta" style="font-size: 10px; color: var(--text-muted); font-weight: 400; font-family: 'JetBrains Mono';">Not loaded</span>
                         </div>
-                        <p style="color: #888; font-size: 13px; max-width: 720px; margin-bottom: 16px; line-height: 1.5;">
-                            One policy per account. Applied to every API key on <code style="color:#00ff88;">POST /v2/evaluate</code>. Save flushes Redis policy cache when configured.
+                        <p style="color: var(--text-soft); font-size: 13px; max-width: 720px; margin-bottom: 16px; line-height: 1.5;">
+                            One policy per account. Applied to every API key on <code style="color:var(--accent);">POST /v2/evaluate</code>. Save flushes Redis policy cache when configured.
                         </p>
                         <div id="policy-preview" class="policy-preview">Loading effective behavior…</div>
 
                         <div class="policy-grid-2" style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem; position: relative; z-index: 2;">
-                            <div style="background: #050505; border: 1px solid #111; padding: 20px; border-radius: 8px;">
-                                <div style="font-family: 'JetBrains Mono'; font-size: 10px; color: #666; text-transform: uppercase; margin-bottom: 15px;">Behavioral Thresholds</div>
-                                <label style="display: block; color: #fff; font-size: 13px; font-weight: 600; margin-bottom: 8px;">Engine Mode</label>
-                                <select id="v2-mode" style="width: 100%; background: #0a0a0a; border: 1px solid #222; color: #fff; padding: 12px; border-radius: 6px; font-size: 13px; margin-bottom: 8px; outline: none;">
+                            <div style="background: var(--surface); border: 1px solid var(--border); padding: 20px; border-radius: 8px;">
+                                <div style="font-family: 'JetBrains Mono'; font-size: 10px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 15px;">Behavioral Thresholds</div>
+                                <label style="display: block; color: var(--text-bright); font-size: 13px; font-weight: 600; margin-bottom: 8px;">Engine Mode</label>
+                                <select id="v2-mode" class="form-control" style="width: 100%; padding: 12px; font-size: 13px; margin-bottom: 8px;">
                                     <option value="PASSIVE">PASSIVE — Soft thresholds (extreme scores still challenged/blocked)</option>
                                     <option value="BALANCED" selected>BALANCED — Clean residential may allow; VPN/DC usually challenge</option>
                                     <option value="STRICT">STRICT — High bar; token usually required to allow</option>
                                     <option value="DRACONIAN">DRACONIAN — Near lockdown; residential + token for allow</option>
                                     <option value="HUMAN_ONLY">HUMAN_ONLY — Residential + token required; scanners blocked</option>
                                 </select>
-                                <div style="font-size: 10px; color: #555; font-family: 'JetBrains Mono'; margin-bottom: 20px; line-height: 1.4;">When Force BWT is on, mode runs only after a valid trust token (or exempt server clients).</div>
-                                <label style="display: block; color: #fff; font-size: 13px; font-weight: 600; margin-bottom: 5px;">PoW Difficulty (challenge issue)</label>
-                                <div style="display: flex; justify-content: space-between; font-size: 10px; color: #555; font-family: 'JetBrains Mono'; margin-bottom: 6px;">
+                                <div style="font-size: 10px; color: var(--text-faint); font-family: 'JetBrains Mono'; margin-bottom: 20px; line-height: 1.4;">When Force BWT is on, mode runs only after a valid trust token (or exempt server clients).</div>
+                                <label style="display: block; color: var(--text-bright); font-size: 13px; font-weight: 600; margin-bottom: 5px;">PoW Difficulty (challenge issue)</label>
+                                <div style="display: flex; justify-content: space-between; font-size: 10px; color: var(--text-faint); font-family: 'JetBrains Mono'; margin-bottom: 6px;">
                                     <span>1 (Fast)</span><span>5 (Hard)</span>
                                 </div>
                                 <input id="v2-diff" type="range" min="1" max="5" value="3" style="width: 100%; margin-bottom: 8px; cursor: pointer;">
-                                <div id="v2-diff-label" style="font-size: 10px; color: #00ff88; text-align: right; font-family: 'JetBrains Mono';">Difficulty: Level 3</div>
+                                <div id="v2-diff-label" style="font-size: 10px; color: var(--accent); text-align: right; font-family: 'JetBrains Mono';">Difficulty: Level 3</div>
                             </div>
-                            <div style="background: #050505; border: 1px solid #111; padding: 20px; border-radius: 8px;">
-                                <div style="font-family: 'JetBrains Mono'; font-size: 10px; color: #666; text-transform: uppercase; margin-bottom: 15px;">Infrastructural Filtering</div>
-                                <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px dashed #111;">
+                            <div style="background: var(--surface); border: 1px solid var(--border); padding: 20px; border-radius: 8px;">
+                                <div style="font-family: 'JetBrains Mono'; font-size: 10px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 15px;">Infrastructural Filtering</div>
+                                <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px dashed var(--border);">
                                     <div>
-                                        <div style="color: #fff; font-size: 13px; font-weight: 600;">VPN / Proxy Traffic</div>
-                                        <div style="color: #666; font-size: 11px; margin-top: 4px;">Hard override when VPN is detected.</div>
+                                        <div style="color: var(--text-bright); font-size: 13px; font-weight: 600;">VPN / Proxy Traffic</div>
+                                        <div style="color: var(--text-muted); font-size: 11px; margin-top: 4px;">Hard override when VPN is detected.</div>
                                     </div>
-                                    <select id="v2-vpn-action" style="background: #0a0a0a; border: 1px solid #222; color: #fff; padding: 6px 10px; border-radius: 4px; font-size: 12px;">
+                                    <select id="v2-vpn-action" class="form-control" style="padding: 6px 10px; font-size: 12px;">
                                         <option value="allow">Score only</option>
                                         <option value="challenge">Force Challenge</option>
                                         <option value="block">Hard Block</option>
                                     </select>
                                 </div>
-                                <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px dashed #111;">
+                                <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px dashed var(--border);">
                                     <div>
-                                        <div style="color: #fff; font-size: 13px; font-weight: 600;">Datacenter IPs</div>
-                                        <div style="color: #666; font-size: 11px; margin-top: 4px;">Hard override for hosting/cloud ranges.</div>
+                                        <div style="color: var(--text-bright); font-size: 13px; font-weight: 600;">Datacenter IPs</div>
+                                        <div style="color: var(--text-muted); font-size: 11px; margin-top: 4px;">Hard override for hosting/cloud ranges.</div>
                                     </div>
-                                    <select id="v2-dc-action" style="background: #0a0a0a; border: 1px solid #222; color: #fff; padding: 6px 10px; border-radius: 4px; font-size: 12px;">
+                                    <select id="v2-dc-action" class="form-control" style="padding: 6px 10px; font-size: 12px;">
                                         <option value="allow">Score only</option>
                                         <option value="challenge">Force Challenge</option>
                                         <option value="block">Hard Block</option>
                                     </select>
                                 </div>
-                                <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px dashed #111;">
+                                <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px dashed var(--border);">
                                     <div>
-                                        <div style="color: #fff; font-size: 13px; font-weight: 600;">Force BWT Verification</div>
-                                        <div style="color: #666; font-size: 11px; margin-top: 4px;">Challenge browsers without a trust token before mode math.</div>
+                                        <div style="color: var(--text-bright); font-size: 13px; font-weight: 600;">Force BWT Verification</div>
+                                        <div style="color: var(--text-muted); font-size: 11px; margin-top: 4px;">Challenge browsers without a trust token before mode math.</div>
                                     </div>
                                     <label class="switch"><input id="v2-bwt-toggle" type="checkbox" checked><span class="slider"></span></label>
                                 </div>
                                 <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 0;">
                                     <div>
-                                        <div style="color: #fff; font-size: 13px; font-weight: 600;">Exempt Server API Clients</div>
-                                        <div style="color: #666; font-size: 11px; margin-top: 4px;">Skip Force BWT only (not VPN/DC or mode).</div>
+                                        <div style="color: var(--text-bright); font-size: 13px; font-weight: 600;">Exempt Server API Clients</div>
+                                        <div style="color: var(--text-muted); font-size: 11px; margin-top: 4px;">Skip Force BWT only (not VPN/DC or mode).</div>
                                     </div>
                                     <label class="switch"><input id="v2-server-bypass-toggle" type="checkbox"><span class="slider"></span></label>
                                 </div>
                             </div>
                         </div>
-                        <div style="text-align: right; border-top: 1px solid #111; padding-top: 20px;">
-                            <span id="v2-save-status" style="display: none; color: #00ff88; font-family: 'JetBrains Mono'; font-size: 11px; margin-right: 20px;">Saved · cache flushed</span>
+                        <div style="text-align: right; border-top: 1px solid var(--border); padding-top: 20px;">
+                            <span id="v2-save-status" style="display: none; color: var(--accent); font-family: 'JetBrains Mono'; font-size: 11px; margin-right: 20px;">Saved · cache flushed</span>
                             <button id="save-v2-btn" class="btn-primary" style="padding: 12px 24px;">Save &amp; Apply</button>
                         </div>
 
                         <div class="sim-panel">
-                            <div style="font-family: 'JetBrains Mono'; font-size: 10px; color: #666; text-transform: uppercase; margin-bottom: 12px;">Simulate · POST /v2/evaluate</div>
+                            <div style="font-family: 'JetBrains Mono'; font-size: 10px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 12px;">Simulate · POST /v2/evaluate</div>
                             <div class="sim-row">
                                 <div class="sim-field">
                                     <label>Target IP</label>
@@ -1448,7 +1704,7 @@
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
                             <div>
                                 <div style="font-family: 'JetBrains Mono'; font-size: 12px; font-weight: 700;">Lab tools</div>
-                                <div style="font-size: 11px; color: #444; margin-top: 4px;">Mock IP header · cache flush</div>
+                                <div style="font-size: 11px; color: var(--text-dim); margin-top: 4px;">Mock IP header · cache flush</div>
                             </div>
                             <label class="switch"><input type="checkbox" id="eng-mode-toggle"><span class="slider"></span></label>
                         </div>
@@ -1489,7 +1745,7 @@
                     SYSTEM_UPGRADE: PRO_TIER</h2>
                 <button class="close-modal">&times;</button>
             </div>
-            <div style="padding: 0; background: #000; display: flex; justify-content: center;">
+            <div style="padding: 0; background: var(--bg); display: flex; justify-content: center;">
                 <iframe src="https://nowpayments.io/embeds/payment-widget?iid=5332615656" width="410" height="696"
                     frameborder="0" scrolling="no" style="overflow-y: hidden;">
                     Can't load widget
@@ -1511,6 +1767,38 @@
         let activeFilter = 'all';
         let searchQuery = '';
         let lastRawLogs = [];
+        /* Theme preference */
+        function getTheme() {
+            return document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
+        }
+        function syncThemeControls(theme) {
+            document.querySelectorAll('[data-theme-set]').forEach(btn => {
+                btn.setAttribute('aria-pressed', btn.getAttribute('data-theme-set') === theme ? 'true' : 'false');
+            });
+        }
+        function applyChartTheme(theme) {
+            if (!decisionChart) return;
+            const isLight = theme === 'light';
+            decisionChart.updateOptions({
+                grid: { borderColor: isLight ? '#e5e7eb' : '#111' },
+                markers: { strokeColors: isLight ? '#fff' : '#000' },
+                xaxis: { labels: { style: { colors: isLight ? '#6b7280' : '#444', fontSize: '10px' } } },
+                yaxis: { labels: { style: { colors: isLight ? '#6b7280' : '#444', fontSize: '10px' } } },
+                tooltip: { theme: isLight ? 'light' : 'dark' }
+            }, false, false);
+        }
+        function setTheme(theme) {
+            const t = theme === 'light' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', t);
+            try { localStorage.setItem('sentinel.theme', t); } catch (e) {}
+            syncThemeControls(t);
+            applyChartTheme(t);
+        }
+        document.querySelectorAll('[data-theme-set]').forEach(btn => {
+            btn.addEventListener('click', () => setTheme(btn.getAttribute('data-theme-set')));
+        });
+        syncThemeControls(getTheme());
+
         let decisionChart = null;
 
         const VIEW_META = {
@@ -1574,7 +1862,7 @@
                 <div><strong>VPN detected:</strong> ${vpn === 'allow' ? 'score only (may still challenge under mode)' : vpn.toUpperCase()}</div>
                 <div><strong>Datacenter:</strong> ${dc === 'allow' ? 'score only (may still challenge under mode)' : dc.toUpperCase()}</div>
                 <div><strong>Verified bots:</strong> skip Force BWT / VPN·DC hard blocks; mode still applies</div>
-                <div style="margin-top:6px;color:#666;">Order: signals → verified bot / token bypass → VPN/DC → Force BWT → mode</div>
+                <div style="margin-top:6px;color:var(--text-muted);">Order: signals → verified bot / token bypass → VPN/DC → Force BWT → mode</div>
             `;
         }
 
@@ -1630,9 +1918,9 @@
             });
 
             if (filtered.length === 0) {
-                feed.innerHTML = `<tr><td colspan="7" style="text-align:center; padding: 3rem; color: #444;">
+                feed.innerHTML = `<tr><td colspan="7" style="text-align:center; padding: 3rem; color: var(--text-dim);">
                     ${lastRawLogs.length === 0
-                        ? 'No decisions in the last 7 days. Call <code style="color:#00ff88;">POST /v2/evaluate</code> to populate this feed.'
+                        ? 'No decisions in the last 7 days. Call <code style="color:var(--accent);">POST /v2/evaluate</code> to populate this feed.'
                         : 'No rows match this filter.'}
                 </td></tr>`;
                 return;
@@ -1659,14 +1947,14 @@
                         <td class="${mapped.cls}">
                             <button type="button" class="verdict-btn ${mapped.cls} dossier-open" data-dossier="${payload}">${mapped.label}</button>
                         </td>
-                        <td style="color:#ccc;">
-                            <button type="button" class="verdict-btn dossier-open" style="color:#ccc;" data-dossier="${payload}">${log.target || '—'}</button>
+                        <td style="color:var(--text-soft);">
+                            <button type="button" class="verdict-btn dossier-open" style="color:var(--text-soft);" data-dossier="${payload}">${log.target || '—'}</button>
                         </td>
-                        <td style="color:#888;">${log.profile || '—'}</td>
-                        <td style="color:#aaa;">${score}</td>
-                        <td style="color:#666; max-width:160px; overflow:hidden; text-overflow:ellipsis;">${sig}</td>
-                        <td style="color:#666;">${bwt}</td>
-                        <td style="text-align:right; color:#666;">${lat}</td>
+                        <td style="color:var(--text-soft);">${log.profile || '—'}</td>
+                        <td style="color:var(--text-secondary);">${score}</td>
+                        <td style="color:var(--text-muted); max-width:160px; overflow:hidden; text-overflow:ellipsis;">${sig}</td>
+                        <td style="color:var(--text-muted);">${bwt}</td>
+                        <td style="text-align:right; color:var(--text-muted);">${lat}</td>
                     </tr>`;
             }).join('');
         }
@@ -1714,13 +2002,13 @@
 
                 if (list) {
                     list.innerHTML = keys.length === 0
-                        ? '<tr><td colspan="5" style="text-align:center;color:#444;padding:2rem;">No keys yet. Create one to start sending evaluate traffic.</td></tr>'
+                        ? '<tr><td colspan="5" style="text-align:center;color:var(--text-dim);padding:2rem;">No keys yet. Create one to start sending evaluate traffic.</td></tr>'
                         : keys.map(k => `
                             <tr>
-                                <td style="font-weight:700;color:#fff;">${k.name || 'API Key'}</td>
-                                <td style="color:#666;">${k.profile || 'api'}</td>
-                                <td style="color:#666;font-family:monospace;">${k.usage_count || 0} / ${k.max_usage || 500}</td>
-                                <td style="color:#444;">${k.usage_count > 0 ? 'ACTIVE' : 'IDLE'}</td>
+                                <td style="font-weight:700;color:var(--text-bright);">${k.name || 'API Key'}</td>
+                                <td style="color:var(--text-muted);">${k.profile || 'api'}</td>
+                                <td style="color:var(--text-muted);font-family:monospace;">${k.usage_count || 0} / ${k.max_usage || 500}</td>
+                                <td style="color:var(--text-dim);">${k.usage_count > 0 ? 'ACTIVE' : 'IDLE'}</td>
                                 <td style="text-align:right;"><button class="btn-action copy-key-btn" data-key="${k.api_key}">Copy</button></td>
                             </tr>`).join('');
                 }
@@ -1812,16 +2100,16 @@
                 xaxis: { labels: { style: { colors: '#444', fontSize: '10px' } }, axisBorder: { show: false }, axisTicks: { show: false } },
                 yaxis: { min: 0, max: 100, tickAmount: 4, labels: { style: { colors: '#444', fontSize: '10px' } } },
                 tooltip: {
-                    theme: 'dark',
+                    theme: getTheme() === 'light' ? 'light' : 'dark',
                     custom: function ({ series, seriesIndex, dataPointIndex, w }) {
                         const y = series[seriesIndex][dataPointIndex];
                         const x = w.globals.categoryLabels[dataPointIndex] || '';
-                        return `<div style="padding:8px 10px;font-family:JetBrains Mono;font-size:11px;">${x}<br/><b style="color:#00ff88">${y}</b></div>`;
+                        return `<div style="padding:8px 10px;font-family:JetBrains Mono;font-size:11px;">${x}<br/><b style="color:var(--accent)">${y}</b></div>`;
                     }
                 }
             };
             decisionChart = new ApexCharts(document.querySelector('#decision-chart'), options);
-            decisionChart.render();
+            decisionChart.render().then(() => applyChartTheme(getTheme()));
         }
 
         async function renderCharts() {
@@ -1995,9 +2283,19 @@
                     const res = await fetch('/api/intel/dossier?' + q.toString(), {
                         headers: { 'Authorization': `Bearer ${session.access_token}` }
                     });
-                    const json = await res.json();
+                    const json = await res.json().catch(() => ({}));
                     if (!res.ok) {
-                        body().innerHTML = `<div class="dossier-error">${esc(json.error || 'Enrichment failed')}</div>`;
+                        let msg = json.error || 'Enrichment failed';
+                        if (res.status === 404 || /unreachable/i.test(String(msg))) {
+                            msg = 'Dossier API not live on this host yet — rebuild & deploy the API (GET /api/intel/dossier).';
+                        } else if (res.status === 401) {
+                            msg = 'Session expired — refresh and sign in again.';
+                        }
+                        body().innerHTML = `<div class="dossier-error">${esc(msg)}</div>`;
+                        return;
+                    }
+                    if (!json.dossier) {
+                        body().innerHTML = `<div class="dossier-error">Empty dossier response</div>`;
                         return;
                     }
                     render(json.dossier);
@@ -2101,11 +2399,11 @@
                         <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
                             <div>
                                 <span class="dossier-badge ${mapped.filter === 'ALLOW' ? 'allow' : mapped.filter === 'BLOCK' ? 'block' : 'challenge'}">${mapped.label}</span>
-                                <span style="margin-left:10px;color:#ccc;">score ${d.score ?? '—'}</span>
-                                <span style="margin-left:10px;color:#666;">${d.latency_ms ?? '—'}ms</span>
-                                <span style="margin-left:10px;color:#555;">${body.tenant?.policy_engaged || ''}</span>
-                                <div style="margin-top:8px;color:#666;">signals · ${signals}</div>
-                                <div style="margin-top:4px;color:#444;">Logged to telemetry · refresh feed below</div>
+                                <span style="margin-left:10px;color:var(--text-soft);">score ${d.score ?? '—'}</span>
+                                <span style="margin-left:10px;color:var(--text-muted);">${d.latency_ms ?? '—'}ms</span>
+                                <span style="margin-left:10px;color:var(--text-faint);">${body.tenant?.policy_engaged || ''}</span>
+                                <div style="margin-top:8px;color:var(--text-muted);">signals · ${signals}</div>
+                                <div style="margin-top:4px;color:var(--text-dim);">Logged to telemetry · refresh feed below</div>
                             </div>
                             <button type="button" class="btn-action" id="probe-inspect">Inspect</button>
                         </div>
@@ -2242,6 +2540,7 @@
             const quiet = document.getElementById('quiet-upgrade');
             if (quiet) quiet.style.display = tier === 'PRO' ? 'none' : 'flex';
         }
+
 
         document.getElementById('logout-btn')?.addEventListener('click', () => {
             sp.auth.signOut().then(() => window.location.href = './index.html');

@@ -7,6 +7,7 @@ exports.IntelServiceV2 = void 0;
 const TrustCalculator_1 = require("./TrustCalculator");
 const PolicyEngine_1 = require("./PolicyEngine");
 const cache_1 = require("../../utils/cache");
+const configService_1 = require("../configService");
 const intelService_1 = require("../intelService");
 const logger_1 = __importDefault(require("../../utils/logger"));
 class IntelServiceV2 {
@@ -89,19 +90,38 @@ class IntelServiceV2 {
         catch (err) {
             logger_1.default.error(`[V2] Velocity check failed for ${target}:`, err);
         }
-        // 6. Automation / Scanner Detection
-        const botKeywords = /headless|puppeteer|selenium|playwright|bot|crawl|spider|axios|python-requests|curl|wget/i;
-        if (botKeywords.test(userAgent)) {
+        // 6. Verified bots (good crawlers) — must run before scanner heuristics.
+        //    Generic /bot|crawl/ would otherwise punish Googlebot as SCANNER_PATTERN.
+        const verifiedBotLabel = this.detectVerifiedBot(userAgent, target);
+        if (verifiedBotLabel) {
             signals.push({
-                id: 'SCANNER_PATTERN',
-                weight: TrustCalculator_1.TrustCalculator.WEIGHTS.SCANNER_PATTERN,
-                label: 'Automation/Script Signature Detected'
+                id: 'VERIFIED_BOT',
+                weight: TrustCalculator_1.TrustCalculator.WEIGHTS.VERIFIED_BOT,
+                label: verifiedBotLabel
             });
+        }
+        else {
+            // 7. Automation / Scanner Detection (hostile scripts only)
+            const botKeywords = /headless|puppeteer|selenium|playwright|bot|crawl|spider|axios|python-requests|curl|wget/i;
+            if (botKeywords.test(userAgent)) {
+                signals.push({
+                    id: 'SCANNER_PATTERN',
+                    weight: TrustCalculator_1.TrustCalculator.WEIGHTS.SCANNER_PATTERN,
+                    label: 'Automation/Script Signature Detected'
+                });
+            }
         }
         // ── PHASE 2: POLICY ENFORCEMENT ────────────────────────────────────────
         // All signals are now collected. Apply hard policy overrides in order of severity.
         // Hard blocks always take precedence over soft challenges, UNLESS the user has a valid Trust Token.
         const hasValidToken = signals.some(s => s.id === 'TOKEN_VALID');
+        const isVerifiedBot = signals.some(s => s.id === 'VERIFIED_BOT');
+        // Verified good bots: skip VPN/DC hard blocks and Force BWT; score + mode still apply
+        // (HUMAN_ONLY explicitly allows VERIFIED_BOT in PolicyEngine).
+        if (isVerifiedBot) {
+            this.triggerAsyncTasks(target, policy);
+            return this.finalizeCalculations(signals, policy, start);
+        }
         // ── Human Bypass Logic ────────────────────────────────────────────────
         // If a valid HMAC token is present (meaning they just solved the widget), 
         // they have proven they are human. We immediately short-circuit all infrastructure blocks.
@@ -159,6 +179,7 @@ class IntelServiceV2 {
         }
         // 2c. Force BWT — challenge unverified traffic
         // Check if server bypass applies (e.g. non-browser automated client)
+        const botKeywords = /headless|puppeteer|selenium|playwright|bot|crawl|spider|axios|python-requests|curl|wget/i;
         const isServerClient = !(/mozilla|chrome|safari|applewebkit/i.test(userAgent)) || botKeywords.test(userAgent);
         const exemptBwt = policy.exempt_server_requests === true && isServerClient;
         if (policy.force_bwt === true && !hasValidToken && !exemptBwt) {
@@ -175,6 +196,42 @@ class IntelServiceV2 {
         this.triggerAsyncTasks(target, policy);
         // ── PHASE 4: SCORE + VERDICT ───────────────────────────────────────────
         return this.finalizeCalculations(signals, policy, start);
+    }
+    /**
+     * Known-good crawlers. Prefer explicit UA allowlist (fast path).
+     * ASN map from ConfigService used only when deep enrich is already cached
+     * AND the UA still looks like a crawler (avoids marking all CF egress as "verified").
+     */
+    static detectVerifiedBot(userAgent, target) {
+        const ua = userAgent || '';
+        const crawlers = [
+            [/Googlebot|Google-InspectionTool|Storebot-Google|APIs-Google/i, 'Googlebot (Verified)'],
+            [/bingbot|BingPreview|msnbot/i, 'Bingbot (Verified)'],
+            [/Applebot/i, 'Applebot (Verified)'],
+            [/facebookexternalhit|meta-externalagent|Facebot/i, 'Facebook (Verified)'],
+            [/DuckDuckBot/i, 'DuckDuckBot (Verified)'],
+            [/Yandex(Bot|RenderResourcesBot)/i, 'Yandex (Verified)'],
+            [/Slurp/i, 'Yahoo Slurp (Verified)'],
+            [/Twitterbot/i, 'Twitterbot (Verified)'],
+            [/LinkedInBot/i, 'LinkedInBot (Verified)']
+        ];
+        for (const [re, label] of crawlers) {
+            if (re.test(ua))
+                return label;
+        }
+        try {
+            const deep = cache_1.intelCache.get(`deep:${target}`);
+            const asnNum = deep?.asn?.asn;
+            if (asnNum != null && /bot|crawl|spider|slurp/i.test(ua)) {
+                const mapped = configService_1.ConfigService.getVerifiedBotAsns()[asnNum];
+                if (mapped)
+                    return mapped;
+            }
+        }
+        catch {
+            /* cache miss is fine */
+        }
+        return null;
     }
     static finalizeCalculations(signals, policy, startTime) {
         const score = TrustCalculator_1.TrustCalculator.calculateScore(signals);

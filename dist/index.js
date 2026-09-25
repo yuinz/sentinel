@@ -18,6 +18,7 @@ const telemetryService_1 = require("./services/telemetryService");
 const authRoutes_1 = __importDefault(require("./routes/authRoutes"));
 const policyRoutes_1 = __importDefault(require("./routes/policyRoutes"));
 const payRoutes_1 = __importDefault(require("./routes/payRoutes"));
+const dossierRoutes_1 = __importDefault(require("./routes/dossierRoutes"));
 const error_1 = require("./middleware/error");
 const visitor_1 = require("./middleware/visitor");
 dotenv_1.default.config();
@@ -102,6 +103,7 @@ app.use('/v2', v2Routes_1.default);
 app.use('/auth', authRoutes_1.default);
 app.use('/api', authRoutes_1.default);
 app.use('/api/policy', policyRoutes_1.default);
+app.use('/api/intel', dossierRoutes_1.default);
 app.use('/v1/pay', payRoutes_1.default);
 // 7. 404 & Error Handling
 app.use((req, res, next) => {

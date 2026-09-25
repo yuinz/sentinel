@@ -12,6 +12,7 @@ const crypto_1 = __importDefault(require("crypto"));
 const logger_1 = __importDefault(require("../utils/logger"));
 const broadcastService_1 = require("../services/broadcastService");
 const telemetryService_1 = require("../services/telemetryService");
+const TenantService_1 = require("../services/v2/TenantService");
 const cache_1 = require("../utils/cache");
 const checkSchema = zod_1.z.object({
     target: zod_1.z.string().min(3).max(255),
@@ -199,7 +200,11 @@ const issueChallenge = async (req, res) => {
     let finalTarget = target === 'detect' ? (req.headers['x-forwarded-for']?.split(',')[0].trim() || req.ip || '127.0.0.1') : target;
     if (finalTarget.startsWith('::ffff:'))
         finalTarget = finalTarget.substring(7);
-    const challenge = await intelService_1.IntelService.issueBehavioralWork(finalTarget, context || 'general', duration);
+    // Tenant PoW scale from Global Master Policies (defaults to 3 when no valid key / no row).
+    const apiKey = req.__challengeApiKey;
+    const policy = await TenantService_1.TenantService.getPolicy(apiKey || '');
+    const difficulty = policy.difficulty_level ?? 3;
+    const challenge = await intelService_1.IntelService.issueBehavioralWork(finalTarget, context || 'general', duration, difficulty);
     return res.json(challenge);
 };
 exports.issueChallenge = issueChallenge;

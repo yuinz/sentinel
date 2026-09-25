@@ -37,6 +37,22 @@ if (exports.redisClient) {
 }
 class SharedCache {
     /**
+     * Read velocity count without recording (dossier / inspect paths).
+     */
+    static async peekVelocity(target) {
+        try {
+            if (exports.redisClient) {
+                const len = await exports.redisClient.llen(`sentinel:vel:${target}`);
+                return len;
+            }
+            const velocity = exports.velocityCache.get(target);
+            return velocity ? velocity.length : 0;
+        }
+        catch {
+            return null;
+        }
+    }
+    /**
      * Push a timestamp to a velocity array and return the count.
      */
     static async recordVelocity(target) {

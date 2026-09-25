@@ -159,7 +159,7 @@ router.get('/analytics', ensureSupabaseAuth, async (req: any, res) => {
             .order('created_at', { ascending: false })
             .gte('created_at', sevenDaysAgo.toISOString());
 
-        let logsSafe = logs;
+        let logsSafe: any[] | null = logs;
         if (logsError) {
             // Fallback if bwt_verified column missing in older schemas
             const retry = await supabase
@@ -169,7 +169,7 @@ router.get('/analytics', ensureSupabaseAuth, async (req: any, res) => {
                 .order('created_at', { ascending: false })
                 .gte('created_at', sevenDaysAgo.toISOString());
             if (retry.error) throw retry.error;
-            logsSafe = retry.data;
+            logsSafe = (retry.data || []).map((r: any) => ({ ...r, bwt_verified: null }));
         }
 
         const rows = logsSafe || [];

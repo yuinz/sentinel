@@ -16,7 +16,9 @@ class TenantService {
     static async getPolicy(apiKey) {
         if (!apiKey)
             return this.getDefaultPolicy();
-        const cacheKey = `v2:policy:v2:${apiKey}`;
+        // v3: never select columns that are not in production user_policies
+        // (allowed_asns/blocked_asns caused 42703 → silent default fallback).
+        const cacheKey = `v2:policy:v3:${apiKey}`;
         // 1. FAST PATH: Check Redis (L2 Cache)
         if (cache_1.redisClient) {
             try {
@@ -40,25 +42,26 @@ class TenantService {
             if (keyError || !keyRow?.user_id) {
                 return this.getDefaultPolicy();
             }
-            // Step B: fetch the user's saved global policy
+            // Step B: fetch the user's saved global policy (columns that exist in prod)
             const { data, error } = await supabase_1.supabase
                 .from('user_policies')
-                .select('mode, vpn_action, datacenter_action, exempt_server_requests, block_proxies, block_datacenters, force_bwt, difficulty_level, allowed_asns, blocked_asns')
+                .select('mode, vpn_action, datacenter_action, exempt_server_requests, block_proxies, block_datacenters, force_bwt, difficulty_level')
                 .eq('user_id', keyRow.user_id)
                 .maybeSingle();
             if (error || !data) {
+                if (error) {
+                    logger_1.default.error('[TenantService] user_policies select failed', error);
+                }
                 return this.getDefaultPolicy();
             }
             const policy = {
                 mode: data.mode || 'BALANCED',
-                // Graceful schema migration fallback:
+                // Graceful schema migration fallback when action columns are null:
                 vpn_action: data.vpn_action || (data.block_proxies ? 'block' : 'allow'),
                 datacenter_action: data.datacenter_action || (data.block_datacenters ? 'block' : 'allow'),
                 exempt_server_requests: data.exempt_server_requests ?? false,
                 force_bwt: data.force_bwt ?? true,
-                difficulty_level: data.difficulty_level ?? 3,
-                allowed_asns: data.allowed_asns || [],
-                blocked_asns: data.blocked_asns || []
+                difficulty_level: data.difficulty_level ?? 3
             };
             // 3. Warm Redis so next 5 min of requests hit the fast path
             if (cache_1.redisClient) {
@@ -71,8 +74,16 @@ class TenantService {
             return this.getDefaultPolicy();
         }
     }
+    /** Matches schema + dashboard defaults when no row / load failure. */
     static getDefaultPolicy() {
-        return { mode: 'BALANCED' };
+        return {
+            mode: 'BALANCED',
+            vpn_action: 'allow',
+            datacenter_action: 'allow',
+            force_bwt: true,
+            exempt_server_requests: false,
+            difficulty_level: 3
+        };
     }
 }
 exports.TenantService = TenantService;
