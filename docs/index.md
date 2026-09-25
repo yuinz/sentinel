@@ -10,14 +10,14 @@ hero:
       text: Get Started
       link: /introduction
     - theme: alt
-      text: Custom Policies (DSL)
+      text: Global Master Policies
       link: /dsl-rules
 
 features:
   - title: V2 Policy Engine
-    details: Build custom logic in the Dashboard using English DSL strings to control exactly who enters your app. No coding required.
+    details: One Global Master Policy per account — mode, VPN/datacenter actions, Force BWT, and PoW difficulty — applied to every API key on /v2/evaluate.
   - title: Proof-of-Work Challenges
-    details: Our Silent Challenge issues complex cryptographic hashes verified in the browser. Ultimate bot destruction with zero human friction.
+    details: Behavioral Work Tokens issue cryptographic hashes verified in the browser. Bots stall; humans pass with a short hold gesture.
   - title: 100% Multi-Tenant
-    details: Complete logical isolation. V1 users maintain identical global configurations while V2 leverages dedicated tenant boundaries.
+    details: Complete logical isolation. V1 users keep global profiles; V2 uses dedicated per-account policies.
 ---

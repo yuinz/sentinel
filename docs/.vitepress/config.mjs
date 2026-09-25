@@ -22,7 +22,7 @@ export default defineConfig({
       {
         text: 'V2 Architecture',
         items: [
-          { text: 'Custom Policy DSL', link: '/dsl-rules' },
+          { text: 'Global Master Policies', link: '/dsl-rules' },
           { text: 'API Reference', link: '/v2-api' }
         ]
       },

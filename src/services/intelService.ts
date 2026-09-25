@@ -385,9 +385,10 @@ export class IntelService {
         } catch { return false; }
     }
 
-    static async issueBehavioralWork(rawTarget: string, context: string, duration?: number) {
+    static async issueBehavioralWork(rawTarget: string, context: string, duration?: number, difficultyLevel?: number) {
         const target = this.normalizeTarget(rawTarget);
-        const difficulty = 3;
+        // Single-digit 1–5 — encoded in nonce prefix; verifyBehavioralWork reads digit at index 8.
+        const difficulty = Math.min(5, Math.max(1, Math.floor(difficultyLevel ?? 3)));
         const salt = process.env.POW_SECRET || 'sentinel-secure-powder';
         const signature = crypto.createHash('sha256').update(target + salt + difficulty).digest('hex').substring(0, 8);
 

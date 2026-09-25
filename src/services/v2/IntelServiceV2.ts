@@ -95,14 +95,25 @@ export class IntelServiceV2 {
             logger.error(`[V2] Velocity check failed for ${target}:`, err);
         }
 
-        // 6. Automation / Scanner Detection
-        const botKeywords = /headless|puppeteer|selenium|playwright|bot|crawl|spider|axios|python-requests|curl|wget/i;
-        if (botKeywords.test(userAgent)) {
+        // 6. Verified bots (good crawlers) — must run before scanner heuristics.
+        //    Generic /bot|crawl/ would otherwise punish Googlebot as SCANNER_PATTERN.
+        const verifiedBotLabel = this.detectVerifiedBot(userAgent, target);
+        if (verifiedBotLabel) {
             signals.push({
-                id: 'SCANNER_PATTERN',
-                weight: TrustCalculator.WEIGHTS.SCANNER_PATTERN,
-                label: 'Automation/Script Signature Detected'
+                id: 'VERIFIED_BOT',
+                weight: TrustCalculator.WEIGHTS.VERIFIED_BOT,
+                label: verifiedBotLabel
             });
+        } else {
+            // 7. Automation / Scanner Detection (hostile scripts only)
+            const botKeywords = /headless|puppeteer|selenium|playwright|bot|crawl|spider|axios|python-requests|curl|wget/i;
+            if (botKeywords.test(userAgent)) {
+                signals.push({
+                    id: 'SCANNER_PATTERN',
+                    weight: TrustCalculator.WEIGHTS.SCANNER_PATTERN,
+                    label: 'Automation/Script Signature Detected'
+                });
+            }
         }
 
         // ── PHASE 2: POLICY ENFORCEMENT ────────────────────────────────────────
@@ -110,6 +121,14 @@ export class IntelServiceV2 {
         // Hard blocks always take precedence over soft challenges, UNLESS the user has a valid Trust Token.
 
         const hasValidToken = signals.some(s => s.id === 'TOKEN_VALID');
+        const isVerifiedBot = signals.some(s => s.id === 'VERIFIED_BOT');
+
+        // Verified good bots: skip VPN/DC hard blocks and Force BWT; score + mode still apply
+        // (HUMAN_ONLY explicitly allows VERIFIED_BOT in PolicyEngine).
+        if (isVerifiedBot) {
+            this.triggerAsyncTasks(target, policy);
+            return this.finalizeCalculations(signals, policy, start);
+        }
 
         // ── Human Bypass Logic ────────────────────────────────────────────────
         // If a valid HMAC token is present (meaning they just solved the widget), 
@@ -169,6 +188,7 @@ export class IntelServiceV2 {
 
         // 2c. Force BWT — challenge unverified traffic
         // Check if server bypass applies (e.g. non-browser automated client)
+        const botKeywords = /headless|puppeteer|selenium|playwright|bot|crawl|spider|axios|python-requests|curl|wget/i;
         const isServerClient = !(/mozilla|chrome|safari|applewebkit/i.test(userAgent)) || botKeywords.test(userAgent);
         const exemptBwt = policy.exempt_server_requests === true && isServerClient;
 
@@ -188,6 +208,41 @@ export class IntelServiceV2 {
 
         // ── PHASE 4: SCORE + VERDICT ───────────────────────────────────────────
         return this.finalizeCalculations(signals, policy, start);
+    }
+
+    /**
+     * Known-good crawlers. Prefer explicit UA allowlist (fast path).
+     * ASN map from ConfigService used only when deep enrich is already cached
+     * AND the UA still looks like a crawler (avoids marking all CF egress as "verified").
+     */
+    private static detectVerifiedBot(userAgent: string, target: string): string | null {
+        const ua = userAgent || '';
+        const crawlers: Array<[RegExp, string]> = [
+            [/Googlebot|Google-InspectionTool|Storebot-Google|APIs-Google/i, 'Googlebot (Verified)'],
+            [/bingbot|BingPreview|msnbot/i, 'Bingbot (Verified)'],
+            [/Applebot/i, 'Applebot (Verified)'],
+            [/facebookexternalhit|meta-externalagent|Facebot/i, 'Facebook (Verified)'],
+            [/DuckDuckBot/i, 'DuckDuckBot (Verified)'],
+            [/Yandex(Bot|RenderResourcesBot)/i, 'Yandex (Verified)'],
+            [/Slurp/i, 'Yahoo Slurp (Verified)'],
+            [/Twitterbot/i, 'Twitterbot (Verified)'],
+            [/LinkedInBot/i, 'LinkedInBot (Verified)']
+        ];
+        for (const [re, label] of crawlers) {
+            if (re.test(ua)) return label;
+        }
+
+        try {
+            const deep = intelCache.get(`deep:${target}`) as any;
+            const asnNum = deep?.asn?.asn;
+            if (asnNum != null && /bot|crawl|spider|slurp/i.test(ua)) {
+                const mapped = ConfigService.getVerifiedBotAsns()[asnNum];
+                if (mapped) return mapped;
+            }
+        } catch {
+            /* cache miss is fine */
+        }
+        return null;
     }
 
     private static finalizeCalculations(signals: TrustSignal[], policy: V2PolicyConfig, startTime: number): EvaluationResult {

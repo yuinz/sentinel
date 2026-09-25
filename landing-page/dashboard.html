@@ -982,7 +982,7 @@
                         <span style="font-size: 1.3rem;">⬢</span> Sentinel V2 Global Master Policies
                     </div>
                     <p style="color: #aaa; font-size: 13px; font-family: 'Inter'; max-width: 650px; margin-bottom: 25px; line-height: 1.5;">
-                        Mathematically architect your global mitigation thresholds. These rules seamlessly compile into the bytecode array and synchronize across our Edge network natively under 15ms protecting all registered keys perfectly underneath this enterprise tenant.
+                        One policy per account. Applied to every API key under this tenant on <code style="color:#00ff88;">POST /v2/evaluate</code>. Changes take effect after save (Redis cache flushed when configured).
                     </p>
                 
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem; position: relative; z-index: 2;">
@@ -990,22 +990,23 @@
                         <div style="background: #050505; border: 1px solid #111; padding: 20px; border-radius: 8px;">
                             <div style="font-family: 'JetBrains Mono'; font-size: 10px; color: #666; text-transform: uppercase; margin-bottom: 15px;">Behavioral Thresholds</div>
                             
-                            <label style="display: block; color: #fff; font-size: 13px; font-weight: 600; margin-bottom: 8px;">Engine Operating Pipeline Mode</label>
-                            <select id="v2-mode" style="width: 100%; background: #0a0a0a; border: 1px solid #222; color: #fff; padding: 12px; border-radius: 6px; font-family: 'Inter'; font-size: 13px; margin-bottom: 25px; outline: none; appearance: none;">
-                                <option value="PASSIVE">PASSIVE (Monitor Telemetry Only)</option>
-                                <option value="BALANCED" selected>BALANCED (Auto-Mitigate Anomalies)</option>
-                                <option value="STRICT">STRICT (Zero-Trust Required)</option>
-                                <option value="DRACONIAN">DRACONIAN (Absolute Lockdown)</option>
-                                <option value="HUMAN_ONLY">HUMANS ONLY (Absolute Zero-Trust)</option>
+                            <label style="display: block; color: #fff; font-size: 13px; font-weight: 600; margin-bottom: 8px;">Engine Mode</label>
+                            <select id="v2-mode" style="width: 100%; background: #0a0a0a; border: 1px solid #222; color: #fff; padding: 12px; border-radius: 6px; font-family: 'Inter'; font-size: 13px; margin-bottom: 8px; outline: none; appearance: none;">
+                                <option value="PASSIVE">PASSIVE — Soft thresholds (extreme scores still challenged/blocked)</option>
+                                <option value="BALANCED" selected>BALANCED — Clean residential may allow; VPN/DC usually challenge</option>
+                                <option value="STRICT">STRICT — High bar; token usually required to allow</option>
+                                <option value="DRACONIAN">DRACONIAN — Near lockdown; residential + token for allow</option>
+                                <option value="HUMAN_ONLY">HUMAN_ONLY — Residential + token required; scanners blocked</option>
                             </select>
+                            <div style="font-size: 10px; color: #555; font-family: 'JetBrains Mono'; margin-bottom: 20px; line-height: 1.4;">Note: when Force BWT is on, mode runs only after a valid trust token (or for exempt server clients).</div>
                 
-                            <label style="display: block; color: #fff; font-size: 13px; font-weight: 600; margin-bottom: 5px;">Cryptographic Demand (PoW Scale)</label>
+                            <label style="display: block; color: #fff; font-size: 13px; font-weight: 600; margin-bottom: 5px;">PoW Difficulty (challenge issue)</label>
                             <div style="display: flex; justify-content: space-between; font-size: 10px; color: #555; font-family: 'JetBrains Mono'; margin-bottom: 6px;">
                                 <span>1 (Fast)</span>
-                                <span>5 (Impenetrable)</span>
+                                <span>5 (Hard)</span>
                             </div>
                             <input id="v2-diff" type="range" min="1" max="5" value="3" style="width: 100%; margin-bottom: 8px; cursor: pointer;">
-                            <div style="font-size: 10px; color: #00ff88; text-align: right; font-family: 'JetBrains Mono';">Current Network Scale: Level 3</div>
+                            <div id="v2-diff-label" style="font-size: 10px; color: #00ff88; text-align: right; font-family: 'JetBrains Mono';">Difficulty: Level 3</div>
                         </div>
                 
                         <!-- Column 2 -->
@@ -1015,10 +1016,10 @@
                             <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px dashed #111;">
                                 <div>
                                     <div style="color: #fff; font-size: 13px; font-weight: 600;">VPN / Proxy Traffic</div>
-                                    <div style="color: #666; font-size: 11px; margin-top: 4px;">Handle connections from commercial proxies.</div>
+                                    <div style="color: #666; font-size: 11px; margin-top: 4px;">Hard override when VPN is detected (cached intel).</div>
                                 </div>
                                 <select id="v2-vpn-action" style="background: #0a0a0a; border: 1px solid #222; color: #fff; padding: 6px 10px; border-radius: 4px; font-family: 'Inter'; font-size: 12px; outline: none;">
-                                    <option value="allow">Allow (Auto-Score)</option>
+                                    <option value="allow">Score only</option>
                                     <option value="challenge">Force Challenge</option>
                                     <option value="block">Hard Block</option>
                                 </select>
@@ -1027,10 +1028,10 @@
                             <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px dashed #111;">
                                 <div>
                                     <div style="color: #fff; font-size: 13px; font-weight: 600;">Datacenter IPs</div>
-                                    <div style="color: #666; font-size: 11px; margin-top: 4px;">Handle AWS/GCP/DO structural traffic.</div>
+                                    <div style="color: #666; font-size: 11px; margin-top: 4px;">Hard override for hosting/cloud ASN ranges.</div>
                                 </div>
                                 <select id="v2-dc-action" style="background: #0a0a0a; border: 1px solid #222; color: #fff; padding: 6px 10px; border-radius: 4px; font-family: 'Inter'; font-size: 12px; outline: none;">
-                                    <option value="allow">Allow (Auto-Score)</option>
+                                    <option value="allow">Score only</option>
                                     <option value="challenge">Force Challenge</option>
                                     <option value="block">Hard Block</option>
                                 </select>
@@ -1039,7 +1040,7 @@
                             <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px dashed #111;">
                                 <div>
                                     <div style="color: #fff; font-size: 13px; font-weight: 600;">Force BWT Verification</div>
-                                    <div style="color: #666; font-size: 11px; margin-top: 4px;">Require valid Trust Tokens globally.</div>
+                                    <div style="color: #666; font-size: 11px; margin-top: 4px;">Challenge browsers without a trust token before mode math.</div>
                                 </div>
                                 <label class="switch"><input id="v2-bwt-toggle" type="checkbox" checked><span class="slider"></span></label>
                             </div>
@@ -1047,7 +1048,7 @@
                             <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 0;">
                                 <div>
                                     <div style="color: #fff; font-size: 13px; font-weight: 600;">Exempt Server API Clients</div>
-                                    <div style="color: #666; font-size: 11px; margin-top: 4px;">Bypass BWT if no browser User-Agent detected.</div>
+                                    <div style="color: #666; font-size: 11px; margin-top: 4px;">Skip Force BWT only (not VPN/DC blocks or mode).</div>
                                 </div>
                                 <label class="switch"><input id="v2-server-bypass-toggle" type="checkbox"><span class="slider"></span></label>
                             </div>
@@ -1200,6 +1201,11 @@
             }
         }
 
+        function syncV2DiffLabel(val) {
+            const label = document.getElementById('v2-diff-label');
+            if (label) label.textContent = `Difficulty: Level ${val}`;
+        }
+
         // Load saved V2 policy settings and hydrate all UI controls
         async function loadV2Policy(curr) {
             const s = curr || session;
@@ -1221,7 +1227,10 @@
                 const bypassEl = document.getElementById('v2-server-bypass-toggle');
 
                 if (modeEl && p.mode) modeEl.value = p.mode;
-                if (diffEl && p.difficulty_level) diffEl.value = p.difficulty_level;
+                if (diffEl && p.difficulty_level != null) {
+                    diffEl.value = p.difficulty_level;
+                    syncV2DiffLabel(p.difficulty_level);
+                }
                 if (vpnActionEl && p.vpn_action) vpnActionEl.value = p.vpn_action;
                 if (dcActionEl && p.datacenter_action) dcActionEl.value = p.datacenter_action;
                 if (bwtEl) bwtEl.checked = p.force_bwt ?? true;
@@ -1230,6 +1239,10 @@
                 console.warn('[V2Policy] Could not load saved policies', e);
             }
         }
+
+        document.getElementById('v2-diff')?.addEventListener('input', (e) => {
+            syncV2DiffLabel(e.target.value);
+        });
 
         // Delegated listener for Copy Buttons
         document.getElementById('api-keys-list').addEventListener('click', (e) => {

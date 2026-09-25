@@ -51,14 +51,20 @@ router.post('/global', ensureSupabaseAuth, async (req: any, res) => {
     const { mode, difficulty, vpn_action, datacenter_action, exempt_server_requests, block_proxies, block_dc, force_bwt } = req.body;
 
     try {
+        const resolvedVpn = vpn_action || (block_proxies !== undefined ? (block_proxies ? 'block' : 'allow') : 'allow');
+        const resolvedDc = datacenter_action || (block_dc !== undefined ? (block_dc ? 'block' : 'allow') : 'allow');
+
         const payload = {
             user_id: user.id,
             mode: mode || 'BALANCED',
             difficulty_level: difficulty || 3,
-            vpn_action: vpn_action || (block_proxies !== undefined ? (block_proxies ? 'block' : 'allow') : 'allow'),
-            datacenter_action: datacenter_action || (block_dc !== undefined ? (block_dc ? 'block' : 'allow') : 'allow'),
+            vpn_action: resolvedVpn,
+            datacenter_action: resolvedDc,
             exempt_server_requests: exempt_server_requests || false,
             force_bwt: force_bwt !== undefined ? force_bwt : true,
+            // Keep legacy columns coherent with action selects (fallback still works).
+            block_proxies: resolvedVpn === 'block',
+            block_datacenters: resolvedDc === 'block',
             updated_at: new Date().toISOString()
         };
 
@@ -80,7 +86,8 @@ router.post('/global', ensureSupabaseAuth, async (req: any, res) => {
 
             if (keys) {
                 for (const k of keys) {
-                    redisClient.del(`v2:policy:v2:${k.api_key}`);
+                    redisClient.del(`v2:policy:v3:${k.api_key}`);
+                    redisClient.del(`v2:policy:v2:${k.api_key}`); // legacy key bust
                 }
             }
         }

@@ -132,8 +132,9 @@ export const challengeAuthMiddleware = async (
         }
 
         // 4. Valid key — tag the request with tenant ID for the rate limiter keygen,
-        //    then apply the lenient tenant limiter
+        //    and the API key so challenge issue can load tenant PoW difficulty.
         (req as any).__challengeTenantId = data.id;
+        (req as any).__challengeApiKey = apiKey;
         logger.debug(`[ChallengeAuth] Valid key — tenant ${data.id} — applying lenient rate limit`);
         tenantLimiter(req, res, next);
         return;

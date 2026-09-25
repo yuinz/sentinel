@@ -4,7 +4,7 @@ The Sentinel V2 API is a deterministic, multi-tenant evaluation endpoint. It doe
 
 ## 1. Trust Evaluation Endpoint
 
-Evaluate an incoming IP address against your specific tenant's DSL policies and the internal behavioral hash map.
+Evaluate an incoming IP address against your tenant's Global Master Policy and the in-memory signal matrix.
 
 **Endpoint:** `POST /v2/evaluate`  
 **Headers:** 

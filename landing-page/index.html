@@ -39,7 +39,7 @@
           "name": "Fleet Command",
           "price": "49",
           "priceCurrency": "USD",
-          "description": "500,000 Edge Decisions/Month, Deep Cryptographic Carrier Enrichment, Custom DSL Policy Routing"
+          "description": "500,000 Edge Decisions/Month, Deep Cryptographic Carrier Enrichment, Global Master Policies"
         }
       ],
       "publisher": {
@@ -304,12 +304,13 @@
 }</pre>
             </div>
             <div>
-                <div class="snippet-header"><span>V2 Policy DSL</span><span id="copy3" class="snippet-copy">COPY</span></div>
-                <pre class="code-block" id="snippet3" style="margin:0; font-size:0.75rem; overflow-x:auto; line-height:1.8;"><span style="color:#666">// Dashboard-configurable rules</span>
+                <div class="snippet-header"><span>V2 Global Policy</span><span id="copy3" class="snippet-copy">COPY</span></div>
+                <pre class="code-block" id="snippet3" style="margin:0; font-size:0.75rem; overflow-x:auto; line-height:1.8;"><span style="color:#666">// Dashboard → Global Master Policies</span>
 <span style="color:#FF3366">const</span> config = {
+  mode: <span style="color:#00E5FF">'BALANCED'</span>,
   vpn_action: <span style="color:#00E5FF">'challenge'</span>,
   datacenter_action: <span style="color:#00E5FF">'block'</span>,
-  humans_only: <span style="color:#FF3366">true</span>,
+  force_bwt: <span style="color:#FF3366">true</span>,
   exempt_server_requests: <span style="color:#FF3366">true</span>
 };
 <span style="color:#666">// POST /v2/evaluate → live verdict</span></pre>
@@ -373,17 +374,16 @@ DIFFICULTY: target_level_3</div>
             
             <div class="bento-card bento-card-large">
                 <div>
-                    <div class="bento-title">High-Velocity DSL Evaluation</div>
-                    <div class="bento-text">Deploy granular security rules natively from the dashboard using our minimal, regex-compiled Domain Specific Language. Evaluated locally on the Edge in &lt;5ms.</div>
+                    <div class="bento-title">Global Master Policies</div>
+                    <div class="bento-text">One policy per account — engine mode, VPN/datacenter actions, Force BWT, and PoW difficulty — applied to every API key on <code style="color:#00E5FF">/v2/evaluate</code>. Cached in Redis; saved from the dashboard.</div>
                 </div>
-                <div class="code-block" style="color: #E0E0E0;"><span style="color: #666;">// Synced directly via Supabase / Redis Cache</span>
-<span style="color: #FF3366;">const</span> tenantRules = [
-  <span style="color: #00E5FF;">"IF signal == 'VERIFIED_BOT' THEN ALLOW"</span>,
-  <span style="color: #00E5FF;">"IF signal == 'HIGH_VELOCITY' THEN BLOCK"</span>
-];
-
-<span style="color: #FF3366;">const</span> override = <span style="color: #FF3366;">this</span>.evaluateRules(tenantRules, rawSignals);
-<span style="color: #FF3366;">if</span> (override) <span style="color: #FF3366;">return</span> override;</div>
+                <div class="code-block" style="color: #E0E0E0;"><span style="color: #666;">// POST /api/policy/global</span>
+{
+  <span style="color: #00E5FF;">"mode"</span>: <span style="color: #00E5FF;">"BALANCED"</span>,
+  <span style="color: #00E5FF;">"vpn_action"</span>: <span style="color: #00E5FF;">"challenge"</span>,
+  <span style="color: #00E5FF;">"datacenter_action"</span>: <span style="color: #00E5FF;">"block"</span>,
+  <span style="color: #00E5FF;">"force_bwt"</span>: <span style="color: #FF3366;">true</span>
+}</div>
             </div>
         </div>
     </div>
@@ -415,7 +415,7 @@ DIFFICULTY: target_level_3</div>
                 <ul>
                     <li>500,000 Edge Decisions / Month</li>
                     <li>Deep Cryptographic Carrier Enrichment</li>
-                    <li>Custom DSL Policy Routing</li>
+                    <li>Global Master Policies (mode / VPN / DC / BWT)</li>
                     <li>Global Threat Pub/Sub Matrix Sync</li>
                 </ul>
                 <a href="./login.html" class="btn-console" style="margin-top: auto; text-align: center; background: var(--cyan); color: #000;">Authorize Fleet</a>

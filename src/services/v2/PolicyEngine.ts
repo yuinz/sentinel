@@ -56,7 +56,10 @@ export class PolicyEngine {
                 return 'BLOCK';
 
             case 'HUMAN_ONLY':
-                // Absolute Zero-Trust: score doesn't matter, signals do.
+                // Absolute Zero-Trust for humans; known-good crawlers still pass.
+                if (signals.some(s => s.id === 'VERIFIED_BOT')) {
+                    return 'ALLOW';
+                }
                 // Must NOT be an automated script or velocity abuser
                 if (signals.some(s => s.id === 'SCANNER_PATTERN' || s.id === 'HIGH_VELOCITY')) {
                     return 'BLOCK';

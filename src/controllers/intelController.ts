@@ -8,6 +8,7 @@ import crypto from 'crypto';
 import logger from '../utils/logger';
 import { BroadcastService } from '../services/broadcastService';
 import { TelemetryService } from '../services/telemetryService';
+import { TenantService } from '../services/v2/TenantService';
 import { intelCache, cacheStats, velocityCache, redisClient } from '../utils/cache';
 
 const checkSchema = zod.object({
@@ -215,7 +216,12 @@ export const issueChallenge = async (req: AuthRequest, res: Response) => {
     let finalTarget = target === 'detect' ? ((req.headers['x-forwarded-for'] as string)?.split(',')[0].trim() || req.ip || '127.0.0.1') : target;
     if (finalTarget.startsWith('::ffff:')) finalTarget = finalTarget.substring(7);
 
-    const challenge = await IntelService.issueBehavioralWork(finalTarget, context || 'general', duration);
+    // Tenant PoW scale from Global Master Policies (defaults to 3 when no valid key / no row).
+    const apiKey = (req as any).__challengeApiKey as string | undefined;
+    const policy = await TenantService.getPolicy(apiKey || '');
+    const difficulty = policy.difficulty_level ?? 3;
+
+    const challenge = await IntelService.issueBehavioralWork(finalTarget, context || 'general', duration, difficulty);
     return res.json(challenge);
 };
 
