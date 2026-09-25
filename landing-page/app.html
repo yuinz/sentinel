@@ -1,0 +1,2665 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+
+<head>
+    <script>
+        (function () {
+            try {
+                var t = localStorage.getItem('sentinel.theme');
+                if (t !== 'light' && t !== 'dark') t = 'dark';
+                document.documentElement.setAttribute('data-theme', t);
+            } catch (e) {
+                document.documentElement.setAttribute('data-theme', 'dark');
+            }
+        })();
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Console | Manage Trust API Security & Bot Mitigation</title>
+    <meta name="description"
+        content="Monitor real-time API security analytics, manage trust vectors, and oversee bot protection policies from the Sentinel Management Console.">
+    <meta name="keywords"
+        content="Trust API console, bot mitigation analytics, behavioral threat detection, trust vector management, Zero Trust dashboard, real-time security observability">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
+        rel="stylesheet">
+    <link rel="icon" type="image/png" href="./logo.png">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <style>
+        :root,
+        html[data-theme="dark"] {
+            --sidebar-width: 240px;
+            --card-padding: 1.25rem;
+            --input-height: 36px;
+            /* brand green — muted vs neon #00ff88 */
+            --accent: #2eb88a;
+            --accent-glow: rgba(46, 184, 138, 0.18);
+            --accent-soft: rgba(46, 184, 138, 0.12);
+            --danger: #e05252;
+            --warning: #d4a017;
+            --on-accent: #0b0d0c;
+            /* Cloudflare dark: gray.0 #1D1D1D, layered charcoal — not pure black */
+            --bg: #1d1d1d;
+            --surface: #242424;
+            --surface-2: #2a2a2a;
+            --surface-3: #2f2f2f;
+            --surface-deep: #1a1a1a;
+            --surface-inset: #222222;
+            --border: #333333;
+            --border-mid: #383838;
+            --border-strong: #404040;
+            --border-hover: #4a4a4a;
+            --text: #e8e8e8;
+            --text-bright: #f5f5f5;
+            --text-secondary: #c4c4c4;
+            --text-soft: #9a9a9a;
+            --text-muted: #8a8a8a;
+            --text-faint: #7a7a7a;
+            --text-dim: #6a6a6a;
+            --text-ghost: #5a5a5a;
+            --glass: #242424;
+            --topbar: rgba(36, 36, 36, 0.92);
+            --chart-grid: #333333;
+            --row-hover: rgba(255, 255, 255, 0.04);
+            --overlay: rgba(0, 0, 0, 0.45);
+            --overlay-strong: rgba(0, 0, 0, 0.65);
+            --scrollbar: #404040;
+            --nav-hover-bg: #2f2f2f;
+            --input-bg: #2a2a2a;
+            --input-border: #404040;
+            --input-text: #f5f5f5;
+            --slider-track: #404040;
+            --slider-knob: #f5f5f5;
+            --color-scheme: dark;
+        }
+
+        html[data-theme="light"] {
+            --accent: #1f9d6f;
+            --accent-glow: rgba(31, 157, 111, 0.16);
+            --accent-soft: rgba(31, 157, 111, 0.1);
+            --danger: #d93a3a;
+            --warning: #b8860b;
+            --on-accent: #ffffff;
+            /* CF-like light: soft gray canvas, white panels — not stark white page */
+            --bg: #f2f2f2;
+            --surface: #ffffff;
+            --surface-2: #f7f7f7;
+            --surface-3: #ffffff;
+            --surface-deep: #ebebeb;
+            --surface-inset: #e6e6e6;
+            --border: #e0e0e0;
+            --border-mid: #e5e5e5;
+            --border-strong: #d4d4d4;
+            --border-hover: #c2c2c2;
+            --text: #2c2c2c;
+            --text-bright: #1a1a1a;
+            --text-secondary: #4a4a4a;
+            --text-soft: #666666;
+            --text-muted: #6e6e6e;
+            --text-faint: #7a7a7a;
+            --text-dim: #8a8a8a;
+            --text-ghost: #9a9a9a;
+            --glass: #ffffff;
+            --topbar: rgba(255, 255, 255, 0.94);
+            --chart-grid: #e0e0e0;
+            --row-hover: rgba(0, 0, 0, 0.03);
+            --overlay: rgba(0, 0, 0, 0.32);
+            --overlay-strong: rgba(0, 0, 0, 0.48);
+            --scrollbar: #c8c8c8;
+            --nav-hover-bg: #ececec;
+            --input-bg: #ffffff;
+            --input-border: #d4d4d4;
+            --input-text: #1a1a1a;
+            --slider-track: #d4d4d4;
+            --slider-knob: #ffffff;
+            --color-scheme: light;
+        }
+
+        html {
+            color-scheme: var(--color-scheme);
+        }
+
+        body {
+            background: var(--bg);
+            font-family: 'Inter', sans-serif;
+            font-size: 13px;
+            color: var(--text);
+            transition: background-color 0.18s ease, color 0.18s ease;
+        }
+
+        /* Top Bar */
+        .system-top-bar {
+            position: fixed;
+            top: 0;
+            left: var(--sidebar-width);
+            right: 0;
+            height: 48px;
+            background: var(--topbar);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            padding: 0 2rem;
+            justify-content: space-between;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+        }
+
+        .status-pill {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .online-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--accent);
+            border-radius: 50%;
+            box-shadow: none;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border: 2px solid var(--border-strong);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .metric-item {
+            color: var(--text-muted);
+        }
+
+        .metric-item span {
+            color: var(--text-bright);
+            margin-left: 4px;
+        }
+
+        .metric-item.is-empty span {
+            color: var(--text-faint);
+        }
+
+        .dash-view { display: none; }
+        .dash-view.active { display: block; }
+
+        .empty-state {
+            text-align: center;
+            padding: 2.5rem 1.5rem;
+            color: var(--text-muted);
+            border: 1px dashed var(--border-hover);
+            border-radius: 8px;
+            background: var(--surface);
+        }
+        .empty-state h3 {
+            color: var(--text);
+            font-size: 14px;
+            margin: 0 0 8px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .empty-state p {
+            margin: 0 0 1rem;
+            font-size: 12px;
+            line-height: 1.5;
+            color: var(--text-muted);
+        }
+        .empty-state ol {
+            text-align: left;
+            max-width: 360px;
+            margin: 0 auto 1.25rem;
+            padding-left: 1.2rem;
+            font-size: 12px;
+            color: #999;
+            line-height: 1.7;
+        }
+        .empty-state code {
+            color: var(--accent);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+        }
+
+        .quota-bar-wrap {
+            margin: 0 0 1.25rem;
+            padding: 12px 14px;
+            background: var(--surface-2);
+            border: 1px solid var(--border-mid);
+            border-radius: 8px;
+        }
+        .quota-bar-meta {
+            display: flex;
+            justify-content: space-between;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+        .quota-bar-track {
+            height: 6px;
+            background: var(--nav-hover-bg);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        .quota-bar-fill {
+            height: 100%;
+            width: 0%;
+            background: var(--accent);
+            transition: width 0.3s ease;
+        }
+        .quota-bar-fill.warn { background: var(--warning); }
+        .quota-bar-fill.crit { background: var(--danger); }
+
+        .policy-preview {
+            margin-bottom: 1.5rem;
+            padding: 14px 16px;
+            background: var(--accent-soft);
+            border: 1px solid rgba(0, 255, 136, 0.2);
+            border-radius: 8px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            line-height: 1.6;
+            color: #aaa;
+        }
+        .policy-preview strong { color: var(--text-bright); }
+        .policy-preview .tag {
+            display: inline-block;
+            padding: 1px 6px;
+            border-radius: 3px;
+            background: var(--accent-soft);
+            color: var(--accent);
+            margin-right: 4px;
+        }
+
+        .sim-panel {
+            margin-top: 1.5rem;
+            padding: 16px;
+            background: var(--surface);
+            border: 1px solid var(--border-strong);
+            border-radius: 8px;
+        }
+        .sim-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr auto;
+            gap: 10px;
+            align-items: end;
+        }
+        .sim-field label {
+            display: block;
+            font-size: 10px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            margin-bottom: 6px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .sim-field input, .sim-field select {
+            width: 100%;
+            background: var(--input-bg);
+            border: 1px solid var(--input-border);
+            color: var(--input-text);
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-family: 'JetBrains Mono', monospace;
+            outline: none;
+            box-sizing: border-box;
+        }
+        .sim-result {
+            margin-top: 12px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            color: var(--text-soft);
+            display: none;
+        }
+        .sim-result.show { display: block; }
+
+        .upgrade-quiet {
+            border: 1px solid var(--border-strong);
+            background: var(--surface-2);
+            padding: 1rem 1.25rem;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+        .upgrade-quiet p {
+            margin: 4px 0 0;
+            color: var(--text-muted);
+            font-size: 12px;
+        }
+
+        /* ── IP Dossier drawer ── */
+        .dossier-overlay {
+            position: fixed;
+            inset: 0;
+            background: var(--overlay);
+            z-index: 3000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.15s ease;
+        }
+        .dossier-overlay.open { opacity: 1; pointer-events: auto; }
+        .dossier-drawer {
+            position: fixed;
+            top: 0; right: 0; bottom: 0;
+            width: min(480px, 100vw);
+            background: var(--surface);
+            border-left: 1px solid var(--border-strong);
+            z-index: 3001;
+            transform: translateX(100%);
+            transition: transform 0.18s ease;
+            display: flex;
+            flex-direction: column;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .dossier-drawer.open { transform: translateX(0); }
+        .dossier-head {
+            padding: 16px 18px;
+            border-bottom: 1px solid var(--border-mid);
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 12px;
+            flex-shrink: 0;
+        }
+        .dossier-head h2 {
+            margin: 0;
+            font-size: 14px;
+            color: var(--text-bright);
+            letter-spacing: 0.02em;
+            word-break: break-all;
+        }
+        .dossier-head .sub {
+            margin-top: 6px;
+            font-size: 10px;
+            color: var(--text-muted);
+        }
+        .dossier-close {
+            background: transparent;
+            border: 1px solid var(--border-hover);
+            color: var(--text-soft);
+            width: 32px; height: 32px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+        .dossier-close:hover { color: var(--text-bright); border-color: var(--text-dim); }
+        .dossier-body {
+            overflow-y: auto;
+            padding: 0 0 32px;
+            flex: 1;
+        }
+        .dossier-loading, .dossier-error {
+            padding: 40px 20px;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 11px;
+        }
+        .dossier-error { color: var(--danger); }
+        .dossier-sec {
+            padding: 14px 18px;
+            border-bottom: 1px solid var(--border);
+        }
+        .dossier-sec h3 {
+            margin: 0 0 10px;
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--text-faint);
+            font-weight: 600;
+        }
+        .dossier-kv {
+            display: grid;
+            grid-template-columns: 120px 1fr;
+            gap: 4px 10px;
+            font-size: 11px;
+            line-height: 1.45;
+        }
+        .dossier-kv .k { color: var(--text-faint); }
+        .dossier-kv .v { color: var(--text-secondary); word-break: break-word; }
+        .dossier-kv .v.muted { color: var(--text-muted); }
+        .dossier-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+        }
+        .dossier-badge.allow { background: var(--accent-soft); color: var(--accent); }
+        .dossier-badge.challenge { background: rgba(255,204,0,0.12); color: var(--warning); }
+        .dossier-badge.block { background: rgba(255,68,68,0.12); color: var(--danger); }
+        .dossier-signals {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 10px;
+        }
+        .dossier-signals th {
+            text-align: left;
+            color: var(--text-dim);
+            padding: 4px 0;
+            border-bottom: 1px solid var(--border-mid);
+            font-weight: 500;
+        }
+        .dossier-signals td {
+            padding: 5px 0;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-secondary);
+        }
+        .dossier-signals .w-pos { color: var(--accent); }
+        .dossier-signals .w-neg { color: var(--danger); }
+        .dossier-hist {
+            font-size: 10px;
+            color: var(--text-soft);
+            padding: 4px 0;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            gap: 8px;
+        }
+        .dossier-sources {
+            font-size: 9px;
+            color: var(--text-dim);
+            padding: 12px 18px;
+        }
+        .verdict-btn {
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            font: inherit;
+            padding: 0;
+            text-decoration: underline;
+            text-underline-offset: 3px;
+            text-decoration-color: rgba(255,255,255,0.15);
+        }
+        .verdict-btn:hover { text-decoration-color: currentColor; }
+
+        /* Device probe */
+        .probe-card {
+            border: 1px solid var(--border-strong);
+            background: var(--surface-2);
+            border-radius: 8px;
+            padding: 16px 18px;
+            margin-bottom: 1.5rem;
+        }
+        .probe-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+        .probe-meta {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            color: var(--text-soft);
+            line-height: 1.6;
+        }
+        .probe-meta .ip {
+            color: var(--text-bright);
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+        }
+        .probe-meta .label {
+            color: var(--text-faint);
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 4px;
+        }
+        .probe-actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .probe-result {
+            margin-top: 14px;
+            padding-top: 14px;
+            border-top: 1px solid var(--border-mid);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            color: var(--text-soft);
+            display: none;
+        }
+        .probe-result.show { display: block; }
+
+        @media (max-width: 900px) {
+            .policy-grid-2 {
+                grid-template-columns: 1fr !important;
+            }
+            .sim-row {
+                grid-template-columns: 1fr;
+            }
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        .dashboard-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Compact Sidebar */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: var(--surface);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+            z-index: 1100;
+        }
+
+        .sidebar-header {
+            padding: 1.5rem 1.25rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .logo-text {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+            font-size: 1.1rem;
+            letter-spacing: -0.04em;
+            color: var(--text-bright);
+        }
+
+        .sidebar-nav {
+            padding: 0.75rem 0.65rem 1rem;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.7rem 0.8rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            border-radius: 6px;
+            margin-bottom: 4px;
+            transition: all 0.2s;
+        }
+
+        .nav-item:hover,
+        .nav-item.active {
+            color: var(--text-bright);
+            background: var(--nav-hover-bg);
+        }
+
+        .nav-item.active {
+            background: var(--accent-soft);
+            color: var(--accent);
+            border-right: 2px solid var(--accent);
+        }
+
+        .sidebar-footer {
+            padding: 1rem;
+            border-top: 1px solid var(--border);
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            flex: 1;
+            padding: 0;
+            max-width: 100%;
+        }
+
+        .content-scroll {
+            padding: 2rem;
+            padding-top: 5rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .page-header {
+            margin-bottom: 2.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+
+        .page-header h1 {
+            font-size: 1.75rem;
+            font-weight: 800;
+            margin-bottom: 0.25rem;
+            letter-spacing: -0.02em;
+        }
+
+        .page-header p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        /* Cards & Glassmorphism */
+        .card {
+            background: var(--glass);
+            border: 1px solid var(--border-strong);
+            border-radius: 8px;
+            padding: var(--card-padding);
+            margin-bottom: 1.5rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .card:hover {
+            border-color: var(--border-hover);
+        }
+
+        .card-title {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-dim);
+            margin-bottom: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* Section Layouts */
+        .dash-grid {
+            display: grid;
+            grid-template-columns: 1.5fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        /* Section Labels - Engineering Theme */
+        .section-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            color: var(--accent);
+            background: var(--accent-soft);
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+            display: inline-block;
+        }
+
+        /* Mini Stats */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.25rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--surface-2);
+            border: 1px solid var(--border-mid);
+            padding: 1.25rem;
+            border-radius: 8px;
+        }
+
+        .stat-label {
+            color: var(--text-faint);
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.75rem;
+        }
+
+        .stat-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-bright);
+        }
+
+        .stat-meta {
+            font-size: 10px;
+            margin-top: 0.5rem;
+            color: var(--text-ghost);
+        }
+
+        /* Tables */
+        .sentinel-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+        }
+
+        .sentinel-table th {
+            text-align: left;
+            padding: 1rem;
+            color: var(--text-dim);
+            border-bottom: 1px solid var(--border);
+            text-transform: uppercase;
+        }
+
+        .sentinel-table td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .row-hover:hover {
+            background: var(--row-hover);
+            cursor: pointer;
+        }
+
+        /* Verdict Colors */
+        .v-allow {
+            color: var(--accent);
+            font-weight: 700;
+        }
+
+        .v-block {
+            color: var(--danger);
+            font-weight: 700;
+        }
+
+        .v-flag {
+            color: var(--warning);
+            font-weight: 700;
+        }
+
+        /* Expandable Area */
+        .expanded-details {
+            display: none;
+            background: var(--surface-deep);
+            border-left: 2px solid var(--accent);
+        }
+
+        .expanded-details.active {
+            display: table-row;
+        }
+
+        .detail-content {
+            padding: 2rem;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+        }
+
+        .detail-box label {
+            display: block;
+            font-size: 9px;
+            color: var(--text-ghost);
+            text-transform: uppercase;
+            margin-bottom: 6px;
+        }
+
+        .detail-box p {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* Performance Metrics */
+        .perf-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .perf-item {
+            padding: 1rem;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+        }
+
+        .perf-label {
+            font-size: 10px;
+            color: var(--text-dim);
+            margin-bottom: 8px;
+        }
+
+        .perf-val {
+            font-size: 18px;
+            font-weight: 700;
+            font-family: 'JetBrains Mono';
+        }
+
+        .perf-caption {
+            font-size: 10px;
+            color: var(--text-ghost);
+            margin-top: 1rem;
+            font-style: italic;
+        }
+
+        /* Engineering Toggle */
+        .eng-mode-box {
+            margin-top: 4rem;
+            padding: 2rem;
+            border: 1px dashed var(--border-hover);
+            border-radius: 12px;
+            background: var(--row-hover);
+        }
+
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 36px;
+            height: 20px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--slider-track);
+            transition: .4s;
+            border-radius: 20px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 14px;
+            width: 14px;
+            left: 3px;
+            bottom: 3px;
+            background-color: var(--slider-knob);
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked+.slider {
+            background-color: var(--accent);
+        }
+
+        input:checked+.slider:before {
+            transform: translateX(16px);
+            background-color: var(--on-accent);
+        }
+
+        /* Upgrade Bait */
+        .bait-card {
+            background: linear-gradient(135deg, var(--nav-hover-bg) 0%, var(--surface) 100%);
+            border-color: var(--border-hover);
+            color: var(--text-bright);
+        }
+
+        .bait-card h3 {
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+            color: var(--accent);
+        }
+
+        .bait-card p {
+            color: var(--text-muted);
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+
+        .bait-list {
+            list-style: none;
+            padding: 0;
+            margin-bottom: 2rem;
+        }
+
+        .bait-list li {
+            font-size: 11px;
+            color: var(--text-soft);
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .bait-list li::before {
+            content: "🔒";
+            font-size: 10px;
+        }
+
+        /* API Key Styling */
+        .key-mono {
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--text-faint);
+            font-size: 11px;
+            background: var(--surface);
+            padding: 4px 8px;
+            border-radius: 4px;
+            border: 1px solid var(--border);
+        }
+
+        .btn-action {
+            padding: 4px 10px;
+            background: var(--nav-hover-bg);
+            border: 1px solid var(--border-hover);
+            color: var(--text-muted);
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 11px;
+            transition: all 0.2s;
+        }
+
+        .btn-action:hover {
+            color: var(--text-bright);
+            border-color: var(--text-dim);
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: var(--on-accent);
+            border: none;
+            padding: 8px 16px;
+            font-weight: 700;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .user-pill {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 6px;
+            padding-right: 14px;
+            background: var(--surface-3);
+            border-radius: 30px;
+            border: 1px solid var(--border);
+        }
+
+        .user-pill img {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+        }
+
+        .tier-badge {
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 4px;
+            background: var(--nav-hover-bg);
+            color: var(--text-muted);
+            margin-left: 10px;
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+
+        .tier-badge.pro {
+            background: var(--accent);
+            color: var(--on-accent);
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--nav-hover-bg);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--border-hover);
+        }
+
+        /* Upgrade Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--overlay-strong);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            backdrop-filter: blur(8px);
+        }
+
+        .modal-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            width: 450px;
+            max-width: 95vw;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .modal-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .close-modal {
+            background: transparent;
+            border: none;
+            color: var(--text-dim);
+            cursor: pointer;
+            font-size: 1.5rem;
+        }
+
+        /* Chart Bars */
+        .chart-row {
+            display: flex;
+            align-items: flex-end;
+            gap: 12px;
+            height: 140px;
+            padding-bottom: 2rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .chart-bar-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .chart-bar {
+            width: 100%;
+            background: var(--surface-inset);
+            border-radius: 2px 2px 0 0;
+            transition: height 0.3s ease, background 0.3s;
+        }
+
+        .chart-bar:hover {
+            background: var(--accent);
+        }
+
+        .chart-label {
+            font-size: 10px;
+            color: var(--text-ghost);
+            font-family: 'JetBrains Mono';
+        }
+
+        /* Mobile Hamburger */
+        .mobile-menu-btn {
+            display: none;
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            z-index: 2000;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            padding: 8px;
+            border-radius: 6px;
+            color: var(--accent);
+        }
+
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--overlay-strong);
+            z-index: 1050;
+        }
+
+        @media (max-width: 768px) {
+            .mobile-menu-btn {
+                display: block;
+            }
+
+            .sidebar-overlay.active {
+                display: block;
+            }
+
+            /* Hide sidebar by default on mobile */
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+
+            /* Show sidebar when mobile-open class is active */
+            .sidebar.mobile-open {
+                transform: translateX(0);
+            }
+
+            /* Adjust main content to full width on mobile */
+            .main-content {
+                margin-left: 0;
+            }
+
+            /* Adjust top bar to full width on mobile */
+            .system-top-bar {
+                left: 0;
+            }
+
+            /* Make stats grid responsive */
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 1rem;
+            }
+
+            /* Make dash-grid single column on mobile */
+            .dash-grid {
+                grid-template-columns: 1fr;
+            }
+
+            /* Adjust content padding on mobile */
+            .content-scroll {
+                padding: 1.5rem 1rem;
+                padding-top: 4rem;
+            }
+
+            /* Make page header stack vertically */
+            .page-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+
+            /* Adjust table font size on mobile */
+            .sentinel-table {
+                font-size: 10px;
+            }
+
+            .sentinel-table th,
+            .sentinel-table td {
+                padding: 0.75rem 0.5rem;
+            }
+
+            /* Make detail content single column on mobile */
+            .detail-content {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+                padding: 1rem;
+            }
+        }
+
+        /* Theme toggle */
+        .theme-toggle {
+            display: inline-flex;
+            align-items: center;
+            padding: 2px;
+            border: 1px solid var(--border-strong);
+            border-radius: 8px;
+            background: var(--surface-2);
+            gap: 0;
+        }
+        .theme-toggle button {
+            appearance: none;
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+            font-family: 'Inter', sans-serif;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 6px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            line-height: 1;
+            transition: background 0.15s ease, color 0.15s ease;
+        }
+        .theme-toggle button[aria-pressed="true"] {
+            background: var(--surface);
+            color: var(--text-bright);
+            box-shadow: 0 0 0 1px var(--border);
+        }
+        .theme-toggle button:hover {
+            color: var(--text-bright);
+        }
+        .theme-toggle.sidebar-theme {
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        .theme-toggle.sidebar-theme button {
+            flex: 1;
+            text-align: center;
+        }
+
+        /* CF-style sidebar polish */
+        .sidebar-header {
+            padding: 1.1rem 1.15rem;
+            min-height: 56px;
+            display: flex;
+            align-items: center;
+        }
+        .sidebar-brand {
+            text-decoration: none;
+            color: var(--text-bright);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .sidebar-brand img {
+            height: 20px;
+            width: auto;
+        }
+        .nav-section {
+            margin: 1.25rem 0.75rem 0.5rem;
+            padding: 0 0.35rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 9px;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--text-ghost);
+        }
+        .nav-item {
+            border-radius: 6px;
+            border-right: 2px solid transparent;
+            margin-bottom: 2px;
+            font-size: 13px;
+            font-weight: 500;
+        }
+        .nav-item .icon {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            width: 18px;
+            color: var(--text-faint);
+            flex-shrink: 0;
+        }
+        .nav-item:hover .icon,
+        .nav-item.active .icon {
+            color: inherit;
+        }
+        .nav-item:hover {
+            color: var(--text-bright);
+            background: var(--nav-hover-bg);
+        }
+        .nav-item.active {
+            background: var(--accent-soft);
+            color: var(--accent);
+            border-right-color: var(--accent);
+        }
+        .sidebar-plan {
+            margin-top: auto;
+            padding: 0.75rem;
+        }
+        .btn-upgrade {
+            display: block;
+            width: 100%;
+            text-align: center;
+            text-decoration: none;
+            background: transparent;
+            border: 1px solid var(--border-strong);
+            color: var(--text);
+            padding: 0.65rem 0.75rem;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+        }
+        .btn-upgrade:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+            background: var(--accent-soft);
+        }
+        .sidebar-footer .nav-item {
+            border: 1px solid rgba(255, 68, 68, 0.15);
+            color: var(--danger);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+        }
+        html[data-theme="light"] .sidebar-footer .nav-item {
+            border-color: rgba(255, 68, 68, 0.25);
+        }
+        html[data-theme="light"] .online-dot {
+            box-shadow: none;
+        }
+        html[data-theme="light"] .card {
+            box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+        }
+        html[data-theme="light"] .stat-card,
+        html[data-theme="light"] .probe-card,
+        html[data-theme="light"] .perf-item {
+            box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
+        }
+        .form-control {
+            background: var(--input-bg);
+            border: 1px solid var(--input-border);
+            color: var(--input-text);
+            padding: 8px 10px;
+            border-radius: 6px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            outline: none;
+        }
+        .form-control:focus {
+            border-color: var(--accent);
+        }
+
+    </style>
+</head>
+
+<body>
+    <!-- Mobile Menu Button -->
+    <button class="mobile-menu-btn" id="mobile-menu-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20">
+            <path d="M3 12h18M3 6h18M3 18h18" />
+        </svg>
+    </button>
+
+    <!-- Sidebar Overlay -->
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+        <!-- TOP BAR -->
+    <div class="system-top-bar">
+        <div class="status-pill">
+            <div class="online-dot"></div>
+            <span>Sentinel Engine Online</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 20px;">
+            <div class="metric-item is-empty" id="metric-p95-wrap">p95 Latency: <span id="p95-latency">—</span></div>
+            <div class="metric-item is-empty" id="metric-avg-wrap">Avg Latency: <span id="avg-latency">—</span></div>
+            <div class="metric-item is-empty" id="metric-quota-wrap">Quota: <span id="top-quota">—</span></div>
+            <div class="theme-toggle" role="group" aria-label="Color theme">
+                <button type="button" data-theme-set="light" aria-pressed="false">Light</button>
+                <button type="button" data-theme-set="dark" aria-pressed="true">Dark</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="dashboard-container">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <a href="/" class="logo-text sidebar-brand">
+                    <img src="./logo.png" alt="S">
+                    SENTINEL
+                </a>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-section">Console</div>
+                <a href="#" class="nav-item active" data-view="overview" id="nav-overview"><span class="icon">//</span> Overview</a>
+                <a href="#" class="nav-item" data-view="keys" id="nav-keys"><span class="icon">-></span> API Keys</a>
+                <a href="#" class="nav-item" data-view="policies" id="nav-policies"><span class="icon">*=</span> Policies</a>
+                <div class="nav-section">Resources</div>
+                <a href="/docs/introduction.html" class="nav-item" id="nav-docs"><span class="icon">[]</span> Documentation</a>
+                <div class="sidebar-plan">
+                    <div class="nav-section" style="margin: 0 0 0.65rem; padding: 0;">Plan</div>
+                    <div id="tier-status-container">
+                        <a href="#" class="btn-upgrade" id="open-upgrade-btn">Upgrade to Pro</a>
+                    </div>
+                </div>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="theme-toggle sidebar-theme" role="group" aria-label="Color theme">
+                    <button type="button" data-theme-set="light" aria-pressed="false">Light</button>
+                    <button type="button" data-theme-set="dark" aria-pressed="true">Dark</button>
+                </div>
+                <a href="#" id="logout-btn" class="nav-item">
+                    <span class="icon">!</span> Sign out
+                </a>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <div class="content-scroll">
+                <div id="status-banner" style="background: var(--accent-soft); border: 1px solid rgba(0, 255, 136, 0.25); padding: 14px 18px; border-radius: 8px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;">
+                    <div>
+                        <h4 style="color: var(--accent); margin: 0 0 4px 0; font-size: 13px; font-family: 'JetBrains Mono', monospace;">V2 Global Master Policies · active</h4>
+                        <p style="margin: 0; color: var(--text-soft); font-size: 12px;">Mode, VPN/DC actions, Force BWT, PoW difficulty — enforced on <code style="color:var(--accent);">POST /v2/evaluate</code> for every key under this account.</p>
+                    </div>
+                    <button type="button" class="btn-primary" id="goto-policies-btn" style="white-space: nowrap;">Open Policies</button>
+                </div>
+
+                <header class="page-header">
+                    <div>
+                        <h1 style="display: flex; align-items: center; gap: 12px;">
+                            <span id="page-title">Overview</span>
+                            <span id="tier-badge" class="tier-badge">FREE</span>
+                        </h1>
+                        <p id="page-subtitle">Live decisions, quota, and account health</p>
+                    </div>
+                    <div class="user-pill">
+                        <img src="https://github.com/identicons/user.png" id="user-avatar" alt="A">
+                        <span id="user-name" style="font-family: 'JetBrains Mono'; font-size: 11px;">Loading...</span>
+                    </div>
+                </header>
+
+                <div id="view-overview" class="dash-view active">
+                    <div id="onboarding-empty" class="empty-state" style="display:none; margin-bottom: 1.5rem;">
+                        <h3>Get started</h3>
+                        <p>No API keys yet. Create a key, call evaluate, then tune your Global Master Policy.</p>
+                        <ol>
+                            <li>Go to <strong>API Keys</strong> and create a key</li>
+                            <li>Call <code>POST /v2/evaluate</code> with that key</li>
+                            <li>Open <strong>Policies</strong> and save mode / Force BWT</li>
+                            <li>Embed <code>widget.js</code> when you need BWT challenges</li>
+                        </ol>
+                        <button type="button" class="btn-primary" id="onboard-goto-keys">Create API key</button>
+                    </div>
+
+                    <div class="probe-card" id="device-probe">
+                        <div class="probe-top">
+                            <div class="probe-meta">
+                                <div class="label">Device probe</div>
+                                <div class="ip" id="probe-ip">Detecting…</div>
+                                <div id="probe-ua" style="max-width: 520px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color:var(--text-faint);">—</div>
+                                <div style="margin-top:6px;color:var(--text-faint);font-size:10px;">Runs real <code style="color:var(--text-muted);">POST /v2/evaluate</code> for this egress IP · counts against quota · appears in Decision Feed</div>
+                            </div>
+                            <div class="probe-actions">
+                                <select id="probe-key" class="form-control" style="max-width:200px;">
+                                    <option value="">No keys</option>
+                                </select>
+                                <button type="button" class="btn-action" id="probe-refresh-ip">Refresh IP</button>
+                                <button type="button" class="btn-primary" id="probe-run">Run probe</button>
+                            </div>
+                        </div>
+                        <div class="probe-result" id="probe-result"></div>
+                    </div>
+
+                    <div class="section-label">Mitigation</div>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-label">Total Signals</div>
+                            <div class="stat-value counter" id="total-signals">0</div>
+                            <div class="stat-meta">Billable evaluations (all keys)</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Mitigation Rate</div>
+                            <div class="stat-value counter" id="outcome-reduction">0.0%</div>
+                            <div class="stat-meta">Blocked + challenged share</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Blocked</div>
+                            <div class="stat-value counter" id="outcome-blocked" style="color: var(--danger);">0</div>
+                            <div class="stat-meta">UNTRUSTED / BLOCK verdicts</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Est. Infra Saved</div>
+                            <div class="stat-value counter" id="outcome-saved">$0.00</div>
+                            <div class="stat-meta">Heuristic · $0.013 / block</div>
+                        </div>
+                    </div>
+
+                    <div class="card" style="padding-bottom: 0.5rem; overflow: hidden; border-color: var(--border-strong);">
+                        <div class="section-label" style="display: flex; justify-content: space-between; width: 100%; box-sizing: border-box;">
+                            <span>Trust Score Stream</span>
+                            <span id="streaming-indicator" style="display: flex; align-items: center; gap: 6px;">
+                                <span class="online-dot" style="margin:0; width: 6px; height: 6px;"></span>
+                                <span style="font-size: 8px;">LIVE</span>
+                            </span>
+                        </div>
+                        <div id="decision-chart" style="height: 280px; margin: 1rem -1rem 0 -1rem;"></div>
+                    </div>
+
+                    <div class="card" style="padding: 0; overflow: hidden;">
+                        <div style="padding: 1rem 1.5rem; border-bottom: 1px solid var(--border); display:flex; justify-content: space-between; align-items: center; background: var(--row-hover); flex-wrap: wrap; gap: 12px;">
+                            <div style="display: flex; gap: 1.5rem; align-items: center; flex-wrap: wrap;">
+                                <div class="card-title" style="margin:0;">Decision Feed</div>
+                                <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                                    <button class="btn-action filter-btn active" data-filter="all" style="font-size: 9px; padding: 2px 8px;">ALL</button>
+                                    <button class="btn-action filter-btn" data-filter="ALLOW" style="font-size: 9px; padding: 2px 8px; color: var(--accent);">ALLOW</button>
+                                    <button class="btn-action filter-btn" data-filter="CHALLENGE" style="font-size: 9px; padding: 2px 8px; color: var(--warning);">CHALLENGE</button>
+                                    <button class="btn-action filter-btn" data-filter="BLOCK" style="font-size: 9px; padding: 2px 8px; color: var(--danger);">BLOCK</button>
+                                </div>
+                            </div>
+                            <input type="text" id="ip-search" placeholder="Filter by IP..." class="form-control" style="width: 160px; padding: 5px 12px; border-radius: 4px;">
+                        </div>
+                        <div style="max-height: 320px; overflow-y: auto;">
+                            <table class="sentinel-table">
+                                <thead style="position: sticky; top: 0; background: var(--surface-3); z-index: 10;">
+                                    <tr>
+                                        <th style="width: 100px;">VERDICT</th>
+                                        <th>TARGET</th>
+                                        <th>PROFILE</th>
+                                        <th>SCORE</th>
+                                        <th>SIGNAL</th>
+                                        <th>BWT</th>
+                                        <th style="text-align: right;">LATENCY</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="decisions-feed">
+                                    <tr><td colspan="7" style="text-align:center; padding: 2rem; color: var(--text-ghost);">Loading telemetry…</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="dash-grid">
+                        <div class="card">
+                            <div class="section-label">Decision Performance</div>
+                            <div class="perf-grid">
+                                <div class="perf-item">
+                                    <div class="perf-label">Average Latency</div>
+                                    <div class="perf-val" style="color: var(--accent);"><span id="perf-avg">—</span></div>
+                                    <div style="font-size: 10px; color: var(--text-dim); margin-top: 4px;">From last 7 days of logs</div>
+                                </div>
+                                <div class="perf-item">
+                                    <div class="perf-label">p95 Latency</div>
+                                    <div class="perf-val"><span id="perf-p95">—</span></div>
+                                    <div style="font-size: 10px; color: var(--text-ghost); margin-top: 4px;">95th percentile</div>
+                                </div>
+                            </div>
+                            <div class="perf-caption">Values update from your telemetry — not placeholders.</div>
+                        </div>
+                        <div class="card">
+                            <div class="section-label">Risk Posture (7d)</div>
+                            <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 0.5rem;">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <span style="color: var(--accent); font-family: 'JetBrains Mono';">ALLOW / TRUSTED</span>
+                                    <span id="risk-stable" style="font-weight: 700;">—</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <span style="color: var(--warning); font-family: 'JetBrains Mono';">CHALLENGE / FLAG</span>
+                                    <span id="risk-unstable" style="font-weight: 700;">—</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <span style="color: var(--danger); font-family: 'JetBrains Mono';">BLOCK / UNTRUSTED</span>
+                                    <span id="risk-untrusted" style="font-weight: 700;">—</span>
+                                </div>
+                            </div>
+                            <div style="margin-top: 2rem; padding-top: 1rem; border-top: 1px solid var(--border);">
+                                <div style="font-size: 9px; color: var(--text-dim); text-transform: uppercase; margin-bottom: 4px;">Challenges (7d)</div>
+                                <div id="risk-challenges" style="color: var(--text); font-family: 'JetBrains Mono'; font-size: 11px;">—</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="upgrade-quiet" id="quiet-upgrade">
+                        <div>
+                            <div style="font-family: 'JetBrains Mono'; font-size: 12px; color: var(--text-soft);">Need higher quota?</div>
+                            <p>Pro raises monthly decision limits and unlocks deeper enrichment.</p>
+                        </div>
+                        <button type="button" class="btn-action" id="bait-upgrade-btn">View Pro</button>
+                    </div>
+                </div>
+
+                <div id="view-keys" class="dash-view">
+                    <div id="quota-bar" class="quota-bar-wrap">
+                        <div class="quota-bar-meta">
+                            <span>Account quota (sum of key limits)</span>
+                            <span id="quota-label">0 / 0</span>
+                        </div>
+                        <div class="quota-bar-track"><div class="quota-bar-fill" id="quota-fill"></div></div>
+                        <div style="margin-top: 8px; font-size: 10px; color: var(--text-faint); font-family: 'JetBrains Mono';">
+                            When a key hits <code style="color:var(--text-soft);">max_usage</code>, authenticated evaluate/check returns quota errors for that key.
+                        </div>
+                    </div>
+                    <div id="api-keys-section" class="card">
+                        <div class="card-title">
+                            API Keys
+                            <button class="btn-primary" id="generate-key-btn">Create key</button>
+                        </div>
+                        <table class="sentinel-table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Profile</th>
+                                    <th>Usage</th>
+                                    <th>Status</th>
+                                    <th style="text-align: right;">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="api-keys-list"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div id="view-policies" class="dash-view">
+                    <div class="card" style="border-color: rgba(0, 255, 136, 0.35); position: relative; overflow: hidden; margin-bottom: 2rem;">
+                        <div class="card-title" style="color: var(--accent); margin-bottom: 0.75rem; display: flex; align-items: center; gap: 10px; justify-content: space-between; flex-wrap: wrap;">
+                            <span>Global Master Policies</span>
+                            <span id="policy-meta" style="font-size: 10px; color: var(--text-muted); font-weight: 400; font-family: 'JetBrains Mono';">Not loaded</span>
+                        </div>
+                        <p style="color: var(--text-soft); font-size: 13px; max-width: 720px; margin-bottom: 16px; line-height: 1.5;">
+                            One policy per account. Applied to every API key on <code style="color:var(--accent);">POST /v2/evaluate</code>. Save flushes Redis policy cache when configured.
+                        </p>
+                        <div id="policy-preview" class="policy-preview">Loading effective behavior…</div>
+
+                        <div class="policy-grid-2" style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem; position: relative; z-index: 2;">
+                            <div style="background: var(--surface); border: 1px solid var(--border); padding: 20px; border-radius: 8px;">
+                                <div style="font-family: 'JetBrains Mono'; font-size: 10px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 15px;">Behavioral Thresholds</div>
+                                <label style="display: block; color: var(--text-bright); font-size: 13px; font-weight: 600; margin-bottom: 8px;">Engine Mode</label>
+                                <select id="v2-mode" class="form-control" style="width: 100%; padding: 12px; font-size: 13px; margin-bottom: 8px;">
+                                    <option value="PASSIVE">PASSIVE — Soft thresholds (extreme scores still challenged/blocked)</option>
+                                    <option value="BALANCED" selected>BALANCED — Clean residential may allow; VPN/DC usually challenge</option>
+                                    <option value="STRICT">STRICT — High bar; token usually required to allow</option>
+                                    <option value="DRACONIAN">DRACONIAN — Near lockdown; residential + token for allow</option>
+                                    <option value="HUMAN_ONLY">HUMAN_ONLY — Residential + token required; scanners blocked</option>
+                                </select>
+                                <div style="font-size: 10px; color: var(--text-faint); font-family: 'JetBrains Mono'; margin-bottom: 20px; line-height: 1.4;">When Force BWT is on, mode runs only after a valid trust token (or exempt server clients).</div>
+                                <label style="display: block; color: var(--text-bright); font-size: 13px; font-weight: 600; margin-bottom: 5px;">PoW Difficulty (challenge issue)</label>
+                                <div style="display: flex; justify-content: space-between; font-size: 10px; color: var(--text-faint); font-family: 'JetBrains Mono'; margin-bottom: 6px;">
+                                    <span>1 (Fast)</span><span>5 (Hard)</span>
+                                </div>
+                                <input id="v2-diff" type="range" min="1" max="5" value="3" style="width: 100%; margin-bottom: 8px; cursor: pointer;">
+                                <div id="v2-diff-label" style="font-size: 10px; color: var(--accent); text-align: right; font-family: 'JetBrains Mono';">Difficulty: Level 3</div>
+                            </div>
+                            <div style="background: var(--surface); border: 1px solid var(--border); padding: 20px; border-radius: 8px;">
+                                <div style="font-family: 'JetBrains Mono'; font-size: 10px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 15px;">Infrastructural Filtering</div>
+                                <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px dashed var(--border);">
+                                    <div>
+                                        <div style="color: var(--text-bright); font-size: 13px; font-weight: 600;">VPN / Proxy Traffic</div>
+                                        <div style="color: var(--text-muted); font-size: 11px; margin-top: 4px;">Hard override when VPN is detected.</div>
+                                    </div>
+                                    <select id="v2-vpn-action" class="form-control" style="padding: 6px 10px; font-size: 12px;">
+                                        <option value="allow">Score only</option>
+                                        <option value="challenge">Force Challenge</option>
+                                        <option value="block">Hard Block</option>
+                                    </select>
+                                </div>
+                                <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px dashed var(--border);">
+                                    <div>
+                                        <div style="color: var(--text-bright); font-size: 13px; font-weight: 600;">Datacenter IPs</div>
+                                        <div style="color: var(--text-muted); font-size: 11px; margin-top: 4px;">Hard override for hosting/cloud ranges.</div>
+                                    </div>
+                                    <select id="v2-dc-action" class="form-control" style="padding: 6px 10px; font-size: 12px;">
+                                        <option value="allow">Score only</option>
+                                        <option value="challenge">Force Challenge</option>
+                                        <option value="block">Hard Block</option>
+                                    </select>
+                                </div>
+                                <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px dashed var(--border);">
+                                    <div>
+                                        <div style="color: var(--text-bright); font-size: 13px; font-weight: 600;">Force BWT Verification</div>
+                                        <div style="color: var(--text-muted); font-size: 11px; margin-top: 4px;">Challenge browsers without a trust token before mode math.</div>
+                                    </div>
+                                    <label class="switch"><input id="v2-bwt-toggle" type="checkbox" checked><span class="slider"></span></label>
+                                </div>
+                                <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 0;">
+                                    <div>
+                                        <div style="color: var(--text-bright); font-size: 13px; font-weight: 600;">Exempt Server API Clients</div>
+                                        <div style="color: var(--text-muted); font-size: 11px; margin-top: 4px;">Skip Force BWT only (not VPN/DC or mode).</div>
+                                    </div>
+                                    <label class="switch"><input id="v2-server-bypass-toggle" type="checkbox"><span class="slider"></span></label>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="text-align: right; border-top: 1px solid var(--border); padding-top: 20px;">
+                            <span id="v2-save-status" style="display: none; color: var(--accent); font-family: 'JetBrains Mono'; font-size: 11px; margin-right: 20px;">Saved · cache flushed</span>
+                            <button id="save-v2-btn" class="btn-primary" style="padding: 12px 24px;">Save &amp; Apply</button>
+                        </div>
+
+                        <div class="sim-panel">
+                            <div style="font-family: 'JetBrains Mono'; font-size: 10px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 12px;">Simulate · POST /v2/evaluate</div>
+                            <div class="sim-row">
+                                <div class="sim-field">
+                                    <label>Target IP</label>
+                                    <input id="sim-ip" type="text" placeholder="1.2.3.4 or detect" value="1.1.1.1">
+                                </div>
+                                <div class="sim-field">
+                                    <label>API key</label>
+                                    <select id="sim-key"><option value="">Load keys first…</option></select>
+                                </div>
+                                <button type="button" class="btn-primary" id="sim-run-btn" style="height: 40px;">Run</button>
+                            </div>
+                            <div class="sim-field" style="margin-top: 10px;">
+                                <label>User-Agent (optional)</label>
+                                <input id="sim-ua" type="text" placeholder="Mozilla/5.0 … or Googlebot/2.1">
+                            </div>
+                            <div id="sim-result" class="sim-result"></div>
+                        </div>
+                    </div>
+
+                    <div class="eng-mode-box">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                            <div>
+                                <div style="font-family: 'JetBrains Mono'; font-size: 12px; font-weight: 700;">Lab tools</div>
+                                <div style="font-size: 11px; color: var(--text-dim); margin-top: 4px;">Mock IP header · cache flush</div>
+                            </div>
+                            <label class="switch"><input type="checkbox" id="eng-mode-toggle"><span class="slider"></span></label>
+                        </div>
+                        <div id="eng-controls" style="opacity: 0.3; pointer-events: none; transition: opacity 0.3s ease;">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                                <button class="btn-action" id="mock-ip-btn" style="width: 100%;">Set mock IP</button>
+                                <button class="btn-action" id="flush-cache-btn" style="width: 100%;">Flush cache</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="height: 4rem;"></div>
+            </div>
+        </main>
+    </div>
+
+    <!-- IP Dossier -->
+    <div class="dossier-overlay" id="dossier-overlay"></div>
+    <aside class="dossier-drawer" id="dossier-drawer" aria-hidden="true">
+        <div class="dossier-head">
+            <div>
+                <h2 id="dossier-title">—</h2>
+                <div class="sub" id="dossier-sub">—</div>
+            </div>
+            <button type="button" class="dossier-close" id="dossier-close" aria-label="Close">×</button>
+        </div>
+        <div class="dossier-body" id="dossier-body">
+            <div class="dossier-loading">Enriching…</div>
+        </div>
+    </aside>
+
+    <!-- Upgrade Modal HTML -->
+    <div id="upgrade-modal" class="modal-overlay">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h2 style="font-size: 14px; color: var(--accent); font-family: 'JetBrains Mono'; font-weight: 700;">
+                    SYSTEM_UPGRADE: PRO_TIER</h2>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div style="padding: 0; background: var(--bg); display: flex; justify-content: center;">
+                <iframe src="https://nowpayments.io/embeds/payment-widget?iid=5332615656" width="410" height="696"
+                    frameborder="0" scrolling="no" style="overflow-y: hidden;">
+                    Can't load widget
+                </iframe>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        const supabaseUrl = 'https://ahwkraeuotptvwvutbng.supabase.co';
+        const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFod2tyYWV1b3RwdHZ3dnV0Ym5nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcwNzYxNjIsImV4cCI6MjA4MjY1MjE2Mn0.bsB4kxE-kOx355IMXmeNGGp2rKHl1l1CcMGG_clZUos';
+        const sp = supabase.createClient(supabaseUrl, supabaseAnonKey);
+
+        let currentUser = null;
+        let session = null;
+        let redirectTimeout = null;
+        let cachedKeys = [];
+        let activeFilter = 'all';
+        let searchQuery = '';
+        let lastRawLogs = [];
+        /* Theme preference */
+        function getTheme() {
+            return document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
+        }
+        function syncThemeControls(theme) {
+            document.querySelectorAll('[data-theme-set]').forEach(btn => {
+                btn.setAttribute('aria-pressed', btn.getAttribute('data-theme-set') === theme ? 'true' : 'false');
+            });
+        }
+        function applyChartTheme(theme) {
+            if (!decisionChart) return;
+            const isLight = theme === 'light';
+            const accent = isLight ? '#1f9d6f' : '#2eb88a';
+            decisionChart.updateOptions({
+                stroke: { colors: [accent] },
+                markers: { colors: [accent], strokeColors: isLight ? '#ffffff' : '#1d1d1d' },
+                grid: { borderColor: isLight ? '#e0e0e0' : '#333333' },
+                xaxis: { labels: { style: { colors: isLight ? '#6e6e6e' : '#8a8a8a', fontSize: '10px' } } },
+                yaxis: { labels: { style: { colors: isLight ? '#6e6e6e' : '#8a8a8a', fontSize: '10px' } } },
+                tooltip: { theme: isLight ? 'light' : 'dark' }
+            }, false, false);
+        }
+        function setTheme(theme) {
+            const t = theme === 'light' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', t);
+            try { localStorage.setItem('sentinel.theme', t); } catch (e) {}
+            syncThemeControls(t);
+            applyChartTheme(t);
+        }
+        document.querySelectorAll('[data-theme-set]').forEach(btn => {
+            btn.addEventListener('click', () => setTheme(btn.getAttribute('data-theme-set')));
+        });
+        syncThemeControls(getTheme());
+
+        let decisionChart = null;
+
+        const VIEW_META = {
+            overview: { title: 'Overview', subtitle: 'Live decisions, quota, and account health' },
+            keys: { title: 'API Keys', subtitle: 'Create keys and track per-key usage' },
+            policies: { title: 'Policies', subtitle: 'Global Master Policy for /v2/evaluate' }
+        };
+
+        function showView(name) {
+            ['overview', 'keys', 'policies'].forEach(v => {
+                const el = document.getElementById('view-' + v);
+                if (el) el.classList.toggle('active', v === name);
+            });
+            document.querySelectorAll('.nav-item[data-view]').forEach(a => {
+                a.classList.toggle('active', a.dataset.view === name);
+            });
+            const meta = VIEW_META[name] || VIEW_META.overview;
+            const t = document.getElementById('page-title');
+            const s = document.getElementById('page-subtitle');
+            if (t) t.textContent = meta.title;
+            if (s) s.textContent = meta.subtitle;
+            try { history.replaceState(null, '', '#' + name); } catch (_) {}
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            if (sidebar) sidebar.classList.remove('mobile-open');
+            if (overlay) overlay.classList.remove('active');
+        }
+
+        function mapVerdict(raw) {
+            const v = (raw || '').toUpperCase();
+            if (v === 'TRUSTED' || v === 'ALLOW') return { label: 'ALLOW', cls: 'v-allow', filter: 'ALLOW' };
+            if (v === 'CHALLENGE' || v === 'UNSTABLE') return { label: v === 'UNSTABLE' ? 'FLAG' : 'CHALLENGE', cls: 'v-flag', filter: 'CHALLENGE' };
+            if (v === 'UNTRUSTED' || v === 'BLOCK') return { label: 'BLOCK', cls: 'v-block', filter: 'BLOCK' };
+            return { label: v || '—', cls: '', filter: 'all' };
+        }
+
+        function primarySignal(reason) {
+            if (!reason) return '—';
+            const m = String(reason).match(/\[.*?\]\s*(\S+)/);
+            return m ? m[1] : String(reason).slice(0, 40);
+        }
+
+        function updatePolicyPreview() {
+            const el = document.getElementById('policy-preview');
+            if (!el) return;
+            const mode = document.getElementById('v2-mode')?.value || 'BALANCED';
+            const vpn = document.getElementById('v2-vpn-action')?.value || 'allow';
+            const dc = document.getElementById('v2-dc-action')?.value || 'allow';
+            const force = document.getElementById('v2-bwt-toggle')?.checked ?? true;
+            const exempt = document.getElementById('v2-server-bypass-toggle')?.checked ?? false;
+            const diff = document.getElementById('v2-diff')?.value || '3';
+
+            let firstHit = force
+                ? 'Browser without token → <strong>CHALLENGE</strong> (Force BWT; mode deferred)'
+                : `Browser without token → <strong>mode ${mode}</strong> score thresholds`;
+            if (exempt) firstHit += ' · server/non-browser UAs skip Force BWT';
+
+            el.innerHTML = `
+                <div style="margin-bottom:8px;"><span class="tag">${mode}</span> <span class="tag">PoW ${diff}</span></div>
+                <div><strong>First browser hit:</strong> ${firstHit}</div>
+                <div><strong>VPN detected:</strong> ${vpn === 'allow' ? 'score only (may still challenge under mode)' : vpn.toUpperCase()}</div>
+                <div><strong>Datacenter:</strong> ${dc === 'allow' ? 'score only (may still challenge under mode)' : dc.toUpperCase()}</div>
+                <div><strong>Verified bots:</strong> skip Force BWT / VPN·DC hard blocks; mode still applies</div>
+                <div style="margin-top:6px;color:var(--text-muted);">Order: signals → verified bot / token bypass → VPN/DC → Force BWT → mode</div>
+            `;
+        }
+
+        function syncV2DiffLabel(val) {
+            const label = document.getElementById('v2-diff-label');
+            if (label) label.textContent = `Difficulty: Level ${val}`;
+            updatePolicyPreview();
+        }
+
+        function setMetric(wrapId, spanId, value, suffix) {
+            const wrap = document.getElementById(wrapId);
+            const span = document.getElementById(spanId);
+            if (!span) return;
+            if (value == null || value === '') {
+                span.textContent = '—';
+                if (wrap) wrap.classList.add('is-empty');
+            } else {
+                span.textContent = value + (suffix || '');
+                if (wrap) wrap.classList.remove('is-empty');
+            }
+        }
+
+        function updateQuotaUI(used, max) {
+            const label = document.getElementById('quota-label');
+            const fill = document.getElementById('quota-fill');
+            const top = document.getElementById('top-quota');
+            const wrap = document.getElementById('metric-quota-wrap');
+            const u = used || 0;
+            const m = max || 0;
+            if (label) label.textContent = `${u.toLocaleString()} / ${m.toLocaleString()}`;
+            if (top) {
+                top.textContent = m ? `${u.toLocaleString()} / ${m.toLocaleString()}` : '—';
+                if (wrap) wrap.classList.toggle('is-empty', !m);
+            }
+            if (fill) {
+                const pct = m > 0 ? Math.min(100, Math.round((u / m) * 100)) : 0;
+                fill.style.width = pct + '%';
+                fill.classList.toggle('warn', pct >= 70 && pct < 90);
+                fill.classList.toggle('crit', pct >= 90);
+            }
+        }
+
+        function renderFeed(rawLogs) {
+            lastRawLogs = rawLogs || [];
+            const feed = document.getElementById('decisions-feed');
+            if (!feed) return;
+
+            const filtered = lastRawLogs.filter(log => {
+                const mapped = mapVerdict(log.verdict);
+                const matchesFilter = activeFilter === 'all' || mapped.filter === activeFilter;
+                const matchesSearch = !searchQuery || (log.target || '').toLowerCase().includes(searchQuery.toLowerCase());
+                return matchesFilter && matchesSearch;
+            });
+
+            if (filtered.length === 0) {
+                feed.innerHTML = `<tr><td colspan="7" style="text-align:center; padding: 3rem; color: var(--text-dim);">
+                    ${lastRawLogs.length === 0
+                        ? 'No decisions in the last 7 days. Call <code style="color:var(--accent);">POST /v2/evaluate</code> to populate this feed.'
+                        : 'No rows match this filter.'}
+                </td></tr>`;
+                return;
+            }
+
+            feed.innerHTML = filtered.map((log, idx) => {
+                const mapped = mapVerdict(log.verdict);
+                const score = log.trust_score != null ? log.trust_score : '—';
+                const lat = log.latency != null ? `${log.latency}ms` : '—';
+                const bwt = log.bwt_verified ? 'yes' : '—';
+                const sig = primarySignal(log.reason);
+                const payload = encodeURIComponent(JSON.stringify({
+                    target: log.target,
+                    verdict: log.verdict,
+                    score: log.trust_score,
+                    reason: log.reason,
+                    latency: log.latency,
+                    profile: log.profile,
+                    bwt: !!log.bwt_verified,
+                    time: log.time
+                }));
+                return `
+                    <tr class="row-hover">
+                        <td class="${mapped.cls}">
+                            <button type="button" class="verdict-btn ${mapped.cls} dossier-open" data-dossier="${payload}">${mapped.label}</button>
+                        </td>
+                        <td style="color:var(--text-soft);">
+                            <button type="button" class="verdict-btn dossier-open" style="color:var(--text-soft);" data-dossier="${payload}">${log.target || '—'}</button>
+                        </td>
+                        <td style="color:var(--text-soft);">${log.profile || '—'}</td>
+                        <td style="color:var(--text-secondary);">${score}</td>
+                        <td style="color:var(--text-muted); max-width:160px; overflow:hidden; text-overflow:ellipsis;">${sig}</td>
+                        <td style="color:var(--text-muted);">${bwt}</td>
+                        <td style="text-align:right; color:var(--text-muted);">${lat}</td>
+                    </tr>`;
+            }).join('');
+        }
+
+        sp.auth.onAuthStateChange(async (event, currentSession) => {
+            if (currentSession) {
+                if (redirectTimeout) clearTimeout(redirectTimeout);
+                session = currentSession;
+                currentUser = currentSession.user;
+                const meta = currentUser.user_metadata || {};
+                document.getElementById('user-name').innerText = meta.full_name || meta.user_name || (currentUser.email || '').split('@')[0];
+                document.getElementById('user-avatar').src = meta.avatar_url || 'https://github.com/identicons/user.png';
+                loadApiKeys(currentSession);
+                loadV2Policy(currentSession);
+                renderCharts();
+            } else if (event === 'INITIAL_SESSION' || event === 'SIGNED_OUT') {
+                if (window.location.hash.includes('access_token')) return;
+                redirectTimeout = setTimeout(() => window.location.href = './login.html', 1500);
+            }
+        });
+
+        async function loadApiKeys(curr) {
+            const s = curr || session;
+            if (!s) return;
+            try {
+                const res = await fetch('/api/keys', { headers: { 'Authorization': `Bearer ${s.access_token}` } });
+                if (!res.ok) return;
+                const keys = await res.json();
+                cachedKeys = keys;
+                const list = document.getElementById('api-keys-list');
+                const onboard = document.getElementById('onboarding-empty');
+                if (onboard) onboard.style.display = keys.length === 0 ? 'block' : 'none';
+
+                const used = keys.reduce((a, b) => a + (b.usage_count || 0), 0);
+                const max = keys.reduce((a, b) => a + (b.max_usage || 500), 0);
+                updateQuotaUI(used, max);
+
+                const simKey = document.getElementById('sim-key');
+                const probeKey = document.getElementById('probe-key');
+                const keyOpts = keys.length === 0
+                    ? '<option value="">No keys — create one first</option>'
+                    : keys.map(k => `<option value="${k.api_key}">${(k.name || 'key').slice(0, 24)} · ${(k.api_key || '').slice(0, 12)}…</option>`).join('');
+                if (simKey) simKey.innerHTML = keyOpts;
+                if (probeKey) probeKey.innerHTML = keyOpts;
+
+                if (list) {
+                    list.innerHTML = keys.length === 0
+                        ? '<tr><td colspan="5" style="text-align:center;color:var(--text-dim);padding:2rem;">No keys yet. Create one to start sending evaluate traffic.</td></tr>'
+                        : keys.map(k => `
+                            <tr>
+                                <td style="font-weight:700;color:var(--text-bright);">${k.name || 'API Key'}</td>
+                                <td style="color:var(--text-muted);">${k.profile || 'api'}</td>
+                                <td style="color:var(--text-muted);font-family:monospace;">${k.usage_count || 0} / ${k.max_usage || 500}</td>
+                                <td style="color:var(--text-dim);">${k.usage_count > 0 ? 'ACTIVE' : 'IDLE'}</td>
+                                <td style="text-align:right;"><button class="btn-action copy-key-btn" data-key="${k.api_key}">Copy</button></td>
+                            </tr>`).join('');
+                }
+                checkSubscription(keys);
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        async function loadV2Policy(curr) {
+            const s = curr || session;
+            if (!s) return;
+            const meta = document.getElementById('policy-meta');
+            try {
+                const res = await fetch('/api/policy/global', {
+                    method: 'GET',
+                    headers: { 'Authorization': `Bearer ${s.access_token}` }
+                });
+                if (!res.ok) {
+                    if (meta) meta.textContent = 'Load failed';
+                    updatePolicyPreview();
+                    return;
+                }
+                const p = await res.json();
+                if (!p) {
+                    if (meta) meta.textContent = 'Using defaults (no saved row)';
+                    updatePolicyPreview();
+                    return;
+                }
+                const modeEl = document.getElementById('v2-mode');
+                const diffEl = document.getElementById('v2-diff');
+                const vpnActionEl = document.getElementById('v2-vpn-action');
+                const dcActionEl = document.getElementById('v2-dc-action');
+                const bwtEl = document.getElementById('v2-bwt-toggle');
+                const bypassEl = document.getElementById('v2-server-bypass-toggle');
+                if (modeEl && p.mode) modeEl.value = p.mode;
+                if (diffEl && p.difficulty_level != null) {
+                    diffEl.value = p.difficulty_level;
+                    syncV2DiffLabel(p.difficulty_level);
+                }
+                if (vpnActionEl && p.vpn_action) vpnActionEl.value = p.vpn_action;
+                if (dcActionEl && p.datacenter_action) dcActionEl.value = p.datacenter_action;
+                if (bwtEl) bwtEl.checked = p.force_bwt ?? true;
+                if (bypassEl) bypassEl.checked = p.exempt_server_requests ?? false;
+                if (meta) meta.textContent = `Loaded · ${p.mode || 'BALANCED'}`;
+                updatePolicyPreview();
+            } catch (e) {
+                console.warn('[V2Policy]', e);
+                if (meta) meta.textContent = 'Load error';
+                updatePolicyPreview();
+            }
+        }
+
+        function animateCounter(id, target, prefix = '', suffix = '') {
+            const el = document.getElementById(id);
+            if (!el) return;
+            const current = parseFloat(el.innerText.replace(/[^0-9.]/g, '')) || 0;
+            const duration = 800;
+            const start = performance.now();
+            function update(timestamp) {
+                const progress = Math.min((timestamp - start) / duration, 1);
+                const value = current + (target - current) * progress;
+                const digits = (target % 1 === 0) ? 0 : 1;
+                el.innerText = prefix + (progress === 1
+                    ? Number(target).toLocaleString(undefined, { minimumFractionDigits: digits, maximumFractionDigits: digits })
+                    : value.toFixed(digits)) + suffix;
+                if (progress < 1) requestAnimationFrame(update);
+            }
+            requestAnimationFrame(update);
+        }
+
+        function initDecisionChart(data) {
+            const chartLight = getTheme() === 'light';
+            const accent = chartLight ? '#1f9d6f' : '#2eb88a';
+            const options = {
+                series: [{ name: 'Trust Score', data: data.map(d => ({ x: d.time, y: d.value })) }],
+                chart: {
+                    type: 'area', height: 280,
+                    animations: { enabled: true, easing: 'linear', dynamicAnimation: { speed: 800 } },
+                    toolbar: { show: false }, zoom: { enabled: false },
+                    background: 'transparent', fontFamily: 'Inter, sans-serif'
+                },
+                dataLabels: { enabled: false },
+                stroke: { curve: 'straight', width: 2, colors: [accent], lineCap: 'butt' },
+                markers: { size: 0, colors: [accent], strokeColors: chartLight ? '#ffffff' : '#1d1d1d', strokeWidth: 2, hover: { size: 4 } },
+                fill: {
+                    type: 'gradient',
+                    gradient: { shadeIntensity: 1, opacityFrom: 0.18, opacityTo: 0.0, stops: [0, 90, 100] }
+                },
+                grid: { borderColor: chartLight ? '#e0e0e0' : '#333333', strokeDashArray: 0 },
+                xaxis: { labels: { style: { colors: chartLight ? '#6e6e6e' : '#8a8a8a', fontSize: '10px' } }, axisBorder: { show: false }, axisTicks: { show: false } },
+                yaxis: { min: 0, max: 100, tickAmount: 4, labels: { style: { colors: chartLight ? '#6e6e6e' : '#8a8a8a', fontSize: '10px' } } },
+                tooltip: {
+                    theme: chartLight ? 'light' : 'dark',
+                    custom: function ({ series, seriesIndex, dataPointIndex, w }) {
+                        const y = series[seriesIndex][dataPointIndex];
+                        const x = w.globals.categoryLabels[dataPointIndex] || '';
+                        return `<div style="padding:8px 10px;font-family:JetBrains Mono;font-size:11px;">${x}<br/><b style="color:${accent}">${y}</b></div>`;
+                    }
+                }
+            };
+            decisionChart = new ApexCharts(document.querySelector('#decision-chart'), options);
+            decisionChart.render().then(() => applyChartTheme(getTheme()));
+        }
+
+        async function renderCharts() {
+            if (!session) return;
+            try {
+                const headers = { 'Authorization': `Bearer ${session.access_token}` };
+                const mockIp = sessionStorage.getItem('sentinel_mock_ip');
+                if (mockIp) headers['x-sentinel-mock-ip'] = mockIp;
+
+                const res = await fetch('/api/analytics', { headers });
+                if (!res.ok) return;
+                const stats = await res.json();
+
+                const rawLogs = stats.recent_logs || [];
+                const chartData = [...rawLogs].reverse().map(log => ({
+                    value: log.trust_score || (mapVerdict(log.verdict).filter === 'ALLOW' ? 100 : mapVerdict(log.verdict).filter === 'CHALLENGE' ? 50 : 20),
+                    time: new Date(log.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+                }));
+
+                if (!decisionChart) initDecisionChart(chartData);
+                else decisionChart.updateSeries([{ data: chartData.map(d => ({ x: d.time, y: d.value })) }]);
+
+                setMetric('metric-p95-wrap', 'p95-latency', stats.p95, 'ms');
+                setMetric('metric-avg-wrap', 'avg-latency', stats.avg_latency, 'ms');
+                const perfAvg = document.getElementById('perf-avg');
+                const perfP95 = document.getElementById('perf-p95');
+                if (perfAvg) perfAvg.textContent = stats.avg_latency != null ? stats.avg_latency + 'ms' : '—';
+                if (perfP95) perfP95.textContent = stats.p95 != null ? stats.p95 + 'ms' : '—';
+
+                if (stats.quota) updateQuotaUI(stats.quota.used, stats.quota.max);
+
+                const total = (stats.risk_distribution.stable || 0) + (stats.risk_distribution.unstable || 0) + (stats.risk_distribution.untrusted || 0);
+                animateCounter('total-signals', stats.total_signals || total);
+                animateCounter('outcome-reduction', parseFloat(stats.outcomes.reduction) || 0, '', '%');
+                animateCounter('outcome-blocked', stats.outcomes.blocked || 0);
+                animateCounter('outcome-saved', parseFloat(stats.outcomes.saved) || 0, '$');
+
+                const getPerc = (val) => total === 0 ? '—' : Math.round((val / total) * 100) + '%';
+                document.getElementById('risk-stable').innerText = getPerc(stats.risk_distribution.stable);
+                document.getElementById('risk-unstable').innerText = getPerc(stats.risk_distribution.unstable);
+                document.getElementById('risk-untrusted').innerText = getPerc(stats.risk_distribution.untrusted);
+                const ch = document.getElementById('risk-challenges');
+                if (ch) ch.textContent = String(stats.outcomes.challenges || stats.risk_distribution.challenge || 0);
+
+                renderFeed(rawLogs);
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        function toggleRow(id) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            const isActive = el.classList.contains('active');
+            document.querySelectorAll('.expanded-details').forEach(r => r.classList.remove('active'));
+            if (!isActive) el.classList.add('active');
+        }
+        window.toggleRow = toggleRow;
+
+        // ── Dossier (live enrich drawer) ──────────────────────────────────────
+        const DossierUI = (() => {
+            const overlay = () => document.getElementById('dossier-overlay');
+            const drawer = () => document.getElementById('dossier-drawer');
+            const body = () => document.getElementById('dossier-body');
+            const title = () => document.getElementById('dossier-title');
+            const sub = () => document.getElementById('dossier-sub');
+
+            function badgeClass(v) {
+                const m = mapVerdict(v);
+                if (m.filter === 'ALLOW') return 'allow';
+                if (m.filter === 'CHALLENGE') return 'challenge';
+                if (m.filter === 'BLOCK') return 'block';
+                return '';
+            }
+
+            function kv(obj) {
+                if (!obj || !Object.keys(obj).length) return '<div class="v muted">—</div>';
+                return `<div class="dossier-kv">${Object.entries(obj).map(([k, v]) =>
+                    `<div class="k">${k}</div><div class="v">${v === true ? 'true' : v === false ? 'false' : esc(String(v))}</div>`
+                ).join('')}</div>`;
+            }
+
+            function esc(s) {
+                return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+            }
+
+            function section(name, html) {
+                if (!html) return '';
+                return `<div class="dossier-sec"><h3>${name}</h3>${html}</div>`;
+            }
+
+            function render(d) {
+                const live = d.live || {};
+                const obs = d.observed;
+                const verdict = live.verdict || obs?.verdict || '—';
+                const mapped = mapVerdict(verdict);
+                title().textContent = d.target || '—';
+                sub().innerHTML = `<span class="dossier-badge ${badgeClass(verdict)}">${mapped.label}</span>` +
+                    (live.score != null ? ` · score ${esc(String(live.score))}` : '') +
+                    (live.latency_ms != null ? ` · ${live.latency_ms}ms` : '') +
+                    (live.policy_mode ? ` · ${esc(live.policy_mode)}` : '');
+
+                let html = '';
+
+                if (obs) {
+                    html += section('Observed decision', kv({
+                        verdict: obs.verdict,
+                        score: obs.score,
+                        profile: obs.profile,
+                        latency_ms: obs.latency_ms,
+                        bwt_verified: obs.bwt_verified,
+                        reason: obs.reason,
+                        time: obs.time ? new Date(obs.time).toISOString() : null
+                    }));
+                }
+
+                html += section('Live evaluation', kv({
+                    verdict: live.verdict,
+                    score: live.score,
+                    policy_mode: live.policy_mode,
+                    latency_ms: live.latency_ms
+                }));
+
+                if (live.signals?.length) {
+                    const rows = live.signals.map(s => {
+                        const wcls = s.weight > 0 ? 'w-pos' : s.weight < 0 ? 'w-neg' : '';
+                        return `<tr><td>${esc(s.id)}</td><td>${esc(s.label || '')}</td><td class="${wcls}">${s.weight > 0 ? '+' : ''}${s.weight}</td></tr>`;
+                    }).join('');
+                    html += section('Signals', `<table class="dossier-signals"><thead><tr><th>ID</th><th>Label</th><th>W</th></tr></thead><tbody>${rows}</tbody></table>`);
+                }
+
+                html += section('Network', kv(live.network));
+                html += section('Geolocation', kv(live.geo));
+                html += section('Security flags', kv(live.security));
+                if (live.company) html += section('Organization', kv(live.company));
+                if (live.metrics) html += section('Risk metrics', kv(live.metrics));
+                if (live.flags?.length) html += section('Flags', `<div class="v">${live.flags.map(esc).join(', ')}</div>`);
+
+                if (d.history?.length) {
+                    const hist = d.history.map(h => {
+                        const m = mapVerdict(h.verdict);
+                        return `<div class="dossier-hist"><span class="${m.cls}">${m.label}</span><span>${h.score ?? '—'}</span><span>${h.time ? new Date(h.time).toLocaleString() : '—'}</span></div>`;
+                    }).join('');
+                    html += section(`History (${d.history.length})`, hist);
+                }
+
+                html += `<div class="dossier-sources">sources · ${(d.sources || []).map(esc).join(' · ') || 'none'} · ${esc(d.generated_at || '')}</div>`;
+                body().innerHTML = html;
+            }
+
+            async function open(meta) {
+                const ip = meta?.target;
+                if (!ip || !session) return;
+                overlay().classList.add('open');
+                drawer().classList.add('open');
+                drawer().setAttribute('aria-hidden', 'false');
+                title().textContent = ip;
+                sub().textContent = 'Enriching…';
+                body().innerHTML = '<div class="dossier-loading">Querying providers…</div>';
+
+                const q = new URLSearchParams({ ip });
+                if (meta.verdict) q.set('verdict', meta.verdict);
+                if (meta.score != null && meta.score !== '') q.set('score', meta.score);
+                if (meta.reason) q.set('reason', meta.reason);
+                if (meta.latency != null && meta.latency !== '') q.set('latency', meta.latency);
+                if (meta.profile) q.set('profile', meta.profile);
+                if (meta.bwt) q.set('bwt', '1');
+                if (meta.time) q.set('time', meta.time);
+
+                try {
+                    const res = await fetch('/api/intel/dossier?' + q.toString(), {
+                        headers: { 'Authorization': `Bearer ${session.access_token}` }
+                    });
+                    const json = await res.json().catch(() => ({}));
+                    if (!res.ok) {
+                        let msg = json.error || 'Enrichment failed';
+                        if (res.status === 404 || /unreachable/i.test(String(msg))) {
+                            msg = 'Dossier API not live on this host yet — rebuild & deploy the API (GET /api/intel/dossier).';
+                        } else if (res.status === 401) {
+                            msg = 'Session expired — refresh and sign in again.';
+                        }
+                        body().innerHTML = `<div class="dossier-error">${esc(msg)}</div>`;
+                        return;
+                    }
+                    if (!json.dossier) {
+                        body().innerHTML = `<div class="dossier-error">Empty dossier response</div>`;
+                        return;
+                    }
+                    render(json.dossier);
+                } catch (e) {
+                    body().innerHTML = `<div class="dossier-error">Network error</div>`;
+                }
+            }
+
+            function close() {
+                overlay().classList.remove('open');
+                drawer().classList.remove('open');
+                drawer().setAttribute('aria-hidden', 'true');
+            }
+
+            function bind() {
+                document.getElementById('dossier-close')?.addEventListener('click', close);
+                overlay()?.addEventListener('click', close);
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'Escape') close();
+                });
+                document.getElementById('decisions-feed')?.addEventListener('click', (e) => {
+                    const btn = e.target.closest('.dossier-open');
+                    if (!btn) return;
+                    e.preventDefault();
+                    try {
+                        open(JSON.parse(decodeURIComponent(btn.getAttribute('data-dossier'))));
+                    } catch (_) { /* ignore bad payload */ }
+                });
+            }
+
+            return { open, close, bind };
+        })();
+
+        DossierUI.bind();
+
+        // ── Device probe (this machine → real /v2/evaluate → feed) ───────────
+        const DeviceProbe = (() => {
+            let currentIp = null;
+
+            async function detectIp() {
+                const el = document.getElementById('probe-ip');
+                const uaEl = document.getElementById('probe-ua');
+                if (uaEl) uaEl.textContent = (navigator.userAgent || '').slice(0, 120);
+                if (el) el.textContent = 'Detecting…';
+                try {
+                    const res = await fetch('/api/my-ip');
+                    const data = await res.json();
+                    currentIp = data.ip || null;
+                    if (el) el.textContent = currentIp || 'unavailable';
+                } catch {
+                    currentIp = null;
+                    if (el) el.textContent = 'unavailable';
+                }
+                return currentIp;
+            }
+
+            function showResult(html) {
+                const box = document.getElementById('probe-result');
+                if (!box) return;
+                box.innerHTML = html;
+                box.classList.add('show');
+            }
+
+            async function run() {
+                const key = document.getElementById('probe-key')?.value;
+                if (!key) {
+                    showResult('Create an API key first (API Keys), then run again.');
+                    return;
+                }
+                if (!currentIp) await detectIp();
+
+                const btn = document.getElementById('probe-run');
+                const prev = btn?.innerText;
+                if (btn) { btn.disabled = true; btn.innerText = 'Probing…'; }
+                showResult('Calling POST /v2/evaluate…');
+
+                try {
+                    const res = await fetch('/v2/evaluate', {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${key}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            target: 'detect',
+                            path: '/app/device-probe'
+                        })
+                    });
+                    const body = await res.json();
+                    if (!res.ok) {
+                        showResult(`HTTP ${res.status}: ${body.error || JSON.stringify(body)}`);
+                        return;
+                    }
+
+                    const d = body.decision || {};
+                    const mapped = mapVerdict(d.verdict);
+                    const ip = currentIp || 'detect';
+                    const signals = (d.signals || []).map(s => s.id).join(', ') || 'none';
+
+                    showResult(`
+                        <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
+                            <div>
+                                <span class="dossier-badge ${mapped.filter === 'ALLOW' ? 'allow' : mapped.filter === 'BLOCK' ? 'block' : 'challenge'}">${mapped.label}</span>
+                                <span style="margin-left:10px;color:var(--text-soft);">score ${d.score ?? '—'}</span>
+                                <span style="margin-left:10px;color:var(--text-muted);">${d.latency_ms ?? '—'}ms</span>
+                                <span style="margin-left:10px;color:var(--text-faint);">${body.tenant?.policy_engaged || ''}</span>
+                                <div style="margin-top:8px;color:var(--text-muted);">signals · ${signals}</div>
+                                <div style="margin-top:4px;color:var(--text-dim);">Logged to telemetry · refresh feed below</div>
+                            </div>
+                            <button type="button" class="btn-action" id="probe-inspect">Inspect</button>
+                        </div>
+                    `);
+
+                    document.getElementById('probe-inspect')?.addEventListener('click', () => {
+                        DossierUI.open({
+                            target: ip,
+                            verdict: d.verdict,
+                            score: d.score,
+                            reason: `[/app/device-probe] ${(d.signals || [])[0]?.id || ''}`,
+                            latency: d.latency_ms,
+                            profile: 'v2_global',
+                            bwt: (d.signals || []).some(s => s.id === 'TOKEN_VALID'),
+                            time: new Date().toISOString()
+                        });
+                    });
+
+                    // Telemetry batches every ~5s — refresh after flush windows
+                    setTimeout(() => { renderCharts(); loadApiKeys(); }, 1200);
+                    setTimeout(() => { renderCharts(); }, 5500);
+                    setTimeout(() => { renderCharts(); }, 7500);
+                } catch (e) {
+                    showResult('Network error: ' + (e.message || e));
+                } finally {
+                    if (btn) { btn.disabled = false; btn.innerText = prev || 'Run probe'; }
+                }
+            }
+
+            function bind() {
+                document.getElementById('probe-refresh-ip')?.addEventListener('click', () => detectIp());
+                document.getElementById('probe-run')?.addEventListener('click', () => run());
+                detectIp();
+            }
+
+            return { bind, detectIp, run };
+        })();
+
+        DeviceProbe.bind();
+
+        document.querySelectorAll('.nav-item[data-view]').forEach(a => {
+            a.addEventListener('click', (e) => {
+                e.preventDefault();
+                showView(a.dataset.view);
+            });
+        });
+        document.getElementById('goto-policies-btn')?.addEventListener('click', () => showView('policies'));
+        document.getElementById('onboard-goto-keys')?.addEventListener('click', () => showView('keys'));
+
+        document.getElementById('v2-diff')?.addEventListener('input', (e) => syncV2DiffLabel(e.target.value));
+        ['v2-mode', 'v2-vpn-action', 'v2-dc-action', 'v2-bwt-toggle', 'v2-server-bypass-toggle'].forEach(id => {
+            document.getElementById(id)?.addEventListener('change', updatePolicyPreview);
+        });
+
+        document.getElementById('api-keys-list')?.addEventListener('click', (e) => {
+            if (e.target.classList.contains('copy-key-btn')) {
+                const key = e.target.getAttribute('data-key');
+                navigator.clipboard.writeText(key).then(() => alert('API key copied'));
+            }
+        });
+
+        document.getElementById('generate-key-btn')?.addEventListener('click', async () => {
+            if (!session) return;
+            const res = await fetch('/api/keys/generate', {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${session.access_token}` }
+            });
+            if (res.ok) loadApiKeys();
+            else if (res.status === 403) {
+                const error = await res.json();
+                alert(`${error.message}\n\nCurrent: ${error.current}/${error.limit} keys`);
+            }
+        });
+
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                activeFilter = btn.dataset.filter;
+                renderFeed(lastRawLogs);
+            });
+        });
+        document.getElementById('ip-search')?.addEventListener('input', (e) => {
+            searchQuery = e.target.value;
+            renderFeed(lastRawLogs);
+        });
+
+        const engToggle = document.getElementById('eng-mode-toggle');
+        const engControls = document.getElementById('eng-controls');
+        if (engToggle && engControls) {
+            engToggle.addEventListener('change', () => {
+                const on = engToggle.checked;
+                engControls.style.opacity = on ? '1' : '0.3';
+                engControls.style.pointerEvents = on ? 'all' : 'none';
+                if (!on) sessionStorage.removeItem('sentinel_mock_ip');
+            });
+        }
+        document.getElementById('mock-ip-btn')?.addEventListener('click', () => {
+            const ip = prompt('Mock IP for testing:', sessionStorage.getItem('sentinel_mock_ip') || '');
+            if (ip !== null) {
+                sessionStorage.setItem('sentinel_mock_ip', ip);
+                alert('Mock IP set to: ' + ip);
+            }
+        });
+        document.getElementById('flush-cache-btn')?.addEventListener('click', async () => {
+            const key = cachedKeys[0]?.api_key || document.getElementById('sim-key')?.value;
+            if (!key) {
+                alert('Create an API key first — cache flush uses your API key on /v1/cache/flush.');
+                return;
+            }
+            try {
+                const res = await fetch('/v1/cache/flush', {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${key}` }
+                });
+                alert(res.ok ? 'Cache flushed.' : 'Cache flush failed.');
+            } catch {
+                alert('Network error');
+            }
+        });
+
+        async function checkSubscription(keys) {
+            const tierBadge = document.getElementById('tier-badge');
+            const statusContainer = document.getElementById('tier-status-container');
+            if (!keys || keys.length === 0) return;
+            const tier = keys[0].tier || 'FREE';
+            if (tierBadge) {
+                tierBadge.innerText = tier;
+                tierBadge.className = `tier-badge ${tier.toLowerCase()}`;
+            }
+            if (tier === 'PRO' && statusContainer) {
+                statusContainer.innerHTML = `<div style="background: rgba(0,255,136,0.1); color: var(--accent); padding: 0.75rem; border-radius: 4px; font-size: 10px; text-align: center; border: 1px solid rgba(0,255,136,0.2);"><b>PRO ACTIVE</b></div>`;
+            }
+            const quiet = document.getElementById('quiet-upgrade');
+            if (quiet) quiet.style.display = tier === 'PRO' ? 'none' : 'flex';
+        }
+
+
+        document.getElementById('logout-btn')?.addEventListener('click', () => {
+            sp.auth.signOut().then(() => window.location.href = './index.html');
+        });
+
+        const modal = document.getElementById('upgrade-modal');
+        const openBtn = document.getElementById('open-upgrade-btn');
+        const closeBtn = document.querySelector('.close-modal');
+        openBtn?.addEventListener('click', (e) => { e.preventDefault(); if (modal) modal.style.display = 'flex'; });
+        if (closeBtn) closeBtn.onclick = () => { if (modal) modal.style.display = 'none'; };
+        modal?.addEventListener('click', (e) => { if (e.target === modal) modal.style.display = 'none'; });
+        document.getElementById('bait-upgrade-btn')?.addEventListener('click', () => openBtn?.click());
+
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const sidebar = document.getElementById('sidebar');
+        const sidebarOverlay = document.getElementById('sidebar-overlay');
+        mobileMenuBtn?.addEventListener('click', () => {
+            sidebar?.classList.toggle('mobile-open');
+            sidebarOverlay?.classList.toggle('active');
+        });
+        sidebarOverlay?.addEventListener('click', () => {
+            sidebar?.classList.remove('mobile-open');
+            sidebarOverlay?.classList.remove('active');
+        });
+
+        document.getElementById('save-v2-btn')?.addEventListener('click', async (e) => {
+            const btn = e.target;
+            const originalText = btn.innerText;
+            btn.innerHTML = '<div class="loading-spinner" style="width:12px;height:12px;border-width:2px;margin:0 auto;"></div>';
+            const mode = document.getElementById('v2-mode')?.value || 'BALANCED';
+            const difficulty = parseInt(document.getElementById('v2-diff')?.value || '3');
+            const vpnAction = document.getElementById('v2-vpn-action')?.value || 'allow';
+            const dcAction = document.getElementById('v2-dc-action')?.value || 'allow';
+            const forceBwt = document.getElementById('v2-bwt-toggle')?.checked ?? true;
+            const exemptServer = document.getElementById('v2-server-bypass-toggle')?.checked ?? false;
+            const token = session?.access_token;
+            try {
+                const res = await fetch('/api/policy/global', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({ mode, difficulty, vpn_action: vpnAction, datacenter_action: dcAction, force_bwt: forceBwt, exempt_server_requests: exemptServer })
+                });
+                btn.innerText = originalText;
+                if (res.ok) {
+                    const status = document.getElementById('v2-save-status');
+                    const meta = document.getElementById('policy-meta');
+                    if (status) { status.style.display = 'inline-block'; setTimeout(() => { status.style.display = 'none'; }, 3000); }
+                    if (meta) meta.textContent = `Saved · ${mode} · applied to keys`;
+                    updatePolicyPreview();
+                } else {
+                    btn.innerText = 'Save failed';
+                    btn.style.background = '#ff4444';
+                    setTimeout(() => { btn.innerText = originalText; btn.style.background = ''; }, 3000);
+                }
+            } catch {
+                btn.innerText = 'Network error';
+                setTimeout(() => { btn.innerText = originalText; }, 3000);
+            }
+        });
+
+        document.getElementById('sim-run-btn')?.addEventListener('click', async () => {
+            const result = document.getElementById('sim-result');
+            const key = document.getElementById('sim-key')?.value;
+            const ip = document.getElementById('sim-ip')?.value || 'detect';
+            const ua = document.getElementById('sim-ua')?.value || '';
+            if (!key) {
+                if (result) { result.classList.add('show'); result.textContent = 'Select an API key first.'; }
+                return;
+            }
+            if (result) { result.classList.add('show'); result.textContent = 'Running…'; }
+            try {
+                const headers = {
+                    'Authorization': `Bearer ${key}`,
+                    'Content-Type': 'application/json'
+                };
+                if (ua) headers['User-Agent'] = ua;
+                const res = await fetch('/v2/evaluate', {
+                    method: 'POST',
+                    headers,
+                    body: JSON.stringify({ target: ip, path: '/app/simulate' })
+                });
+                const body = await res.json();
+                if (!res.ok) {
+                    result.textContent = `HTTP ${res.status}: ${body.error || JSON.stringify(body)}`;
+                    return;
+                }
+                const d = body.decision || {};
+                const signals = (d.signals || []).map(s => s.id).join(', ') || 'none';
+                result.innerHTML = `<strong style="color:var(--accent)">${d.verdict}</strong> · score ${d.score} · ${d.latency_ms}ms<br/>policy: ${body.tenant?.policy_engaged || '—'}<br/>signals: ${signals}`;
+                renderCharts();
+            } catch (err) {
+                result.textContent = 'Request failed: ' + (err.message || err);
+            }
+        });
+
+        // Initial view from hash
+        const hash = (location.hash || '').replace('#', '');
+        if (['overview', 'keys', 'policies'].includes(hash)) showView(hash);
+        else showView('overview');
+        updatePolicyPreview();
+        setInterval(() => { if (session) renderCharts(); }, 30000);
+    </script>
+
+</body>
+</html>

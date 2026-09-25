@@ -72,8 +72,19 @@ app.use('/v2/docs', (req, res) => {
     res.redirect(301, target);
 });
 
+const landingPath = path.join(__dirname, '..', 'landing-page');
+
+// Console app (canonical) + legacy dashboard redirects
+app.get(['/app', '/app/'], (_req, res) => {
+    res.sendFile(path.join(landingPath, 'app.html'));
+});
+app.get(['/dashboard', '/dashboard/', '/dashboard.html'], (req, res) => {
+    const q = req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : '';
+    res.redirect(301, '/app' + q);
+});
+
 // 4. Serve Landing Page (Static Files)
-app.use(express.static(path.join(__dirname, '..', 'landing-page'), {
+app.use(express.static(landingPath, {
     setHeaders: (res) => {
         res.set('Cross-Origin-Resource-Policy', 'cross-origin');
     }
@@ -81,7 +92,7 @@ app.use(express.static(path.join(__dirname, '..', 'landing-page'), {
 
 // Root route serves landing page
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, '..', 'landing-page', 'index.html'));
+    res.sendFile(path.join(landingPath, 'index.html'));
 });
 
 // Diagnostic Consoles

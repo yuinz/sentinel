@@ -353,7 +353,7 @@
             const { error } = await sp.auth.signInWithOAuth({
                 provider: 'github',
                 options: {
-                    redirectTo: window.location.origin + '/dashboard.html'
+                    redirectTo: window.location.origin + '/app'
                 }
             });
             if (error) alert('Error: ' + error.message);
