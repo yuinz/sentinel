@@ -118,17 +118,21 @@ router.get('/analytics', ensureSupabaseAuth, async (req: any, res) => {
         // 1. Get all API keys for this user to filter telemetry and get all-time usage count
         const { data: keys } = await supabase
             .from('api_access')
-            .select('id, usage_count')
+            .select('id, usage_count, max_usage')
             .eq('user_id', user.id);
 
         if (!keys || keys.length === 0) {
             return res.json({
                 labels: [],
                 values: [],
-                risk_distribution: { stable: 0, unstable: 0, untrusted: 0 },
+                risk_distribution: { stable: 0, unstable: 0, untrusted: 0, challenge: 0 },
                 total_signals: 0,
                 outcomes: { blocked: 0, reduction: "0.0%", saved: "0", challenges: 0 },
-                p95: 0
+                p95: null,
+                avg_latency: null,
+                key_count: 0,
+                quota: { used: 0, max: 0 },
+                recent_logs: []
             });
         }
 
@@ -150,20 +154,35 @@ router.get('/analytics', ensureSupabaseAuth, async (req: any, res) => {
 
         const { data: logs, error: logsError } = await supabase
             .from('telemetry')
-            .select('verdict, created_at, target, latency_ms, profile, reason, confidence, trust_score')
+            .select('verdict, created_at, target, latency_ms, profile, reason, confidence, trust_score, bwt_verified')
             .in('api_access_id', keyIds)
             .order('created_at', { ascending: false })
             .gte('created_at', sevenDaysAgo.toISOString());
 
-        if (logsError) throw logsError;
+        let logsSafe = logs;
+        if (logsError) {
+            // Fallback if bwt_verified column missing in older schemas
+            const retry = await supabase
+                .from('telemetry')
+                .select('verdict, created_at, target, latency_ms, profile, reason, confidence, trust_score')
+                .in('api_access_id', keyIds)
+                .order('created_at', { ascending: false })
+                .gte('created_at', sevenDaysAgo.toISOString());
+            if (retry.error) throw retry.error;
+            logsSafe = retry.data;
+        }
 
-        // 3. Process Risk Distribution
-        const dist = { stable: 0, unstable: 0, untrusted: 0 };
-        logs.forEach(l => {
-            const v = l.verdict.toLowerCase();
+        const rows = logsSafe || [];
+
+        // 3. Process Risk Distribution (V1: TRUSTED/UNSTABLE/UNTRUSTED · V2: CHALLENGE → unstable)
+        const dist = { stable: 0, unstable: 0, untrusted: 0, challenge: 0 };
+        rows.forEach(l => {
+            const v = (l.verdict || '').toLowerCase();
             if (v === 'trusted') dist.stable++;
-            else if (v === 'unstable') dist.unstable++;
-            else if (v === 'untrusted') dist.untrusted++;
+            else if (v === 'challenge' || v === 'unstable') {
+                dist.unstable++;
+                if (v === 'challenge') dist.challenge++;
+            } else if (v === 'untrusted') dist.untrusted++;
         });
 
         // 4. Process Daily Usage (Last 7 Days)
@@ -177,7 +196,7 @@ router.get('/analytics', ensureSupabaseAuth, async (req: any, res) => {
             dailyData[days[d.getDay()]] = 0;
         }
 
-        logs.forEach(l => {
+        rows.forEach(l => {
             const date = new Date(l.created_at);
             const dayLabel = days[date.getDay()];
             if (dailyData[dayLabel] !== undefined) {
@@ -195,23 +214,36 @@ router.get('/analytics', ensureSupabaseAuth, async (req: any, res) => {
         const savedRaw = persistentBlocked * 0.013;
         const infraSaved = savedRaw > 0 && savedRaw < 1 ? savedRaw.toFixed(2) : (savedRaw > 0 ? savedRaw.toFixed(0) : "0");
 
-        // Real-time p95 calculation
-        const validLatencies = logs.map(l => l.latency_ms).filter(l => (l || 0) > 0).sort((a, b) => a - b);
-        const p95 = validLatencies.length > 0 ? validLatencies[Math.floor(validLatencies.length * 0.95)] : 21;
+        // Real-time latency stats (no fabricated defaults)
+        const validLatencies = rows.map(l => l.latency_ms).filter(l => (l || 0) > 0).sort((a, b) => a - b);
+        const p95 = validLatencies.length > 0
+            ? validLatencies[Math.min(validLatencies.length - 1, Math.floor(validLatencies.length * 0.95))]
+            : null;
+        const avgLatency = validLatencies.length > 0
+            ? Math.round(validLatencies.reduce((a, b) => a + b, 0) / validLatencies.length)
+            : null;
+
+        const challengeCount = rows.filter(l => (l.verdict || '').toLowerCase() === 'challenge').length;
 
         res.json({
             labels: Object.keys(dailyData),
             values: Object.values(dailyData),
             risk_distribution: dist,
             total_signals: allTimeSignals, // Persistent
-            p95: p95,
+            p95,
+            avg_latency: avgLatency,
+            key_count: keys.length,
+            quota: {
+                used: allTimeSignals,
+                max: keys.reduce((acc: number, k: any) => acc + (k.max_usage || 500), 0)
+            },
             outcomes: {
                 blocked: persistentBlocked,
                 reduction: mitigationRate + "%",
-                challenges: 0,
+                challenges: challengeCount,
                 saved: infraSaved
             },
-            recent_logs: logs.slice(0, 15).map(l => ({
+            recent_logs: rows.slice(0, 25).map(l => ({
                 target: l.target,
                 verdict: l.verdict,
                 latency: l.latency_ms,
@@ -219,7 +251,8 @@ router.get('/analytics', ensureSupabaseAuth, async (req: any, res) => {
                 profile: (l as any).profile || 'api',
                 reason: (l as any).reason || 'reputation_verified',
                 confidence: (l as any).confidence || 0.9,
-                trust_score: (l as any).trust_score
+                trust_score: (l as any).trust_score,
+                bwt_verified: !!(l as any).bwt_verified
             }))
         });
 

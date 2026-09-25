@@ -80,6 +80,170 @@
             margin-left: 4px;
         }
 
+        .metric-item.is-empty span {
+            color: #555;
+        }
+
+        .dash-view { display: none; }
+        .dash-view.active { display: block; }
+
+        .empty-state {
+            text-align: center;
+            padding: 2.5rem 1.5rem;
+            color: #666;
+            border: 1px dashed #222;
+            border-radius: 8px;
+            background: #050505;
+        }
+        .empty-state h3 {
+            color: #eee;
+            font-size: 14px;
+            margin: 0 0 8px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .empty-state p {
+            margin: 0 0 1rem;
+            font-size: 12px;
+            line-height: 1.5;
+            color: #777;
+        }
+        .empty-state ol {
+            text-align: left;
+            max-width: 360px;
+            margin: 0 auto 1.25rem;
+            padding-left: 1.2rem;
+            font-size: 12px;
+            color: #999;
+            line-height: 1.7;
+        }
+        .empty-state code {
+            color: var(--accent);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+        }
+
+        .quota-bar-wrap {
+            margin: 0 0 1.25rem;
+            padding: 12px 14px;
+            background: #070707;
+            border: 1px solid #151515;
+            border-radius: 8px;
+        }
+        .quota-bar-meta {
+            display: flex;
+            justify-content: space-between;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+        .quota-bar-track {
+            height: 6px;
+            background: #111;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        .quota-bar-fill {
+            height: 100%;
+            width: 0%;
+            background: var(--accent);
+            transition: width 0.3s ease;
+        }
+        .quota-bar-fill.warn { background: var(--warning); }
+        .quota-bar-fill.crit { background: var(--danger); }
+
+        .policy-preview {
+            margin-bottom: 1.5rem;
+            padding: 14px 16px;
+            background: rgba(0, 255, 136, 0.04);
+            border: 1px solid rgba(0, 255, 136, 0.2);
+            border-radius: 8px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            line-height: 1.6;
+            color: #aaa;
+        }
+        .policy-preview strong { color: #fff; }
+        .policy-preview .tag {
+            display: inline-block;
+            padding: 1px 6px;
+            border-radius: 3px;
+            background: rgba(0,255,136,0.12);
+            color: var(--accent);
+            margin-right: 4px;
+        }
+
+        .sim-panel {
+            margin-top: 1.5rem;
+            padding: 16px;
+            background: #050505;
+            border: 1px solid #1a1a1a;
+            border-radius: 8px;
+        }
+        .sim-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr auto;
+            gap: 10px;
+            align-items: end;
+        }
+        .sim-field label {
+            display: block;
+            font-size: 10px;
+            color: #666;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .sim-field input, .sim-field select {
+            width: 100%;
+            background: #0a0a0a;
+            border: 1px solid #222;
+            color: #fff;
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-family: 'JetBrains Mono', monospace;
+            outline: none;
+            box-sizing: border-box;
+        }
+        .sim-result {
+            margin-top: 12px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            color: #888;
+            display: none;
+        }
+        .sim-result.show { display: block; }
+
+        .upgrade-quiet {
+            border: 1px solid #1a1a1a;
+            background: #070707;
+            padding: 1rem 1.25rem;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+        .upgrade-quiet p {
+            margin: 4px 0 0;
+            color: #666;
+            font-size: 12px;
+        }
+
+        @media (max-width: 900px) {
+            .policy-grid-2 {
+                grid-template-columns: 1fr !important;
+            }
+            .sim-row {
+                grid-template-columns: 1fr;
+            }
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
         .dashboard-container {
             display: flex;
             min-height: 100vh;
@@ -742,76 +906,63 @@
     <!-- Sidebar Overlay -->
     <div class="sidebar-overlay" id="sidebar-overlay"></div>
 
-    <!-- TOP BAR (Above everything) -->
+        <!-- TOP BAR -->
     <div class="system-top-bar">
         <div class="status-pill">
             <div class="online-dot"></div>
             <span>Sentinel Engine Online</span>
         </div>
         <div style="display: flex; gap: 24px;">
-            <div class="metric-item">p95 Decision Latency: <span id="p95-latency">21ms</span></div>
-            <div class="metric-item">Cache Hit Ratio: <span id="cache-hit-ratio">97.4%</span></div>
+            <div class="metric-item is-empty" id="metric-p95-wrap">p95 Latency: <span id="p95-latency">—</span></div>
+            <div class="metric-item is-empty" id="metric-avg-wrap">Avg Latency: <span id="avg-latency">—</span></div>
+            <div class="metric-item is-empty" id="metric-quota-wrap">Quota: <span id="top-quota">—</span></div>
         </div>
     </div>
 
     <div class="dashboard-container">
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
-                <a href="/" class="logo-text"
-                    style="text-decoration: none; color: #fff; display: flex; align-items: center;">
+                <a href="/" class="logo-text" style="text-decoration: none; color: #fff; display: flex; align-items: center;">
                     <img src="./logo.png" alt="S" height="20" style="margin-right: 10px;">
                     SENTINEL
                 </a>
             </div>
-
             <nav class="sidebar-nav">
-                <a href="#" class="nav-item active" id="nav-overview">
-                    <span class="icon">//</span> Telemetry & Decisions
-                </a>
-                <a href="#" class="nav-item" id="nav-keys">
-                    <span class="icon">-></span> Protected Surfaces
-                </a>
-                <a href="#" class="nav-item" id="nav-docs">
-                    <span class="icon">[]</span> Documentation
-                </a>
-
+                <a href="#" class="nav-item active" data-view="overview" id="nav-overview"><span class="icon">//</span> Overview</a>
+                <a href="#" class="nav-item" data-view="keys" id="nav-keys"><span class="icon">-></span> API Keys</a>
+                <a href="#" class="nav-item" data-view="policies" id="nav-policies"><span class="icon">*=</span> Policies</a>
+                <a href="/docs/introduction.html" class="nav-item" id="nav-docs"><span class="icon">[]</span> Documentation</a>
                 <div style="margin-top: 2rem; padding: 0 0.75rem;">
-                    <div
-                        style="color: #333; font-family: 'JetBrains Mono'; font-size: 9px; text-transform: uppercase; margin-bottom: 1rem;">
-                        System Authority</div>
+                    <div style="color: #333; font-family: 'JetBrains Mono'; font-size: 9px; text-transform: uppercase; margin-bottom: 1rem;">Plan</div>
                     <div id="tier-status-container">
-                        <a href="#" class="btn-upgrade" id="open-upgrade-btn"
-                            style="width: 100%; text-align: center;">Unlock Authority Tier</a>
+                        <a href="#" class="btn-upgrade" id="open-upgrade-btn" style="width: 100%; text-align: center;">Upgrade to Pro</a>
                     </div>
                 </div>
             </nav>
-
             <div class="sidebar-footer">
-                <a href="#" id="logout-btn" class="nav-item"
-                    style="color: var(--danger); border: 1px solid rgba(255,0,0,0.1); font-family: var(--font-mono); font-size: 11px;">
-                    <span class="icon">!</span> TERMINATE_SESSION
+                <a href="#" id="logout-btn" class="nav-item" style="color: var(--danger); border: 1px solid rgba(255,0,0,0.1); font-family: var(--font-mono); font-size: 11px;">
+                    <span class="icon">!</span> Sign out
                 </a>
             </div>
         </aside>
 
         <main class="main-content">
             <div class="content-scroll">
-                <!-- V2 Upgrade Banner -->
-                <div style="background: rgba(0, 255, 136, 0.05); border: 1px solid rgba(0, 255, 136, 0.4); padding: 15px 20px; border-radius: 8px; margin-bottom: 30px; display: flex; align-items: center; justify-content: space-between;">
+                <div id="status-banner" style="background: rgba(0, 255, 136, 0.05); border: 1px solid rgba(0, 255, 136, 0.25); padding: 14px 18px; border-radius: 8px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;">
                     <div>
-                        <h4 style="color: var(--accent); margin: 0 0 5px 0; font-size: 14px; font-family: 'JetBrains Mono', monospace;">AVAILABLE NOW: Sentinel Engine V2</h4>
-                        <p style="margin: 0; color: #aaa; font-size: 13px;">You are currently viewing the V1 Telemetry console. Professionally upgrade to V2 for Custom B2B Policies and multi-tenant zero-latency routing.</p>
+                        <h4 style="color: var(--accent); margin: 0 0 4px 0; font-size: 13px; font-family: 'JetBrains Mono', monospace;">V2 Global Master Policies · active</h4>
+                        <p style="margin: 0; color: #888; font-size: 12px;">Mode, VPN/DC actions, Force BWT, PoW difficulty — enforced on <code style="color:var(--accent);">POST /v2/evaluate</code> for every key under this account.</p>
                     </div>
-                    <a href="/docs/introduction.html" style="text-decoration: none; padding: 10px 20px; border-radius: 6px; font-weight: 600; color: #000; background: var(--accent);">Start V2 Migration</a>
+                    <button type="button" class="btn-primary" id="goto-policies-btn" style="white-space: nowrap;">Open Policies</button>
                 </div>
 
                 <header class="page-header">
                     <div>
                         <h1 style="display: flex; align-items: center; gap: 12px;">
-                            Command Center
+                            <span id="page-title">Overview</span>
                             <span id="tier-badge" class="tier-badge">FREE</span>
                         </h1>
-                        <p>Real-time decision authority and surface protection</p>
+                        <p id="page-subtitle">Live decisions, quota, and account health</p>
                     </div>
                     <div class="user-pill">
                         <img src="https://github.com/identicons/user.png" id="user-avatar" alt="A">
@@ -819,297 +970,281 @@
                     </div>
                 </header>
 
-                <div id="section-overview">
-                    <!-- SECTION 2 — WHAT SENTINEL PREVENTED (EGO BOOST) -->
-                    <div class="section-label">System Performance & Mitigation</div>
+                <div id="view-overview" class="dash-view active">
+                    <div id="onboarding-empty" class="empty-state" style="display:none; margin-bottom: 1.5rem;">
+                        <h3>Get started</h3>
+                        <p>No API keys yet. Create a key, call evaluate, then tune your Global Master Policy.</p>
+                        <ol>
+                            <li>Go to <strong>API Keys</strong> and create a key</li>
+                            <li>Call <code>POST /v2/evaluate</code> with that key</li>
+                            <li>Open <strong>Policies</strong> and save mode / Force BWT</li>
+                            <li>Embed <code>widget.js</code> when you need BWT challenges</li>
+                        </ol>
+                        <button type="button" class="btn-primary" id="onboard-goto-keys">Create API key</button>
+                    </div>
+
+                    <div class="section-label">Mitigation</div>
                     <div class="stats-grid">
                         <div class="stat-card">
-                            <div class="stat-label">Total Signals Captured</div>
+                            <div class="stat-label">Total Signals</div>
                             <div class="stat-value counter" id="total-signals">0</div>
-                            <div class="stat-meta">Across all active vectors</div>
+                            <div class="stat-meta">Billable evaluations (all keys)</div>
                         </div>
                         <div class="stat-card">
-                            <div class="stat-label">Bot Mitigation Rate</div>
+                            <div class="stat-label">Mitigation Rate</div>
                             <div class="stat-value counter" id="outcome-reduction">0.0%</div>
-                            <div class="stat-meta">Detection accuracy score</div>
+                            <div class="stat-meta">Blocked + challenged share</div>
                         </div>
                         <div class="stat-card">
-                            <div class="stat-label">Attempts Neutralized</div>
+                            <div class="stat-label">Blocked</div>
                             <div class="stat-value counter" id="outcome-blocked" style="color: var(--danger);">0</div>
-                            <div class="stat-meta">Automated traffic blocked</div>
+                            <div class="stat-meta">UNTRUSTED / BLOCK verdicts</div>
                         </div>
                         <div class="stat-card">
-                            <div class="stat-label">Infrastructure Savings</div>
+                            <div class="stat-label">Est. Infra Saved</div>
                             <div class="stat-value counter" id="outcome-saved">$0.00</div>
-                            <div class="stat-meta">Estimated cost avoidance</div>
+                            <div class="stat-meta">Heuristic · $0.013 / block</div>
                         </div>
                     </div>
 
-                    <!-- SECTION 1 — LIVE DECISION TELEMETRY -->
-                    <div class="card" style="padding-bottom: 0.5rem; overflow: hidden; border-color: var(--accent);">
-                        <div class="section-label"
-                            style="display: flex; justify-content: space-between; width: 100%; box-sizing: border-box;">
-                            <span>Authority Authority Stream (Live)</span>
+                    <div class="card" style="padding-bottom: 0.5rem; overflow: hidden; border-color: #1a1a1a;">
+                        <div class="section-label" style="display: flex; justify-content: space-between; width: 100%; box-sizing: border-box;">
+                            <span>Trust Score Stream</span>
                             <span id="streaming-indicator" style="display: flex; align-items: center; gap: 6px;">
                                 <span class="online-dot" style="margin:0; width: 6px; height: 6px;"></span>
-                                <span style="font-size: 8px;">CONNECTED_60FPS</span>
+                                <span style="font-size: 8px;">LIVE</span>
                             </span>
                         </div>
                         <div id="decision-chart" style="height: 280px; margin: 1rem -1rem 0 -1rem;"></div>
                     </div>
 
-                    <!-- SECTION 2 — DECISION HISTORY LOG -->
                     <div class="card" style="padding: 0; overflow: hidden;">
-                        <div
-                            style="padding: 1rem 1.5rem; border-bottom: 1px solid #111; display:flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.02);">
-                            <div style="display: flex; gap: 1.5rem; align-items: center;">
-                                <div class="card-title" style="margin:0;">Intelligence Feed</div>
-                                <div style="display: flex; gap: 6px;">
-                                    <button class="btn-action filter-btn active" data-filter="all"
-                                        style="font-size: 9px; padding: 2px 8px;">ALL</button>
-                                    <button class="btn-action filter-btn" data-filter="BLOCK"
-                                        style="font-size: 9px; padding: 2px 8px; color: var(--danger);">BLOCKS</button>
-                                    <button class="btn-action filter-btn" data-filter="ALLOW"
-                                        style="font-size: 9px; padding: 2px 8px; color: var(--accent);">SAFE</button>
+                        <div style="padding: 1rem 1.5rem; border-bottom: 1px solid #111; display:flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.02); flex-wrap: wrap; gap: 12px;">
+                            <div style="display: flex; gap: 1.5rem; align-items: center; flex-wrap: wrap;">
+                                <div class="card-title" style="margin:0;">Decision Feed</div>
+                                <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                                    <button class="btn-action filter-btn active" data-filter="all" style="font-size: 9px; padding: 2px 8px;">ALL</button>
+                                    <button class="btn-action filter-btn" data-filter="ALLOW" style="font-size: 9px; padding: 2px 8px; color: var(--accent);">ALLOW</button>
+                                    <button class="btn-action filter-btn" data-filter="CHALLENGE" style="font-size: 9px; padding: 2px 8px; color: var(--warning);">CHALLENGE</button>
+                                    <button class="btn-action filter-btn" data-filter="BLOCK" style="font-size: 9px; padding: 2px 8px; color: var(--danger);">BLOCK</button>
                                 </div>
                             </div>
-                            <div style="position: relative;">
-                                <input type="text" id="ip-search" placeholder="Filter by IP..."
-                                    style="background: #000; border: 1px solid #222; color: #fff; border-radius: 4px; padding: 5px 12px; font-size: 11px; width: 160px; outline: none; font-family: 'JetBrains Mono';">
-                            </div>
+                            <input type="text" id="ip-search" placeholder="Filter by IP..." style="background: #000; border: 1px solid #222; color: #fff; border-radius: 4px; padding: 5px 12px; font-size: 11px; width: 160px; outline: none; font-family: 'JetBrains Mono';">
                         </div>
-                        <div style="max-height: 240px; overflow-y: auto;">
+                        <div style="max-height: 320px; overflow-y: auto;">
                             <table class="sentinel-table">
                                 <thead style="position: sticky; top: 0; background: #0a0a0a; z-index: 10;">
                                     <tr>
                                         <th style="width: 100px;">VERDICT</th>
+                                        <th>TARGET</th>
                                         <th>PROFILE</th>
-                                        <th>PRIMARY SIGNAL</th>
+                                        <th>SCORE</th>
+                                        <th>SIGNAL</th>
+                                        <th>BWT</th>
                                         <th style="text-align: right;">LATENCY</th>
                                     </tr>
                                 </thead>
                                 <tbody id="decisions-feed">
-                                    <tr>
-                                        <td colspan="4" style="text-align:center; padding: 2rem; color: #333;">
-                                            INITIALIZING_DATA_MODEL...
-                                        </td>
-                                    </tr>
+                                    <tr><td colspan="7" style="text-align:center; padding: 2rem; color: #333;">Loading telemetry…</td></tr>
                                 </tbody>
                             </table>
                         </div>
                     </div>
 
                     <div class="dash-grid">
-                        <!-- SECTION 3 — LATENCY FLEX -->
                         <div class="card">
                             <div class="section-label">Decision Performance</div>
                             <div class="perf-grid">
                                 <div class="perf-item">
-                                    <div class="perf-label">Fast-Path Decisions</div>
-                                    <div class="perf-val" style="color: var(--accent);">18ms <span
-                                            style="font-size: 10px; color: #444; font-weight: 400;">avg</span></div>
-                                    <div style="font-size: 10px; color: #444; margin-top: 4px;">p95: 27ms</div>
+                                    <div class="perf-label">Average Latency</div>
+                                    <div class="perf-val" style="color: var(--accent);"><span id="perf-avg">—</span></div>
+                                    <div style="font-size: 10px; color: #444; margin-top: 4px;">From last 7 days of logs</div>
                                 </div>
                                 <div class="perf-item">
-                                    <div class="perf-label">Forced Forensic</div>
-                                    <div class="perf-val">141ms <span
-                                            style="font-size: 10px; color: #444; font-weight: 400;">avg</span></div>
-                                    <div style="font-size: 10px; color: #333; margin-top: 4px;">usage: auth + payments
-                                        only</div>
+                                    <div class="perf-label">p95 Latency</div>
+                                    <div class="perf-val"><span id="perf-p95">—</span></div>
+                                    <div style="font-size: 10px; color: #333; margin-top: 4px;">95th percentile</div>
                                 </div>
                             </div>
-                            <div class="perf-caption">“Security without latency is table stakes.”</div>
+                            <div class="perf-caption">Values update from your telemetry — not placeholders.</div>
                         </div>
-
-                        <!-- SECTION 4 — RISK DISTRIBUTION -->
                         <div class="card">
-                            <div class="section-label">Risk Posture</div>
+                            <div class="section-label">Risk Posture (7d)</div>
                             <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 0.5rem;">
                                 <div style="display: flex; justify-content: space-between; align-items: center;">
-                                    <span style="color: var(--accent); font-family: 'JetBrains Mono';">Stable
-                                        Traffic</span>
-                                    <span id="risk-stable" style="font-weight: 700;">78%</span>
+                                    <span style="color: var(--accent); font-family: 'JetBrains Mono';">ALLOW / TRUSTED</span>
+                                    <span id="risk-stable" style="font-weight: 700;">—</span>
                                 </div>
                                 <div style="display: flex; justify-content: space-between; align-items: center;">
-                                    <span
-                                        style="color: var(--warning); font-family: 'JetBrains Mono';">Suspicious</span>
-                                    <span id="risk-unstable" style="font-weight: 700;">14%</span>
+                                    <span style="color: var(--warning); font-family: 'JetBrains Mono';">CHALLENGE / FLAG</span>
+                                    <span id="risk-unstable" style="font-weight: 700;">—</span>
                                 </div>
                                 <div style="display: flex; justify-content: space-between; align-items: center;">
-                                    <span style="color: var(--danger); font-family: 'JetBrains Mono';">Untrusted</span>
-                                    <span id="risk-untrusted" style="font-weight: 700;">8%</span>
+                                    <span style="color: var(--danger); font-family: 'JetBrains Mono';">BLOCK / UNTRUSTED</span>
+                                    <span id="risk-untrusted" style="font-weight: 700;">—</span>
                                 </div>
                             </div>
                             <div style="margin-top: 2rem; padding-top: 1rem; border-top: 1px solid #111;">
-                                <div
-                                    style="font-size: 9px; color: #444; text-transform: uppercase; margin-bottom: 4px;">
-                                    Dominant Risk Source</div>
-                                <div style="color: #eee; font-family: 'JetBrains Mono'; font-size: 11px;">Hosting ASNs
-                                    (OVH, Hetzner)</div>
+                                <div style="font-size: 9px; color: #444; text-transform: uppercase; margin-bottom: 4px;">Challenges (7d)</div>
+                                <div id="risk-challenges" style="color: #eee; font-family: 'JetBrains Mono'; font-size: 11px;">—</div>
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <!-- SECTION 5 — VECTORS (PROTECTED SURFACES) -->
-                <div id="api-keys-section" class="card">
-                    <div class="card-title">
-                        Protected Surfaces
-                        <button class="btn-primary" id="generate-key-btn">Register New Vector</button>
-                    </div>
-                    <table class="sentinel-table">
-                        <thead>
-                            <tr>
-                                <th>Surface Name</th>
-                                <th>Profile</th>
-                                <th>Mode</th>
-                                <th>Decisions</th>
-                                <th>Last Action</th>
-                                <th style="text-align: right;">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody id="api-keys-list">
-                            <!-- JS Inject -->
-                        </tbody>
-                    </table>
-                </div>
-
-                <!-- SECTION 6 — V2 POLICY ENGINE (NEW) -->
-                <div class="card" style="border-color: rgba(0, 255, 136, 0.4); position: relative; overflow: hidden; margin-top: 2.5rem; margin-bottom: 2rem;">
-                    <div style="position: absolute; top: -100px; right: -50px; width: 250px; height: 250px; background: radial-gradient(circle, rgba(0,255,136,0.08) 0%, transparent 60%); border-radius: 50%; pointer-events: none;"></div>
-                    
-                    <div class="card-title" style="color: var(--accent); margin-bottom: 1.5rem; display: flex; align-items: center; gap: 10px;">
-                        <span style="font-size: 1.3rem;">⬢</span> Sentinel V2 Global Master Policies
-                    </div>
-                    <p style="color: #aaa; font-size: 13px; font-family: 'Inter'; max-width: 650px; margin-bottom: 25px; line-height: 1.5;">
-                        One policy per account. Applied to every API key under this tenant on <code style="color:#00ff88;">POST /v2/evaluate</code>. Changes take effect after save (Redis cache flushed when configured).
-                    </p>
-                
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem; position: relative; z-index: 2;">
-                        <!-- Column 1 -->
-                        <div style="background: #050505; border: 1px solid #111; padding: 20px; border-radius: 8px;">
-                            <div style="font-family: 'JetBrains Mono'; font-size: 10px; color: #666; text-transform: uppercase; margin-bottom: 15px;">Behavioral Thresholds</div>
-                            
-                            <label style="display: block; color: #fff; font-size: 13px; font-weight: 600; margin-bottom: 8px;">Engine Mode</label>
-                            <select id="v2-mode" style="width: 100%; background: #0a0a0a; border: 1px solid #222; color: #fff; padding: 12px; border-radius: 6px; font-family: 'Inter'; font-size: 13px; margin-bottom: 8px; outline: none; appearance: none;">
-                                <option value="PASSIVE">PASSIVE — Soft thresholds (extreme scores still challenged/blocked)</option>
-                                <option value="BALANCED" selected>BALANCED — Clean residential may allow; VPN/DC usually challenge</option>
-                                <option value="STRICT">STRICT — High bar; token usually required to allow</option>
-                                <option value="DRACONIAN">DRACONIAN — Near lockdown; residential + token for allow</option>
-                                <option value="HUMAN_ONLY">HUMAN_ONLY — Residential + token required; scanners blocked</option>
-                            </select>
-                            <div style="font-size: 10px; color: #555; font-family: 'JetBrains Mono'; margin-bottom: 20px; line-height: 1.4;">Note: when Force BWT is on, mode runs only after a valid trust token (or for exempt server clients).</div>
-                
-                            <label style="display: block; color: #fff; font-size: 13px; font-weight: 600; margin-bottom: 5px;">PoW Difficulty (challenge issue)</label>
-                            <div style="display: flex; justify-content: space-between; font-size: 10px; color: #555; font-family: 'JetBrains Mono'; margin-bottom: 6px;">
-                                <span>1 (Fast)</span>
-                                <span>5 (Hard)</span>
-                            </div>
-                            <input id="v2-diff" type="range" min="1" max="5" value="3" style="width: 100%; margin-bottom: 8px; cursor: pointer;">
-                            <div id="v2-diff-label" style="font-size: 10px; color: #00ff88; text-align: right; font-family: 'JetBrains Mono';">Difficulty: Level 3</div>
-                        </div>
-                
-                        <!-- Column 2 -->
-                        <div style="background: #050505; border: 1px solid #111; padding: 20px; border-radius: 8px;">
-                            <div style="font-family: 'JetBrains Mono'; font-size: 10px; color: #666; text-transform: uppercase; margin-bottom: 15px;">Infrastructural Filtering</div>
-                            
-                            <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px dashed #111;">
-                                <div>
-                                    <div style="color: #fff; font-size: 13px; font-weight: 600;">VPN / Proxy Traffic</div>
-                                    <div style="color: #666; font-size: 11px; margin-top: 4px;">Hard override when VPN is detected (cached intel).</div>
-                                </div>
-                                <select id="v2-vpn-action" style="background: #0a0a0a; border: 1px solid #222; color: #fff; padding: 6px 10px; border-radius: 4px; font-family: 'Inter'; font-size: 12px; outline: none;">
-                                    <option value="allow">Score only</option>
-                                    <option value="challenge">Force Challenge</option>
-                                    <option value="block">Hard Block</option>
-                                </select>
-                            </div>
-                
-                            <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px dashed #111;">
-                                <div>
-                                    <div style="color: #fff; font-size: 13px; font-weight: 600;">Datacenter IPs</div>
-                                    <div style="color: #666; font-size: 11px; margin-top: 4px;">Hard override for hosting/cloud ASN ranges.</div>
-                                </div>
-                                <select id="v2-dc-action" style="background: #0a0a0a; border: 1px solid #222; color: #fff; padding: 6px 10px; border-radius: 4px; font-family: 'Inter'; font-size: 12px; outline: none;">
-                                    <option value="allow">Score only</option>
-                                    <option value="challenge">Force Challenge</option>
-                                    <option value="block">Hard Block</option>
-                                </select>
-                            </div>
-                
-                            <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px dashed #111;">
-                                <div>
-                                    <div style="color: #fff; font-size: 13px; font-weight: 600;">Force BWT Verification</div>
-                                    <div style="color: #666; font-size: 11px; margin-top: 4px;">Challenge browsers without a trust token before mode math.</div>
-                                </div>
-                                <label class="switch"><input id="v2-bwt-toggle" type="checkbox" checked><span class="slider"></span></label>
-                            </div>
-
-                            <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 0;">
-                                <div>
-                                    <div style="color: #fff; font-size: 13px; font-weight: 600;">Exempt Server API Clients</div>
-                                    <div style="color: #666; font-size: 11px; margin-top: 4px;">Skip Force BWT only (not VPN/DC blocks or mode).</div>
-                                </div>
-                                <label class="switch"><input id="v2-server-bypass-toggle" type="checkbox"><span class="slider"></span></label>
-                            </div>
-                        </div>
-                    </div>
-                
-                    <div style="text-align: right; border-top: 1px solid #111; padding-top: 20px;">
-                        <span id="v2-save-status" style="display: none; color: #00ff88; font-family: 'JetBrains Mono'; font-size: 11px; margin-right: 20px;">[✓] Synced.</span>
-                        <button id="save-v2-btn" class="btn-primary" style="padding: 12px 24px; box-shadow: 0 4px 15px rgba(0,255,136,0.2);">Save &amp; Apply</button>
-                    </div>
-                </div>
-
-                <!-- SECTION 7 — PREMIUM BAIT (NOT BEGGING) -->
-                <div class="card bait-card">
-                    <h3>Locked Insights</h3>
-                    <div class="bait-list">
-                        <li>Understand why decisions were made</li>
-                        <li>Inspect dominant risk signals</li>
-                        <li>Enable forced forensic audits for auth & payments</li>
-                    </div>
-                    <button class="btn-upgrade" id="bait-upgrade-btn">Unlock Authority Tier</button>
-                </div>
-
-                <!-- SECTION 7 — ENGINEERING MODE -->
-                <div class="eng-mode-box">
-                    <div
-                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                    <div class="upgrade-quiet" id="quiet-upgrade">
                         <div>
-                            <div style="font-family: 'JetBrains Mono'; font-size: 12px; font-weight: 700;">🧪
-                                Engineering / Lab Mode</div>
-                            <div style="font-size: 11px; color: #444; margin-top: 4px;">For local testing and CI only.
-                                Disabled in production.</div>
+                            <div style="font-family: 'JetBrains Mono'; font-size: 12px; color: #ccc;">Need higher quota?</div>
+                            <p>Pro raises monthly decision limits and unlocks deeper enrichment.</p>
                         </div>
-                        <div class="toggle-container">
-                            <label class="switch">
-                                <input type="checkbox" id="eng-mode-toggle">
-                                <span class="slider"></span>
-                            </label>
+                        <button type="button" class="btn-action" id="bait-upgrade-btn">View Pro</button>
+                    </div>
+                </div>
+
+                <div id="view-keys" class="dash-view">
+                    <div id="quota-bar" class="quota-bar-wrap">
+                        <div class="quota-bar-meta">
+                            <span>Account quota (sum of key limits)</span>
+                            <span id="quota-label">0 / 0</span>
+                        </div>
+                        <div class="quota-bar-track"><div class="quota-bar-fill" id="quota-fill"></div></div>
+                        <div style="margin-top: 8px; font-size: 10px; color: #555; font-family: 'JetBrains Mono';">
+                            When a key hits <code style="color:#888;">max_usage</code>, authenticated evaluate/check returns quota errors for that key.
+                        </div>
+                    </div>
+                    <div id="api-keys-section" class="card">
+                        <div class="card-title">
+                            API Keys
+                            <button class="btn-primary" id="generate-key-btn">Create key</button>
+                        </div>
+                        <table class="sentinel-table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Profile</th>
+                                    <th>Usage</th>
+                                    <th>Status</th>
+                                    <th style="text-align: right;">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="api-keys-list"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div id="view-policies" class="dash-view">
+                    <div class="card" style="border-color: rgba(0, 255, 136, 0.35); position: relative; overflow: hidden; margin-bottom: 2rem;">
+                        <div class="card-title" style="color: var(--accent); margin-bottom: 0.75rem; display: flex; align-items: center; gap: 10px; justify-content: space-between; flex-wrap: wrap;">
+                            <span>Global Master Policies</span>
+                            <span id="policy-meta" style="font-size: 10px; color: #666; font-weight: 400; font-family: 'JetBrains Mono';">Not loaded</span>
+                        </div>
+                        <p style="color: #888; font-size: 13px; max-width: 720px; margin-bottom: 16px; line-height: 1.5;">
+                            One policy per account. Applied to every API key on <code style="color:#00ff88;">POST /v2/evaluate</code>. Save flushes Redis policy cache when configured.
+                        </p>
+                        <div id="policy-preview" class="policy-preview">Loading effective behavior…</div>
+
+                        <div class="policy-grid-2" style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem; position: relative; z-index: 2;">
+                            <div style="background: #050505; border: 1px solid #111; padding: 20px; border-radius: 8px;">
+                                <div style="font-family: 'JetBrains Mono'; font-size: 10px; color: #666; text-transform: uppercase; margin-bottom: 15px;">Behavioral Thresholds</div>
+                                <label style="display: block; color: #fff; font-size: 13px; font-weight: 600; margin-bottom: 8px;">Engine Mode</label>
+                                <select id="v2-mode" style="width: 100%; background: #0a0a0a; border: 1px solid #222; color: #fff; padding: 12px; border-radius: 6px; font-size: 13px; margin-bottom: 8px; outline: none;">
+                                    <option value="PASSIVE">PASSIVE — Soft thresholds (extreme scores still challenged/blocked)</option>
+                                    <option value="BALANCED" selected>BALANCED — Clean residential may allow; VPN/DC usually challenge</option>
+                                    <option value="STRICT">STRICT — High bar; token usually required to allow</option>
+                                    <option value="DRACONIAN">DRACONIAN — Near lockdown; residential + token for allow</option>
+                                    <option value="HUMAN_ONLY">HUMAN_ONLY — Residential + token required; scanners blocked</option>
+                                </select>
+                                <div style="font-size: 10px; color: #555; font-family: 'JetBrains Mono'; margin-bottom: 20px; line-height: 1.4;">When Force BWT is on, mode runs only after a valid trust token (or exempt server clients).</div>
+                                <label style="display: block; color: #fff; font-size: 13px; font-weight: 600; margin-bottom: 5px;">PoW Difficulty (challenge issue)</label>
+                                <div style="display: flex; justify-content: space-between; font-size: 10px; color: #555; font-family: 'JetBrains Mono'; margin-bottom: 6px;">
+                                    <span>1 (Fast)</span><span>5 (Hard)</span>
+                                </div>
+                                <input id="v2-diff" type="range" min="1" max="5" value="3" style="width: 100%; margin-bottom: 8px; cursor: pointer;">
+                                <div id="v2-diff-label" style="font-size: 10px; color: #00ff88; text-align: right; font-family: 'JetBrains Mono';">Difficulty: Level 3</div>
+                            </div>
+                            <div style="background: #050505; border: 1px solid #111; padding: 20px; border-radius: 8px;">
+                                <div style="font-family: 'JetBrains Mono'; font-size: 10px; color: #666; text-transform: uppercase; margin-bottom: 15px;">Infrastructural Filtering</div>
+                                <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px dashed #111;">
+                                    <div>
+                                        <div style="color: #fff; font-size: 13px; font-weight: 600;">VPN / Proxy Traffic</div>
+                                        <div style="color: #666; font-size: 11px; margin-top: 4px;">Hard override when VPN is detected.</div>
+                                    </div>
+                                    <select id="v2-vpn-action" style="background: #0a0a0a; border: 1px solid #222; color: #fff; padding: 6px 10px; border-radius: 4px; font-size: 12px;">
+                                        <option value="allow">Score only</option>
+                                        <option value="challenge">Force Challenge</option>
+                                        <option value="block">Hard Block</option>
+                                    </select>
+                                </div>
+                                <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px dashed #111;">
+                                    <div>
+                                        <div style="color: #fff; font-size: 13px; font-weight: 600;">Datacenter IPs</div>
+                                        <div style="color: #666; font-size: 11px; margin-top: 4px;">Hard override for hosting/cloud ranges.</div>
+                                    </div>
+                                    <select id="v2-dc-action" style="background: #0a0a0a; border: 1px solid #222; color: #fff; padding: 6px 10px; border-radius: 4px; font-size: 12px;">
+                                        <option value="allow">Score only</option>
+                                        <option value="challenge">Force Challenge</option>
+                                        <option value="block">Hard Block</option>
+                                    </select>
+                                </div>
+                                <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px dashed #111;">
+                                    <div>
+                                        <div style="color: #fff; font-size: 13px; font-weight: 600;">Force BWT Verification</div>
+                                        <div style="color: #666; font-size: 11px; margin-top: 4px;">Challenge browsers without a trust token before mode math.</div>
+                                    </div>
+                                    <label class="switch"><input id="v2-bwt-toggle" type="checkbox" checked><span class="slider"></span></label>
+                                </div>
+                                <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 0;">
+                                    <div>
+                                        <div style="color: #fff; font-size: 13px; font-weight: 600;">Exempt Server API Clients</div>
+                                        <div style="color: #666; font-size: 11px; margin-top: 4px;">Skip Force BWT only (not VPN/DC or mode).</div>
+                                    </div>
+                                    <label class="switch"><input id="v2-server-bypass-toggle" type="checkbox"><span class="slider"></span></label>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="text-align: right; border-top: 1px solid #111; padding-top: 20px;">
+                            <span id="v2-save-status" style="display: none; color: #00ff88; font-family: 'JetBrains Mono'; font-size: 11px; margin-right: 20px;">Saved · cache flushed</span>
+                            <button id="save-v2-btn" class="btn-primary" style="padding: 12px 24px;">Save &amp; Apply</button>
+                        </div>
+
+                        <div class="sim-panel">
+                            <div style="font-family: 'JetBrains Mono'; font-size: 10px; color: #666; text-transform: uppercase; margin-bottom: 12px;">Simulate · POST /v2/evaluate</div>
+                            <div class="sim-row">
+                                <div class="sim-field">
+                                    <label>Target IP</label>
+                                    <input id="sim-ip" type="text" placeholder="1.2.3.4 or detect" value="1.1.1.1">
+                                </div>
+                                <div class="sim-field">
+                                    <label>API key</label>
+                                    <select id="sim-key"><option value="">Load keys first…</option></select>
+                                </div>
+                                <button type="button" class="btn-primary" id="sim-run-btn" style="height: 40px;">Run</button>
+                            </div>
+                            <div class="sim-field" style="margin-top: 10px;">
+                                <label>User-Agent (optional)</label>
+                                <input id="sim-ua" type="text" placeholder="Mozilla/5.0 … or Googlebot/2.1">
+                            </div>
+                            <div id="sim-result" class="sim-result"></div>
                         </div>
                     </div>
 
-                    <div id="eng-controls" style="opacity: 0.3; pointer-events: none; transition: opacity 0.3s ease;">
-                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
-                            <div class="perf-item">
-                                <div class="perf-label">Mock IP testing</div>
-                                <button class="btn-action" id="mock-ip-btn" style="width: 100%;">Configure</button>
+                    <div class="eng-mode-box">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                            <div>
+                                <div style="font-family: 'JetBrains Mono'; font-size: 12px; font-weight: 700;">Lab tools</div>
+                                <div style="font-size: 11px; color: #444; margin-top: 4px;">Mock IP header · cache flush</div>
                             </div>
-                            <div class="perf-item">
-                                <div class="perf-label">Bypass headers</div>
-                                <div style="font-size: 9px; color: #444;">Localhost only</div>
-                            </div>
-                            <div class="perf-item">
-                                <div class="perf-label">Trust token reuse</div>
-                                <button class="btn-action" id="flush-cache-btn" style="width: 100%;">Flush
-                                    Cache</button>
+                            <label class="switch"><input type="checkbox" id="eng-mode-toggle"><span class="slider"></span></label>
+                        </div>
+                        <div id="eng-controls" style="opacity: 0.3; pointer-events: none; transition: opacity 0.3s ease;">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                                <button class="btn-action" id="mock-ip-btn" style="width: 100%;">Set mock IP</button>
+                                <button class="btn-action" id="flush-cache-btn" style="width: 100%;">Flush cache</button>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div style="height: 6rem;"></div>
+                <div style="height: 4rem;"></div>
             </div>
         </main>
     </div>
@@ -1131,6 +1266,7 @@
         </div>
     </div>
 
+
     <script>
         const supabaseUrl = 'https://ahwkraeuotptvwvutbng.supabase.co';
         const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFod2tyYWV1b3RwdHZ3dnV0Ym5nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcwNzYxNjIsImV4cCI6MjA4MjY1MjE2Mn0.bsB4kxE-kOx355IMXmeNGGp2rKHl1l1CcMGG_clZUos';
@@ -1139,93 +1275,247 @@
         let currentUser = null;
         let session = null;
         let redirectTimeout = null;
+        let cachedKeys = [];
+        let activeFilter = 'all';
+        let searchQuery = '';
+        let lastRawLogs = [];
+        let decisionChart = null;
 
-        // Monitor Auth
+        const VIEW_META = {
+            overview: { title: 'Overview', subtitle: 'Live decisions, quota, and account health' },
+            keys: { title: 'API Keys', subtitle: 'Create keys and track per-key usage' },
+            policies: { title: 'Policies', subtitle: 'Global Master Policy for /v2/evaluate' }
+        };
+
+        function showView(name) {
+            ['overview', 'keys', 'policies'].forEach(v => {
+                const el = document.getElementById('view-' + v);
+                if (el) el.classList.toggle('active', v === name);
+            });
+            document.querySelectorAll('.nav-item[data-view]').forEach(a => {
+                a.classList.toggle('active', a.dataset.view === name);
+            });
+            const meta = VIEW_META[name] || VIEW_META.overview;
+            const t = document.getElementById('page-title');
+            const s = document.getElementById('page-subtitle');
+            if (t) t.textContent = meta.title;
+            if (s) s.textContent = meta.subtitle;
+            try { history.replaceState(null, '', '#' + name); } catch (_) {}
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            if (sidebar) sidebar.classList.remove('mobile-open');
+            if (overlay) overlay.classList.remove('active');
+        }
+
+        function mapVerdict(raw) {
+            const v = (raw || '').toUpperCase();
+            if (v === 'TRUSTED' || v === 'ALLOW') return { label: 'ALLOW', cls: 'v-allow', filter: 'ALLOW' };
+            if (v === 'CHALLENGE' || v === 'UNSTABLE') return { label: v === 'UNSTABLE' ? 'FLAG' : 'CHALLENGE', cls: 'v-flag', filter: 'CHALLENGE' };
+            if (v === 'UNTRUSTED' || v === 'BLOCK') return { label: 'BLOCK', cls: 'v-block', filter: 'BLOCK' };
+            return { label: v || '—', cls: '', filter: 'all' };
+        }
+
+        function primarySignal(reason) {
+            if (!reason) return '—';
+            const m = String(reason).match(/\[.*?\]\s*(\S+)/);
+            return m ? m[1] : String(reason).slice(0, 40);
+        }
+
+        function updatePolicyPreview() {
+            const el = document.getElementById('policy-preview');
+            if (!el) return;
+            const mode = document.getElementById('v2-mode')?.value || 'BALANCED';
+            const vpn = document.getElementById('v2-vpn-action')?.value || 'allow';
+            const dc = document.getElementById('v2-dc-action')?.value || 'allow';
+            const force = document.getElementById('v2-bwt-toggle')?.checked ?? true;
+            const exempt = document.getElementById('v2-server-bypass-toggle')?.checked ?? false;
+            const diff = document.getElementById('v2-diff')?.value || '3';
+
+            let firstHit = force
+                ? 'Browser without token → <strong>CHALLENGE</strong> (Force BWT; mode deferred)'
+                : `Browser without token → <strong>mode ${mode}</strong> score thresholds`;
+            if (exempt) firstHit += ' · server/non-browser UAs skip Force BWT';
+
+            el.innerHTML = `
+                <div style="margin-bottom:8px;"><span class="tag">${mode}</span> <span class="tag">PoW ${diff}</span></div>
+                <div><strong>First browser hit:</strong> ${firstHit}</div>
+                <div><strong>VPN detected:</strong> ${vpn === 'allow' ? 'score only (may still challenge under mode)' : vpn.toUpperCase()}</div>
+                <div><strong>Datacenter:</strong> ${dc === 'allow' ? 'score only (may still challenge under mode)' : dc.toUpperCase()}</div>
+                <div><strong>Verified bots:</strong> skip Force BWT / VPN·DC hard blocks; mode still applies</div>
+                <div style="margin-top:6px;color:#666;">Order: signals → verified bot / token bypass → VPN/DC → Force BWT → mode</div>
+            `;
+        }
+
+        function syncV2DiffLabel(val) {
+            const label = document.getElementById('v2-diff-label');
+            if (label) label.textContent = `Difficulty: Level ${val}`;
+            updatePolicyPreview();
+        }
+
+        function setMetric(wrapId, spanId, value, suffix) {
+            const wrap = document.getElementById(wrapId);
+            const span = document.getElementById(spanId);
+            if (!span) return;
+            if (value == null || value === '') {
+                span.textContent = '—';
+                if (wrap) wrap.classList.add('is-empty');
+            } else {
+                span.textContent = value + (suffix || '');
+                if (wrap) wrap.classList.remove('is-empty');
+            }
+        }
+
+        function updateQuotaUI(used, max) {
+            const label = document.getElementById('quota-label');
+            const fill = document.getElementById('quota-fill');
+            const top = document.getElementById('top-quota');
+            const wrap = document.getElementById('metric-quota-wrap');
+            const u = used || 0;
+            const m = max || 0;
+            if (label) label.textContent = `${u.toLocaleString()} / ${m.toLocaleString()}`;
+            if (top) {
+                top.textContent = m ? `${u.toLocaleString()} / ${m.toLocaleString()}` : '—';
+                if (wrap) wrap.classList.toggle('is-empty', !m);
+            }
+            if (fill) {
+                const pct = m > 0 ? Math.min(100, Math.round((u / m) * 100)) : 0;
+                fill.style.width = pct + '%';
+                fill.classList.toggle('warn', pct >= 70 && pct < 90);
+                fill.classList.toggle('crit', pct >= 90);
+            }
+        }
+
+        function renderFeed(rawLogs) {
+            lastRawLogs = rawLogs || [];
+            const feed = document.getElementById('decisions-feed');
+            if (!feed) return;
+
+            const filtered = lastRawLogs.filter(log => {
+                const mapped = mapVerdict(log.verdict);
+                const matchesFilter = activeFilter === 'all' || mapped.filter === activeFilter;
+                const matchesSearch = !searchQuery || (log.target || '').toLowerCase().includes(searchQuery.toLowerCase());
+                return matchesFilter && matchesSearch;
+            });
+
+            if (filtered.length === 0) {
+                feed.innerHTML = `<tr><td colspan="7" style="text-align:center; padding: 3rem; color: #444;">
+                    ${lastRawLogs.length === 0
+                        ? 'No decisions in the last 7 days. Call <code style="color:#00ff88;">POST /v2/evaluate</code> to populate this feed.'
+                        : 'No rows match this filter.'}
+                </td></tr>`;
+                return;
+            }
+
+            feed.innerHTML = filtered.map((log, idx) => {
+                const mapped = mapVerdict(log.verdict);
+                const score = log.trust_score != null ? log.trust_score : '—';
+                const lat = log.latency != null ? `${log.latency}ms` : '—';
+                const bwt = log.bwt_verified ? 'yes' : '—';
+                const sig = primarySignal(log.reason);
+                return `
+                    <tr class="row-hover" onclick="toggleRow('row-${idx}')">
+                        <td class="${mapped.cls}">${mapped.label}</td>
+                        <td style="color:#ccc;">${log.target || '—'}</td>
+                        <td style="color:#888;">${log.profile || '—'}</td>
+                        <td style="color:#aaa;">${score}</td>
+                        <td style="color:#666; max-width:160px; overflow:hidden; text-overflow:ellipsis;">${sig}</td>
+                        <td style="color:#666;">${bwt}</td>
+                        <td style="text-align:right; color:#666;">${lat}</td>
+                    </tr>
+                    <tr id="row-${idx}" class="expanded-details">
+                        <td colspan="7" style="padding: 12px 16px; color:#777; font-size:10px; background:#050505;">
+                            <div><strong style="color:#aaa;">Reason:</strong> ${log.reason || '—'}</div>
+                            <div><strong style="color:#aaa;">Time:</strong> ${log.time ? new Date(log.time).toLocaleString() : '—'}</div>
+                            <div><strong style="color:#aaa;">Raw verdict:</strong> ${log.verdict || '—'} · <strong style="color:#aaa;">confidence:</strong> ${log.confidence ?? '—'}</div>
+                        </td>
+                    </tr>`;
+            }).join('');
+        }
+
         sp.auth.onAuthStateChange(async (event, currentSession) => {
-            console.log(`🔐 Auth: ${event}`);
             if (currentSession) {
                 if (redirectTimeout) clearTimeout(redirectTimeout);
                 session = currentSession;
                 currentUser = currentSession.user;
-
-                const meta = currentUser.user_metadata;
-                document.getElementById('user-name').innerText = meta.full_name || meta.user_name || currentUser.email.split('@')[0];
+                const meta = currentUser.user_metadata || {};
+                document.getElementById('user-name').innerText = meta.full_name || meta.user_name || (currentUser.email || '').split('@')[0];
                 document.getElementById('user-avatar').src = meta.avatar_url || 'https://github.com/identicons/user.png';
-
                 loadApiKeys(currentSession);
                 loadV2Policy(currentSession);
                 renderCharts();
-            } else {
-                if (event === 'INITIAL_SESSION' || event === 'SIGNED_OUT') {
-                    if (window.location.hash.includes('access_token')) return;
-                    redirectTimeout = setTimeout(() => window.location.href = './login.html', 1500);
-                }
+            } else if (event === 'INITIAL_SESSION' || event === 'SIGNED_OUT') {
+                if (window.location.hash.includes('access_token')) return;
+                redirectTimeout = setTimeout(() => window.location.href = './login.html', 1500);
             }
         });
 
-        // 🎯 Protected Surfaces Logic
         async function loadApiKeys(curr) {
             const s = curr || session;
             if (!s) return;
-
             try {
-                const res = await fetch('/api/keys', {
-                    headers: { 'Authorization': `Bearer ${s.access_token}` }
-                });
+                const res = await fetch('/api/keys', { headers: { 'Authorization': `Bearer ${s.access_token}` } });
                 if (!res.ok) return;
                 const keys = await res.json();
-
+                cachedKeys = keys;
                 const list = document.getElementById('api-keys-list');
-                const totalChecks = keys.reduce((a, b) => a + (b.usage_count || 0), 0);
+                const onboard = document.getElementById('onboarding-empty');
+                if (onboard) onboard.style.display = keys.length === 0 ? 'block' : 'none';
 
-                // document.getElementById('total-checks').innerText = totalChecks; // We use the fake number 3,248 from the prompt now
+                const used = keys.reduce((a, b) => a + (b.usage_count || 0), 0);
+                const max = keys.reduce((a, b) => a + (b.max_usage || 500), 0);
+                updateQuotaUI(used, max);
 
-                list.innerHTML = keys.length === 0 ?
-                    '<tr><td colspan="6" style="text-align:center;color:#444;padding:2rem;">No active vectors detected.</td></tr>' :
-                    keys.map(k => `
-                        <tr>
-                            <td style="font-weight:700;color:#fff;">${k.name || 'Core Signup'}</td>
-                            <td style="color:#666;">${k.profile || 'api'}</td>
-                            <td><span class="section-label" style="margin:0;">Fast-Path</span></td>
-                            <td style="color:#666;font-family:monospace;">${k.usage_count || 0} / ${k.max_usage || 500}</td>
-                            <td style="color:#444;">${k.usage_count > 0 ? 'ACTIVE' : 'IDLE'}</td>
-                            <td style="text-align:right;">
-                                <button class="btn-action copy-key-btn" data-key="${k.api_key}">Copy</button>
-                            </td>
-                        </tr>
-                    `).join('');
+                const simKey = document.getElementById('sim-key');
+                if (simKey) {
+                    simKey.innerHTML = keys.length === 0
+                        ? '<option value="">No keys — create one first</option>'
+                        : keys.map(k => `<option value="${k.api_key}">${(k.name || 'key').slice(0, 24)} · ${(k.api_key || '').slice(0, 12)}…</option>`).join('');
+                }
 
+                if (list) {
+                    list.innerHTML = keys.length === 0
+                        ? '<tr><td colspan="5" style="text-align:center;color:#444;padding:2rem;">No keys yet. Create one to start sending evaluate traffic.</td></tr>'
+                        : keys.map(k => `
+                            <tr>
+                                <td style="font-weight:700;color:#fff;">${k.name || 'API Key'}</td>
+                                <td style="color:#666;">${k.profile || 'api'}</td>
+                                <td style="color:#666;font-family:monospace;">${k.usage_count || 0} / ${k.max_usage || 500}</td>
+                                <td style="color:#444;">${k.usage_count > 0 ? 'ACTIVE' : 'IDLE'}</td>
+                                <td style="text-align:right;"><button class="btn-action copy-key-btn" data-key="${k.api_key}">Copy</button></td>
+                            </tr>`).join('');
+                }
                 checkSubscription(keys);
             } catch (e) {
                 console.error(e);
             }
         }
 
-        function syncV2DiffLabel(val) {
-            const label = document.getElementById('v2-diff-label');
-            if (label) label.textContent = `Difficulty: Level ${val}`;
-        }
-
-        // Load saved V2 policy settings and hydrate all UI controls
         async function loadV2Policy(curr) {
             const s = curr || session;
             if (!s) return;
+            const meta = document.getElementById('policy-meta');
             try {
                 const res = await fetch('/api/policy/global', {
                     method: 'GET',
                     headers: { 'Authorization': `Bearer ${s.access_token}` }
                 });
-                if (!res.ok) return;
+                if (!res.ok) {
+                    if (meta) meta.textContent = 'Load failed';
+                    updatePolicyPreview();
+                    return;
+                }
                 const p = await res.json();
-                if (!p) return;
-
+                if (!p) {
+                    if (meta) meta.textContent = 'Using defaults (no saved row)';
+                    updatePolicyPreview();
+                    return;
+                }
                 const modeEl = document.getElementById('v2-mode');
                 const diffEl = document.getElementById('v2-diff');
                 const vpnActionEl = document.getElementById('v2-vpn-action');
                 const dcActionEl = document.getElementById('v2-dc-action');
                 const bwtEl = document.getElementById('v2-bwt-toggle');
                 const bypassEl = document.getElementById('v2-server-bypass-toggle');
-
                 if (modeEl && p.mode) modeEl.value = p.mode;
                 if (diffEl && p.difficulty_level != null) {
                     diffEl.value = p.difficulty_level;
@@ -1235,273 +1525,112 @@
                 if (dcActionEl && p.datacenter_action) dcActionEl.value = p.datacenter_action;
                 if (bwtEl) bwtEl.checked = p.force_bwt ?? true;
                 if (bypassEl) bypassEl.checked = p.exempt_server_requests ?? false;
+                if (meta) meta.textContent = `Loaded · ${p.mode || 'BALANCED'}`;
+                updatePolicyPreview();
             } catch (e) {
-                console.warn('[V2Policy] Could not load saved policies', e);
+                console.warn('[V2Policy]', e);
+                if (meta) meta.textContent = 'Load error';
+                updatePolicyPreview();
             }
         }
 
-        document.getElementById('v2-diff')?.addEventListener('input', (e) => {
-            syncV2DiffLabel(e.target.value);
-        });
-
-        // Delegated listener for Copy Buttons
-        document.getElementById('api-keys-list').addEventListener('click', (e) => {
-            if (e.target.classList.contains('copy-key-btn')) {
-                const key = e.target.getAttribute('data-key');
-                navigator.clipboard.writeText(key).then(() => alert('CREDENTIAL COPIED'));
-            }
-        });
-
-        document.getElementById('generate-key-btn').addEventListener('click', async () => {
-            if (!session) return;
-            const res = await fetch('/api/keys/generate', {
-                method: 'POST',
-                headers: { 'Authorization': `Bearer ${session.access_token}` }
-            });
-
-            if (res.ok) {
-                loadApiKeys();
-            } else if (res.status === 403) {
-                const error = await res.json();
-                alert(`⚠️ ${error.message}\n\nCurrent: ${error.current}/${error.limit} keys\n\nUpgrade to Premium for unlimited API vectors.`);
-            }
-        });
-
-        // 🎮 INTERACTION STATE
-        let activeFilter = 'all';
-        let searchQuery = '';
-        let lastDecisionTotal = 0;
-
-        // 📈 Animated Counter Helper
         function animateCounter(id, target, prefix = '', suffix = '') {
             const el = document.getElementById(id);
             if (!el) return;
             const current = parseFloat(el.innerText.replace(/[^0-9.]/g, '')) || 0;
-            const duration = 1000;
+            const duration = 800;
             const start = performance.now();
-
             function update(timestamp) {
-                const elapsed = timestamp - start;
-                const progress = Math.min(elapsed / duration, 1);
+                const progress = Math.min((timestamp - start) / duration, 1);
                 const value = current + (target - current) * progress;
-                el.innerText = prefix + (progress === 1 ? target.toLocaleString(undefined, { minimumFractionDigits: target % 1 === 0 ? 0 : 1 }) : value.toFixed(target % 1 === 0 ? 0 : 1)) + suffix;
+                const digits = (target % 1 === 0) ? 0 : 1;
+                el.innerText = prefix + (progress === 1
+                    ? Number(target).toLocaleString(undefined, { minimumFractionDigits: digits, maximumFractionDigits: digits })
+                    : value.toFixed(digits)) + suffix;
                 if (progress < 1) requestAnimationFrame(update);
             }
             requestAnimationFrame(update);
         }
 
-        // 🔥 High-Density Decision Chart
-        let decisionChart = null;
-
         function initDecisionChart(data) {
             const options = {
-                series: [{
-                    name: 'Trust Score',
-                    data: data.map(d => ({ x: d.time, y: d.value }))
-                }],
+                series: [{ name: 'Trust Score', data: data.map(d => ({ x: d.time, y: d.value })) }],
                 chart: {
-                    type: 'area',
-                    height: 280,
+                    type: 'area', height: 280,
                     animations: { enabled: true, easing: 'linear', dynamicAnimation: { speed: 800 } },
-                    toolbar: { show: false },
-                    zoom: { enabled: false },
-                    background: 'transparent',
-                    fontFamily: 'JetBrains Mono, monospace'
+                    toolbar: { show: false }, zoom: { enabled: false },
+                    background: 'transparent', fontFamily: 'JetBrains Mono, monospace'
                 },
                 dataLabels: { enabled: false },
-                stroke: {
-                    curve: 'stepped',
-                    width: 3,
-                    colors: ['#00ff88'],
-                    lineCap: 'butt',
-                },
-                markers: {
-                    size: 4,
-                    colors: ['#00ff88'],
-                    strokeColors: '#000',
-                    strokeWidth: 2,
-                    hover: { size: 6 }
-                },
+                stroke: { curve: 'stepped', width: 3, colors: ['#00ff88'], lineCap: 'butt' },
+                markers: { size: 4, colors: ['#00ff88'], strokeColors: '#000', strokeWidth: 2, hover: { size: 6 } },
                 fill: {
                     type: 'gradient',
-                    gradient: {
-                        shadeIntensity: 1,
-                        opacityFrom: 0.3,
-                        opacityTo: 0.0,
-                        stops: [0, 90, 100]
-                    }
+                    gradient: { shadeIntensity: 1, opacityFrom: 0.3, opacityTo: 0.0, stops: [0, 90, 100] }
                 },
+                grid: { borderColor: '#111', strokeDashArray: 4 },
+                xaxis: { labels: { style: { colors: '#444', fontSize: '10px' } }, axisBorder: { show: false }, axisTicks: { show: false } },
+                yaxis: { min: 0, max: 100, tickAmount: 4, labels: { style: { colors: '#444', fontSize: '10px' } } },
                 tooltip: {
                     theme: 'dark',
                     custom: function ({ series, seriesIndex, dataPointIndex, w }) {
-                        const val = series[seriesIndex][dataPointIndex];
-                        const status = val > 80 ? 'TRUSTED' : val > 60 ? 'UNSTABLE' : 'BLOCK';
-                        const color = val > 80 ? '#00ff88' : val > 60 ? '#ffcc00' : '#ff4444';
-                        return '<div class="chart-tooltip" style="background:#050505; border: 1px solid #222; padding: 10px;">' +
-                            '<span style="color:' + color + '; font-weight:bold;">' + status + '</span>' +
-                            '<div style="color:#666; font-size:10px;">Score: ' + val + '</div>' +
-                            '</div>';
+                        const y = series[seriesIndex][dataPointIndex];
+                        const x = w.globals.categoryLabels[dataPointIndex] || '';
+                        return `<div style="padding:8px 10px;font-family:JetBrains Mono;font-size:11px;">${x}<br/><b style="color:#00ff88">${y}</b></div>`;
                     }
-                },
-                grid: {
-                    borderColor: '#111',
-                    strokeDashArray: 2,
-                    xaxis: { lines: { show: true } },
-                    yaxis: { lines: { show: true } }
-                },
-                xaxis: {
-                    type: 'category',
-                    labels: {
-                        show: true,
-                        style: { colors: '#444', fontSize: '9px' },
-                        rotate: 0,
-                        hideOverlappingLabels: true
-                    },
-                    axisBorder: { show: false },
-                    axisTicks: { show: false }
-                },
-                yaxis: {
-                    min: 0,
-                    max: 100,
-                    tickAmount: 4,
-                    labels: {
-                        show: true,
-                        style: { colors: '#333', fontSize: '9px' },
-                        formatter: (val) => val + '%'
-                    }
-                },
-                annotations: {
-                    yaxis: [
-                        {
-                            y: 75,
-                            borderColor: '#333',
-                            label: {
-                                borderColor: 'transparent',
-                                style: { color: '#444', background: 'transparent', fontSize: '8px' },
-                                text: 'TRUST_THRESHOLD',
-                                position: 'left',
-                                textAnchor: 'start'
-                            }
-                        }
-                    ]
                 }
             };
-
-            decisionChart = new ApexCharts(document.querySelector("#decision-chart"), options);
+            decisionChart = new ApexCharts(document.querySelector('#decision-chart'), options);
             decisionChart.render();
         }
 
-        // 🔥 Recent Trust Decisions Logic
         async function renderCharts() {
             if (!session) return;
-
             try {
                 const headers = { 'Authorization': `Bearer ${session.access_token}` };
                 const mockIp = sessionStorage.getItem('sentinel_mock_ip');
                 if (mockIp) headers['x-sentinel-mock-ip'] = mockIp;
 
-                const res = await fetch('/api/analytics', {
-                    headers: headers
-                });
+                const res = await fetch('/api/analytics', { headers });
                 if (!res.ok) return;
                 const stats = await res.json();
 
-                // 1. Process Chart Data (Using real granular scores)
                 const rawLogs = stats.recent_logs || [];
-                const chartData = [...rawLogs].reverse().map(log => {
-                    return {
-                        value: log.trust_score || (log.verdict === 'TRUSTED' ? 100 : log.verdict === 'UNSTABLE' ? 50 : 20),
-                        time: new Date(log.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
-                    };
-                });
+                const chartData = [...rawLogs].reverse().map(log => ({
+                    value: log.trust_score || (mapVerdict(log.verdict).filter === 'ALLOW' ? 100 : mapVerdict(log.verdict).filter === 'CHALLENGE' ? 50 : 20),
+                    time: new Date(log.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+                }));
 
-                if (!decisionChart) {
-                    initDecisionChart(chartData);
-                } else {
-                    decisionChart.updateSeries([{
-                        data: chartData.map(d => ({ x: d.time, y: d.value }))
-                    }]);
-                }
+                if (!decisionChart) initDecisionChart(chartData);
+                else decisionChart.updateSeries([{ data: chartData.map(d => ({ x: d.time, y: d.value })) }]);
 
-                // 2. Top Bar & Vitals
-                if (stats.p95) {
-                    const p95El = document.getElementById('p95-latency');
-                    if (p95El) p95El.innerText = stats.p95 + 'ms';
-                }
+                setMetric('metric-p95-wrap', 'p95-latency', stats.p95, 'ms');
+                setMetric('metric-avg-wrap', 'avg-latency', stats.avg_latency, 'ms');
+                const perfAvg = document.getElementById('perf-avg');
+                const perfP95 = document.getElementById('perf-p95');
+                if (perfAvg) perfAvg.textContent = stats.avg_latency != null ? stats.avg_latency + 'ms' : '—';
+                if (perfP95) perfP95.textContent = stats.p95 != null ? stats.p95 + 'ms' : '—';
 
-                const total = stats.risk_distribution.stable + stats.risk_distribution.unstable + stats.risk_distribution.untrusted;
+                if (stats.quota) updateQuotaUI(stats.quota.used, stats.quota.max);
 
+                const total = (stats.risk_distribution.stable || 0) + (stats.risk_distribution.unstable || 0) + (stats.risk_distribution.untrusted || 0);
                 animateCounter('total-signals', stats.total_signals || total);
-                animateCounter('outcome-reduction', parseFloat(stats.outcomes.reduction), '', '%');
-                animateCounter('outcome-blocked', stats.outcomes.blocked);
-                animateCounter('outcome-saved', parseFloat(stats.outcomes.saved), '$');
+                animateCounter('outcome-reduction', parseFloat(stats.outcomes.reduction) || 0, '', '%');
+                animateCounter('outcome-blocked', stats.outcomes.blocked || 0);
+                animateCounter('outcome-saved', parseFloat(stats.outcomes.saved) || 0, '$');
 
-                // Risk Distribution
-                const getPerc = (val) => total === 0 ? '0%' : Math.round((val / total) * 100) + '%';
+                const getPerc = (val) => total === 0 ? '—' : Math.round((val / total) * 100) + '%';
                 document.getElementById('risk-stable').innerText = getPerc(stats.risk_distribution.stable);
                 document.getElementById('risk-unstable').innerText = getPerc(stats.risk_distribution.unstable);
                 document.getElementById('risk-untrusted').innerText = getPerc(stats.risk_distribution.untrusted);
+                const ch = document.getElementById('risk-challenges');
+                if (ch) ch.textContent = String(stats.outcomes.challenges || stats.risk_distribution.challenge || 0);
 
-                // 3. Intelligence Feed with Filtering
-                const feed = document.getElementById('decisions-feed');
-                if (feed) {
-                    const filtered = rawLogs.filter(log => {
-                        const matchesFilter = activeFilter === 'all' ||
-                            (activeFilter === 'BLOCK' && log.verdict === 'UNTRUSTED') ||
-                            (activeFilter === 'ALLOW' && log.verdict === 'TRUSTED');
-
-                        const matchesSearch = !searchQuery || log.target.toLowerCase().includes(searchQuery.toLowerCase());
-
-                        return matchesFilter && matchesSearch;
-                    });
-
-                    feed.innerHTML = filtered.length === 0 ?
-                        `<tr><td colspan="4" style="text-align:center; padding: 4rem; color: #333;">NO_MATCHING_TELEMETRY</td></tr>` :
-                        filtered.map((log, idx) => {
-                            const v = log.verdict.toUpperCase();
-                            let label = 'ALLOW', cls = 'v-allow';
-                            if (v === 'UNTRUSTED') { label = 'BLOCK'; cls = 'v-block'; }
-                            else if (v === 'UNSTABLE') { label = 'FLAG'; cls = 'v-flag'; }
-
-                            return `
-                                <tr class="row-hover" onclick="toggleRow('row-${idx}')">
-                                    <td class="${cls}">${label}</td>
-                                    <td style="color: #888;">${log.profile}</td>
-                                    <td style="color: #eee; font-family:monospace;">${log.target}</td>
-                                    <td style="text-align: right; color: #444;">${log.latency}ms</td>
-                                </tr>
-                                <tr id="row-${idx}" class="expanded-details">
-                                    <td colspan="4">
-                                        <div class="detail-content">
-                                            <div class="detail-box"><label>Incident Origin</label><p>${log.target}</p></div>
-                                            <div class="detail-box"><label>Primary Signal</label><p>${log.reason.replace(/_/g, ' ')}</p></div>
-                                            <div class="detail-box"><label>AI Confidence</label><p style="color:var(--accent); font-weight:700;">${(log.confidence * 100).toFixed(1)}%</p></div>
-                                        </div>
-                                    </td>
-                                </tr>
-                            `;
-                        }).join('');
-                }
+                renderFeed(rawLogs);
             } catch (e) {
-                console.error('Charts error:', e);
+                console.error(e);
             }
         }
-
-        // 🖱️ Event Listeners for Interaction
-        document.querySelectorAll('.filter-btn').forEach(btn => {
-            btn.onclick = () => {
-                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                activeFilter = btn.dataset.filter;
-                renderCharts();
-            };
-        });
-
-        document.getElementById('ip-search').oninput = (e) => {
-            searchQuery = e.target.value;
-            renderCharts();
-        };
-
 
         function toggleRow(id) {
             const el = document.getElementById(id);
@@ -1512,161 +1641,204 @@
         }
         window.toggleRow = toggleRow;
 
-        // Sidebar Navigation Handling
-        document.getElementById('nav-overview').onclick = (e) => {
-            e.preventDefault();
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        };
+        document.querySelectorAll('.nav-item[data-view]').forEach(a => {
+            a.addEventListener('click', (e) => {
+                e.preventDefault();
+                showView(a.dataset.view);
+            });
+        });
+        document.getElementById('goto-policies-btn')?.addEventListener('click', () => showView('policies'));
+        document.getElementById('onboard-goto-keys')?.addEventListener('click', () => showView('keys'));
 
-        document.getElementById('nav-keys').onclick = (e) => {
-            e.preventDefault();
-            document.getElementById('api-keys-section').scrollIntoView({ behavior: 'smooth' });
-        };
+        document.getElementById('v2-diff')?.addEventListener('input', (e) => syncV2DiffLabel(e.target.value));
+        ['v2-mode', 'v2-vpn-action', 'v2-dc-action', 'v2-bwt-toggle', 'v2-server-bypass-toggle'].forEach(id => {
+            document.getElementById(id)?.addEventListener('change', updatePolicyPreview);
+        });
 
-        // 🧪 Engineering Mode Toggle
+        document.getElementById('api-keys-list')?.addEventListener('click', (e) => {
+            if (e.target.classList.contains('copy-key-btn')) {
+                const key = e.target.getAttribute('data-key');
+                navigator.clipboard.writeText(key).then(() => alert('API key copied'));
+            }
+        });
+
+        document.getElementById('generate-key-btn')?.addEventListener('click', async () => {
+            if (!session) return;
+            const res = await fetch('/api/keys/generate', {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${session.access_token}` }
+            });
+            if (res.ok) loadApiKeys();
+            else if (res.status === 403) {
+                const error = await res.json();
+                alert(`${error.message}\n\nCurrent: ${error.current}/${error.limit} keys`);
+            }
+        });
+
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                activeFilter = btn.dataset.filter;
+                renderFeed(lastRawLogs);
+            });
+        });
+        document.getElementById('ip-search')?.addEventListener('input', (e) => {
+            searchQuery = e.target.value;
+            renderFeed(lastRawLogs);
+        });
+
         const engToggle = document.getElementById('eng-mode-toggle');
         const engControls = document.getElementById('eng-controls');
-
-        if (engToggle) {
+        if (engToggle && engControls) {
             engToggle.addEventListener('change', () => {
-                const isActive = engToggle.checked;
-                engControls.style.opacity = isActive ? '1' : '0.3';
-                engControls.style.pointerEvents = isActive ? 'all' : 'none';
-                if (!isActive) sessionStorage.removeItem('sentinel_mock_ip');
+                const on = engToggle.checked;
+                engControls.style.opacity = on ? '1' : '0.3';
+                engControls.style.pointerEvents = on ? 'all' : 'none';
+                if (!on) sessionStorage.removeItem('sentinel_mock_ip');
             });
         }
-
-        document.getElementById('mock-ip-btn').onclick = () => {
-            const ip = prompt('Enter Mock IP for testing (e.g. 1.2.3.4):', sessionStorage.getItem('sentinel_mock_ip') || '');
+        document.getElementById('mock-ip-btn')?.addEventListener('click', () => {
+            const ip = prompt('Mock IP for testing:', sessionStorage.getItem('sentinel_mock_ip') || '');
             if (ip !== null) {
                 sessionStorage.setItem('sentinel_mock_ip', ip);
-                alert(`Mock IP set to: ${ip}. Pre-check will now use this origin.`);
+                alert('Mock IP set to: ' + ip);
             }
-        };
-
-        document.getElementById('flush-cache-btn').onclick = async () => {
-            if (!session) return;
+        });
+        document.getElementById('flush-cache-btn')?.addEventListener('click', async () => {
+            const key = cachedKeys[0]?.api_key || document.getElementById('sim-key')?.value;
+            if (!key) {
+                alert('Create an API key first — cache flush uses your API key on /v1/cache/flush.');
+                return;
+            }
             try {
-                const res = await fetch('/api/cache/flush', {
+                const res = await fetch('/v1/cache/flush', {
                     method: 'POST',
-                    headers: { 'Authorization': `Bearer ${session.access_token}` }
+                    headers: { 'Authorization': `Bearer ${key}` }
                 });
-                if (res.ok) alert('Cache Purge Successful: All telemetry and velocity data cleared.');
-                else alert('Cache Purge Failed: Ensure you have administrative authority.');
-            } catch (e) {
-                alert('Connection Error: System unreachable.');
+                alert(res.ok ? 'Cache flushed.' : 'Cache flush failed.');
+            } catch {
+                alert('Network error');
             }
-        };
+        });
 
-        // Logic to check tier and update UI
         async function checkSubscription(keys) {
             const tierBadge = document.getElementById('tier-badge');
             const statusContainer = document.getElementById('tier-status-container');
-
             if (!keys || keys.length === 0) return;
             const tier = keys[0].tier || 'FREE';
-
             if (tierBadge) {
                 tierBadge.innerText = tier;
                 tierBadge.className = `tier-badge ${tier.toLowerCase()}`;
             }
-
             if (tier === 'PRO' && statusContainer) {
-                statusContainer.innerHTML = `
-                    <div style="background: rgba(0,255,136,0.1); color: var(--accent); padding: 0.75rem; border-radius: 4px; font-size: 10px; text-align: center; border: 1px solid rgba(0,255,136,0.2);">
-                        <b>PRO_SYSTEM_ACTIVE</b><br>
-                        UNLIMITED COLD ENRICHMENT
-                    </div>
-                `;
+                statusContainer.innerHTML = `<div style="background: rgba(0,255,136,0.1); color: var(--accent); padding: 0.75rem; border-radius: 4px; font-size: 10px; text-align: center; border: 1px solid rgba(0,255,136,0.2);"><b>PRO ACTIVE</b></div>`;
             }
+            const quiet = document.getElementById('quiet-upgrade');
+            if (quiet) quiet.style.display = tier === 'PRO' ? 'none' : 'flex';
         }
 
-        document.getElementById('logout-btn').addEventListener('click', () => {
+        document.getElementById('logout-btn')?.addEventListener('click', () => {
             sp.auth.signOut().then(() => window.location.href = './index.html');
         });
 
-        /* Upgrade Modal Logic */
         const modal = document.getElementById('upgrade-modal');
         const openBtn = document.getElementById('open-upgrade-btn');
         const closeBtn = document.querySelector('.close-modal');
+        openBtn?.addEventListener('click', (e) => { e.preventDefault(); if (modal) modal.style.display = 'flex'; });
+        if (closeBtn) closeBtn.onclick = () => { if (modal) modal.style.display = 'none'; };
+        modal?.addEventListener('click', (e) => { if (e.target === modal) modal.style.display = 'none'; });
+        document.getElementById('bait-upgrade-btn')?.addEventListener('click', () => openBtn?.click());
 
-        if (openBtn) {
-            openBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                modal.style.display = 'flex';
-            });
-        }
-        if (closeBtn) closeBtn.onclick = () => modal.style.display = 'none';
-
-        // Use modal instead of window to avoid cross-origin issues with iframe
-        if (modal) {
-            modal.onclick = (e) => {
-                if (e.target === modal) modal.style.display = 'none';
-            };
-        }
-
-        // Navigation
-        document.getElementById('nav-docs').onclick = () => window.location.href = '/docs/introduction.html';
-
-        const baitBtn = document.getElementById('bait-upgrade-btn');
-        if (baitBtn && openBtn) baitBtn.onclick = () => openBtn.click();
-
-        // Mobile Menu Logic
         const mobileMenuBtn = document.getElementById('mobile-menu-btn');
         const sidebar = document.getElementById('sidebar');
         const sidebarOverlay = document.getElementById('sidebar-overlay');
+        mobileMenuBtn?.addEventListener('click', () => {
+            sidebar?.classList.toggle('mobile-open');
+            sidebarOverlay?.classList.toggle('active');
+        });
+        sidebarOverlay?.addEventListener('click', () => {
+            sidebar?.classList.remove('mobile-open');
+            sidebarOverlay?.classList.remove('active');
+        });
 
-        if (mobileMenuBtn) {
-            mobileMenuBtn.onclick = () => {
-                sidebar.classList.toggle('mobile-open');
-                sidebarOverlay.classList.toggle('active');
-            };
-        }
-        if (sidebarOverlay) {
-            sidebarOverlay.onclick = () => {
-                sidebar.classList.remove('mobile-open');
-                sidebarOverlay.classList.remove('active');
-            };
-        }
-        // 8. Event Listener for V2 Save Button Animation & Database Sync
         document.getElementById('save-v2-btn')?.addEventListener('click', async (e) => {
             const btn = e.target;
             const originalText = btn.innerText;
             btn.innerHTML = '<div class="loading-spinner" style="width:12px;height:12px;border-width:2px;margin:0 auto;"></div>';
-            
             const mode = document.getElementById('v2-mode')?.value || 'BALANCED';
             const difficulty = parseInt(document.getElementById('v2-diff')?.value || '3');
             const vpnAction = document.getElementById('v2-vpn-action')?.value || 'allow';
             const dcAction = document.getElementById('v2-dc-action')?.value || 'allow';
             const forceBwt = document.getElementById('v2-bwt-toggle')?.checked ?? true;
             const exemptServer = document.getElementById('v2-server-bypass-toggle')?.checked ?? false;
-
             const token = session?.access_token;
-
             try {
                 const res = await fetch('/api/policy/global', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                     body: JSON.stringify({ mode, difficulty, vpn_action: vpnAction, datacenter_action: dcAction, force_bwt: forceBwt, exempt_server_requests: exemptServer })
                 });
-
+                btn.innerText = originalText;
                 if (res.ok) {
-                    btn.innerText = originalText;
                     const status = document.getElementById('v2-save-status');
-                    status.style.display = 'inline-block';
-                    setTimeout(() => { status.style.display = 'none'; }, 3000);
+                    const meta = document.getElementById('policy-meta');
+                    if (status) { status.style.display = 'inline-block'; setTimeout(() => { status.style.display = 'none'; }, 3000); }
+                    if (meta) meta.textContent = `Saved · ${mode} · applied to keys`;
+                    updatePolicyPreview();
                 } else {
-                    btn.innerText = 'Failed. DB Config Required.';
+                    btn.innerText = 'Save failed';
                     btn.style.background = '#ff4444';
                     setTimeout(() => { btn.innerText = originalText; btn.style.background = ''; }, 3000);
                 }
             } catch {
-                btn.innerText = 'Network Error';
+                btn.innerText = 'Network error';
                 setTimeout(() => { btn.innerText = originalText; }, 3000);
             }
         });
 
-    </script>
-</body>
+        document.getElementById('sim-run-btn')?.addEventListener('click', async () => {
+            const result = document.getElementById('sim-result');
+            const key = document.getElementById('sim-key')?.value;
+            const ip = document.getElementById('sim-ip')?.value || 'detect';
+            const ua = document.getElementById('sim-ua')?.value || '';
+            if (!key) {
+                if (result) { result.classList.add('show'); result.textContent = 'Select an API key first.'; }
+                return;
+            }
+            if (result) { result.classList.add('show'); result.textContent = 'Running…'; }
+            try {
+                const headers = {
+                    'Authorization': `Bearer ${key}`,
+                    'Content-Type': 'application/json'
+                };
+                if (ua) headers['User-Agent'] = ua;
+                const res = await fetch('/v2/evaluate', {
+                    method: 'POST',
+                    headers,
+                    body: JSON.stringify({ target: ip, path: '/dashboard/simulate' })
+                });
+                const body = await res.json();
+                if (!res.ok) {
+                    result.textContent = `HTTP ${res.status}: ${body.error || JSON.stringify(body)}`;
+                    return;
+                }
+                const d = body.decision || {};
+                const signals = (d.signals || []).map(s => s.id).join(', ') || 'none';
+                result.innerHTML = `<strong style="color:var(--accent)">${d.verdict}</strong> · score ${d.score} · ${d.latency_ms}ms<br/>policy: ${body.tenant?.policy_engaged || '—'}<br/>signals: ${signals}`;
+                renderCharts();
+            } catch (err) {
+                result.textContent = 'Request failed: ' + (err.message || err);
+            }
+        });
 
+        // Initial view from hash
+        const hash = (location.hash || '').replace('#', '');
+        if (['overview', 'keys', 'policies'].includes(hash)) showView(hash);
+        else showView('overview');
+        updatePolicyPreview();
+        setInterval(() => { if (session) renderCharts(); }, 30000);
+    </script>
+
+</body>
 </html>
