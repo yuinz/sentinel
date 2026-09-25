@@ -489,6 +489,8 @@
             border-radius: 8px;
             padding: 16px 18px;
             margin-bottom: 1.5rem;
+            overflow: hidden;
+            min-width: 0;
         }
         .probe-top {
             display: flex;
@@ -496,18 +498,23 @@
             align-items: flex-start;
             gap: 16px;
             flex-wrap: wrap;
+            min-width: 0;
         }
         .probe-meta {
             font-family: 'JetBrains Mono', monospace;
             font-size: 11px;
             color: var(--text-soft);
             line-height: 1.6;
+            flex: 1 1 200px;
+            min-width: 0;
+            overflow: hidden;
         }
         .probe-meta .ip {
             color: var(--text-bright);
             font-size: 14px;
             font-weight: 600;
             letter-spacing: 0.02em;
+            word-break: break-all;
         }
         .probe-meta .label {
             color: var(--text-faint);
@@ -516,11 +523,33 @@
             letter-spacing: 0.1em;
             margin-bottom: 4px;
         }
+        .probe-meta .probe-ua {
+            max-width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            color: var(--text-faint);
+        }
+        .probe-meta .probe-hint {
+            margin-top: 6px;
+            color: var(--text-faint);
+            font-size: 10px;
+            line-height: 1.45;
+            word-break: break-word;
+            overflow-wrap: anywhere;
+        }
         .probe-actions {
             display: flex;
             gap: 8px;
             align-items: center;
             flex-wrap: wrap;
+            flex: 0 1 auto;
+            min-width: 0;
+            max-width: 100%;
+        }
+        .probe-actions .form-control {
+            max-width: 100%;
+            min-width: 0;
         }
         .probe-result {
             margin-top: 14px;
@@ -530,6 +559,9 @@
             font-size: 11px;
             color: var(--text-soft);
             display: none;
+            overflow-wrap: anywhere;
+            word-break: break-word;
+            min-width: 0;
         }
         .probe-result.show { display: block; }
 
@@ -545,6 +577,24 @@
             }
         }
 
+        @media (max-width: 600px) {
+            .probe-top {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .probe-actions {
+                width: 100%;
+            }
+            .probe-actions .form-control,
+            .probe-actions .btn-action,
+            .probe-actions .btn-primary {
+                flex: 1 1 100%;
+                width: 100%;
+                max-width: 100%;
+                box-sizing: border-box;
+            }
+        }
+
         .dashboard-container {
             display: flex;
             min-height: 100vh;
@@ -553,6 +603,7 @@
         /* Compact Sidebar */
         .sidebar {
             width: var(--sidebar-width);
+            max-width: 100vw;
             background: var(--surface);
             border-right: 1px solid var(--border);
             display: flex;
@@ -560,11 +611,14 @@
             position: fixed;
             height: 100vh;
             z-index: 1100;
+            overflow-x: hidden;
+            box-sizing: border-box;
         }
 
         .sidebar-header {
             padding: 1.5rem 1.25rem;
             border-bottom: 1px solid var(--border);
+            min-width: 0;
         }
 
         .logo-text {
@@ -581,6 +635,8 @@
             display: flex;
             flex-direction: column;
             overflow-y: auto;
+            overflow-x: hidden;
+            min-width: 0;
         }
 
         .nav-item {
@@ -592,7 +648,10 @@
             text-decoration: none;
             border-radius: 6px;
             margin-bottom: 4px;
-            transition: all 0.2s;
+            transition: background 0.15s ease, color 0.15s ease;
+            box-sizing: border-box;
+            max-width: 100%;
+            min-width: 0;
         }
 
         .nav-item:hover,
@@ -602,14 +661,16 @@
         }
 
         .nav-item.active {
-            background: var(--accent-soft);
-            color: var(--accent);
-            border-right: 2px solid var(--accent);
+            background: var(--nav-hover-bg);
+            color: var(--text-bright);
+            font-weight: 600;
         }
 
         .sidebar-footer {
             padding: 1rem;
             border-top: 1px solid var(--border);
+            min-width: 0;
+            overflow-x: hidden;
         }
 
         /* Main Content */
@@ -1267,7 +1328,6 @@
         }
         .nav-item {
             border-radius: 6px;
-            border-right: 2px solid transparent;
             margin-bottom: 2px;
             font-size: 13px;
             font-weight: 500;
@@ -1288,9 +1348,9 @@
             background: var(--nav-hover-bg);
         }
         .nav-item.active {
-            background: var(--accent-soft);
-            color: var(--accent);
-            border-right-color: var(--accent);
+            background: var(--nav-hover-bg);
+            color: var(--text-bright);
+            font-weight: 600;
         }
         .sidebar-plan {
             margin-top: auto;
@@ -1311,9 +1371,9 @@
             transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
         }
         .btn-upgrade:hover {
-            border-color: var(--accent);
-            color: var(--accent);
-            background: var(--accent-soft);
+            border-color: var(--border-hover);
+            color: var(--text-bright);
+            background: var(--nav-hover-bg);
         }
         .sidebar-footer .nav-item {
             border: 1px solid rgba(255, 68, 68, 0.15);
@@ -1455,8 +1515,8 @@
                             <div class="probe-meta">
                                 <div class="label">Device probe</div>
                                 <div class="ip" id="probe-ip">Detecting…</div>
-                                <div id="probe-ua" style="max-width: 520px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color:var(--text-faint);">—</div>
-                                <div style="margin-top:6px;color:var(--text-faint);font-size:10px;">Runs real <code style="color:var(--text-muted);">POST /v2/evaluate</code> for this egress IP · counts against quota · appears in Decision Feed</div>
+                                <div id="probe-ua" class="probe-ua">—</div>
+                                <div class="probe-hint">Runs real <code style="color:var(--text-muted);">POST /v2/evaluate</code> for this egress IP · counts against quota · appears in Decision Feed</div>
                             </div>
                             <div class="probe-actions">
                                 <select id="probe-key" class="form-control" style="max-width:200px;">
