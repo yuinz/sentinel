@@ -34,11 +34,19 @@
                     background: #0d0d0d;
                     border: 1px solid #1f1f1f;
                     border-radius: 10px;
-                    padding: 14px 16px 10px;
+                    padding: 8px 12px 9px;
                     position: relative;
                     overflow: hidden;
                     cursor: pointer;
                     user-select: none;
+                    display: grid;
+                    grid-template-columns: 20px minmax(0, 1fr) auto;
+                    grid-template-areas:
+                        "icon label mark"
+                        "sub  sub   links";
+                    column-gap: 10px;
+                    row-gap: 3px;
+                    align-items: center;
                     transition: border-color 0.25s ease, box-shadow 0.25s ease;
                     box-shadow: 0 1px 3px rgba(0,0,0,0.4);
                 }
@@ -47,20 +55,11 @@
                     box-shadow: 0 2px 8px rgba(0,0,0,0.5);
                 }
 
-                /* ── Main row ─────────────────────────────────── */
-                .widget-content {
-                    display: flex;
-                    align-items: center;
-                    gap: 12px;
-                    position: relative;
-                    z-index: 2;
-                }
-
                 /* ── Checkbox ─────────────────────────────────── */
                 .status-icon {
-                    flex-shrink: 0;
-                    width: 22px;
-                    height: 22px;
+                    grid-area: icon;
+                    width: 20px;
+                    height: 20px;
                     border: 2px solid #2d2d2d;
                     border-radius: 5px;
                     display: flex;
@@ -78,38 +77,45 @@
                 }
 
                 /* ── Text ─────────────────────────────────────── */
-                .text-payload { flex: 1; min-width: 0; }
                 .label {
+                    grid-area: label;
+                    min-width: 0;
                     font-size: 13px;
                     font-weight: 600;
                     color: #e8e8e8;
-                    margin-bottom: 2px;
+                    margin-bottom: 1px;
                     letter-spacing: -0.01em;
+                    line-height: 1.15;
                     white-space: nowrap;
                     overflow: hidden;
                     text-overflow: ellipsis;
                 }
                 .sub-label {
+                    grid-area: sub;
+                    min-width: 0;
                     font-size: 10px;
                     font-weight: 500;
                     color: #484848;
                     text-transform: uppercase;
-                    letter-spacing: 0.07em;
+                    letter-spacing: 0.04em;
+                    line-height: 1.15;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
                     transition: color 0.2s;
                 }
 
                 /* ── Logo / Brand ─────────────────────────────── */
-                .brand {
+                .brand-mark {
+                    grid-area: mark;
                     display: flex;
-                    flex-direction: column;
                     align-items: center;
-                    gap: 3px;
-                    flex-shrink: 0;
+                    gap: 5px;
                 }
                 .brand-icon svg {
                     display: block;
-                    width: 20px;
-                    height: 20px;
+                    width: 15px;
+                    height: 15px;
                     opacity: 0.45;
                     transition: opacity 0.2s;
                 }
@@ -120,9 +126,35 @@
                     color: #363636;
                     text-transform: uppercase;
                     letter-spacing: 0.12em;
+                    line-height: 1;
                     transition: color 0.2s;
                 }
                 .widget-box:hover .brand-name { color: #484848; }
+                .brand-links {
+                    grid-area: links;
+                    display: flex;
+                    align-items: center;
+                    justify-self: end;
+                    gap: 4px;
+                    line-height: 1;
+                }
+                .brand-links a {
+                    font-size: 8px;
+                    font-weight: 500;
+                    color: #3a3a3a;
+                    text-decoration: none;
+                    text-transform: uppercase;
+                    letter-spacing: 0.05em;
+                    transition: color 0.2s;
+                    pointer-events: auto;
+                    cursor: pointer;
+                }
+                .brand-links a:hover { color: #777; }
+                .brand-sep {
+                    font-size: 8px;
+                    color: #2a2a2a;
+                    line-height: 1;
+                }
 
                 /* ── Progress bar ─────────────────────────────── */
                 .progress-bar {
@@ -149,39 +181,6 @@
                     100% { opacity: 0; }
                 }
 
-                /* ── Divider ──────────────────────────────────── */
-                .divider {
-                    height: 1px;
-                    background: #181818;
-                    margin: 10px -16px 8px;
-                }
-
-                /* ── Footer ───────────────────────────────────── */
-                .footer {
-                    display: flex;
-                    align-items: center;
-                    justify-content: flex-end;
-                    gap: 10px;
-                    position: relative;
-                    z-index: 2;
-                }
-                .footer a {
-                    font-size: 9.5px;
-                    font-weight: 500;
-                    color: #343434;
-                    text-decoration: none;
-                    text-transform: uppercase;
-                    letter-spacing: 0.06em;
-                    transition: color 0.2s;
-                    pointer-events: auto;
-                    cursor: pointer;
-                }
-                .footer a:hover { color: #666; }
-                .footer-sep {
-                    font-size: 9px;
-                    color: #252525;
-                }
-
                 /* ── Success state ────────────────────────────── */
                 [data-state="success"] .status-icon {
                     border-color: #00e87a;
@@ -206,32 +205,33 @@
             this.wrapper = document.createElement('div');
             this.wrapper.className = 'widget-box';
             this.wrapper.innerHTML = `
-                <div class="widget-content">
-                    <div class="status-icon" id="icon">&#10003;</div>
-                    <div class="text-payload">
-                        <div class="label" id="label">Verify you're human</div>
-                        <div class="sub-label" id="sub">Hold to verify</div>
+                <div class="status-icon" id="icon">&#10003;</div>
+                <div class="label" id="label">Verify you're human</div>
+                <div class="brand-mark">
+                    <div class="brand-icon">
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 2L4 6v6c0 5.25 3.4 10.15 8 11.35C16.6 22.15 20 17.25 20 12V6l-8-4z" fill="#00e87a" opacity="0.9"/>
+                            <path d="M9 12l2 2 4-4" stroke="#0d0d0d" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
                     </div>
-                    <div class="brand">
-                        <div class="brand-icon">
-                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M12 2L4 6v6c0 5.25 3.4 10.15 8 11.35C16.6 22.15 20 17.25 20 12V6l-8-4z" fill="#00e87a" opacity="0.9"/>
-                                <path d="M9 12l2 2 4-4" stroke="#0d0d0d" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                            </svg>
-                        </div>
-                        <div class="brand-name">Sentinel</div>
-                    </div>
+                    <div class="brand-name">Sentinel</div>
                 </div>
-                <div class="divider"></div>
-                <div class="footer">
+                <div class="sub-label" id="sub">Hold to verify</div>
+                <div class="brand-links">
                     <a href="https://sentinel.risksignal.name.ng/privacy.html" target="_blank" rel="noopener">Privacy</a>
-                    <span class="footer-sep">·</span>
+                    <span class="brand-sep">·</span>
                     <a href="https://sentinel.risksignal.name.ng/terms.html" target="_blank" rel="noopener">Terms</a>
                 </div>
                 <div class="progress-bar" id="progress"></div>
             `;
 
             this.shadow.appendChild(this.wrapper);
+
+            this.wrapper.querySelectorAll('a').forEach((link) => {
+                const stop = (e) => e.stopPropagation();
+                link.addEventListener('mousedown', stop);
+                link.addEventListener('touchstart', stop);
+            });
 
             this.wrapper.addEventListener('mousedown', (e) => this.startHold(e));
             window.addEventListener('mouseup', () => this.stopHold());
