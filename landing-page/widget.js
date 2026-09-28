@@ -25,7 +25,7 @@
 
                 :host {
                     display: block;
-                    width: 300px;
+                    width: 248px;
                     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
                 }
 
@@ -34,18 +34,18 @@
                     background: #0d0d0d;
                     border: 1px solid #1f1f1f;
                     border-radius: 10px;
-                    padding: 8px 12px 9px;
+                    padding: 7px 10px 8px;
                     position: relative;
                     overflow: hidden;
                     cursor: pointer;
                     user-select: none;
                     display: grid;
-                    grid-template-columns: 20px minmax(0, 1fr) auto;
+                    grid-template-columns: 16px minmax(0, 1fr) auto;
                     grid-template-areas:
                         "icon label mark"
                         "sub  sub   links";
-                    column-gap: 10px;
-                    row-gap: 3px;
+                    column-gap: 8px;
+                    row-gap: 2px;
                     align-items: center;
                     transition: border-color 0.25s ease, box-shadow 0.25s ease;
                     box-shadow: 0 1px 3px rgba(0,0,0,0.4);
@@ -58,14 +58,14 @@
                 /* ── Checkbox ─────────────────────────────────── */
                 .status-icon {
                     grid-area: icon;
-                    width: 20px;
-                    height: 20px;
-                    border: 2px solid #2d2d2d;
-                    border-radius: 5px;
+                    width: 16px;
+                    height: 16px;
+                    border: 1.5px solid #2d2d2d;
+                    border-radius: 4px;
                     display: flex;
                     align-items: center;
                     justify-content: center;
-                    font-size: 13px;
+                    font-size: 11px;
                     color: transparent;
                     transition: border-color 0.3s, background 0.3s, color 0.3s;
                     background: #111;
@@ -80,7 +80,7 @@
                 .label {
                     grid-area: label;
                     min-width: 0;
-                    font-size: 13px;
+                    font-size: 11px;
                     font-weight: 600;
                     color: #e8e8e8;
                     margin-bottom: 1px;
@@ -93,11 +93,11 @@
                 .sub-label {
                     grid-area: sub;
                     min-width: 0;
-                    font-size: 10px;
+                    font-size: 8.5px;
                     font-weight: 500;
                     color: #484848;
                     text-transform: uppercase;
-                    letter-spacing: 0.04em;
+                    letter-spacing: 0.01em;
                     line-height: 1.15;
                     white-space: nowrap;
                     overflow: hidden;
@@ -114,18 +114,18 @@
                 }
                 .brand-icon svg {
                     display: block;
-                    width: 15px;
-                    height: 15px;
+                    width: 12px;
+                    height: 12px;
                     opacity: 0.45;
                     transition: opacity 0.2s;
                 }
                 .widget-box:hover .brand-icon svg { opacity: 0.7; }
                 .brand-name {
-                    font-size: 8px;
+                    font-size: 7px;
                     font-weight: 700;
                     color: #363636;
                     text-transform: uppercase;
-                    letter-spacing: 0.12em;
+                    letter-spacing: 0.1em;
                     line-height: 1;
                     transition: color 0.2s;
                 }
@@ -139,7 +139,7 @@
                     line-height: 1;
                 }
                 .brand-links a {
-                    font-size: 8px;
+                    font-size: 7px;
                     font-weight: 500;
                     color: #3a3a3a;
                     text-decoration: none;
@@ -151,7 +151,7 @@
                 }
                 .brand-links a:hover { color: #777; }
                 .brand-sep {
-                    font-size: 8px;
+                    font-size: 7px;
                     color: #2a2a2a;
                     line-height: 1;
                 }
