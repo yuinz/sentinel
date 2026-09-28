@@ -43,7 +43,7 @@ When your API decides a challenge is required, the flow is always the same three
 
 **1. Challenge Issuance** — Your backend calls `/v1/challenge/issue` (authenticated with your site key) to obtain a cryptographic nonce tied to the user's IP.
 
-**2. Intent Demonstration** — The Sentinel Widget renders in the user's browser. The user clicks and holds for 2–4 seconds while the browser computes the SHA-256 Proof-of-Work.
+**2. Intent demonstration** — Show one Sentinel widget. **Hold** (`widget.js`) asks the user to press and hold. **Click** (`widget-click.js`) asks for one click. Either widget solves the same SHA-256 proof in the browser.
 
 **3. Token Issuance** — Your backend calls `/v1/challenge/verify`. If the nonce is valid, Sentinel returns a `trust_token`. Pass this as `x-sentinel-trust` on the retried request. The backend checks it and allows through.
 
@@ -83,21 +83,29 @@ You can mock any IP for local development using the query parameter:
 
 ### Option A: The Visual Widget (Recommended)
 
-Load the widget script **directly from the Sentinel CDN** — this is critical. The widget resolves its API base URL from its own `src`, so self-hosting it will break all challenge requests.
+Load the widget script **directly from the Sentinel origin**. The widget resolves its API base URL from its own `src`, so self-hosting it will break challenge requests.
+
+Use one widget. Both accept the same `data-sitekey`, fire the same `sentinelSuccess` event, and write the same `sentinel-token` field.
+
+**Hold** — press and hold:
 
 ```html
-<!-- 1. Place the container where you want the widget to appear -->
 <div id="sentinel-widget" data-sitekey="sl_your_site_key_here"></div>
-
-<!-- 2. Load the script from the Sentinel CDN (not self-hosted) -->
 <script src="https://sentinel.risksignal.name.ng/widget.js" async defer></script>
+```
+
+**Click** — one click:
+
+```html
+<div id="sentinel-click-widget" data-sitekey="sl_your_site_key_here"></div>
+<script src="https://sentinel.risksignal.name.ng/widget-click.js" async defer></script>
 ```
 
 ::: warning Key format
 Site keys always start with `sl_`. Do **not** use your billing API key (which starts with `sl_` but is longer) as the site key — they are different credentials. Get your site key from the Sentinel Dashboard.
 :::
 
-When the user completes the hold, the widget fires a `sentinelSuccess` event on `document`. Listen for it to get the trust token:
+When verification completes, either widget fires a `sentinelSuccess` event on `document`. Listen for it to get the trust token. The examples below use the hold widget. For click, swap in `sentinel-click-widget` and `widget-click.js`. The event, the hidden field, and the header do not change.
 
 ```javascript
 document.addEventListener('sentinelSuccess', (event) => {

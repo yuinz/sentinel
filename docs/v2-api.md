@@ -10,7 +10,7 @@ Evaluate an incoming IP address against your tenant's Global Master Policy and t
 **Headers:** 
 - `Authorization: Bearer <YOUR_API_KEY>`
 - `Content-Type: application/json`
-- `x-sentinel-trust: <JWT>` (Optional. Required to bypass a block after a challenge is successfully solved.)
+- `x-sentinel-trust: <trust_token>` (Optional. Issued by either widget after `/v1/challenge/verify`. Send it to pass a challenge.)
 
 ### Request Body
 ```json

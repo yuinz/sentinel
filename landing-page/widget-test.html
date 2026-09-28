@@ -143,7 +143,8 @@
         }
 
         /* Widget Customization for the Demo */
-        #sentinel-widget {
+        #sentinel-widget,
+        #sentinel-click-widget {
             margin: 0 auto;
         }
     </style>
@@ -172,16 +173,23 @@
             </div>
         </section>
 
+        <section class="test-section">
+            <p style="margin-bottom: 20px; color: #888;">Click to verify. Same card, one click.</p>
+            <div id="sentinel-click-widget" data-sitekey="sl_fd037e1c88fc16b96e920a41dafe2b78b9bb2ba346e634d7"></div>
+        </section>
+
         <div class="implementation-details">
             <div class="detail-card">
-                <h3>HTML_STRUCTURE</h3>
-                <pre>&lt;div id="sentinel-widget" 
-     data-sitekey="YOUR_KEY"&gt;
-&lt;/div&gt;</pre>
+                <h3>HOLD</h3>
+                <pre>&lt;div id="sentinel-widget"
+     data-sitekey="YOUR_KEY"&gt;&lt;/div&gt;
+&lt;script src="widget.js"&gt;&lt;/script&gt;</pre>
             </div>
             <div class="detail-card">
-                <h3>SCRIPT_IMPORT</h3>
-                <pre>&lt;script src="widget.js"&gt;&lt;/script&gt;</pre>
+                <h3>CLICK</h3>
+                <pre>&lt;div id="sentinel-click-widget"
+     data-sitekey="YOUR_KEY"&gt;&lt;/div&gt;
+&lt;script src="widget-click.js"&gt;&lt;/script&gt;</pre>
             </div>
         </div>
 
@@ -193,6 +201,7 @@
 
     <!-- The Widget Script -->
     <script src="widget.js"></script>
+    <script src="widget-click.js"></script>
 
     <script>
         // Log Widget Events

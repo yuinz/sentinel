@@ -236,10 +236,20 @@ Resolved policies are cached in Redis under `v2:policy:v2:<api_key>` (TTL 300s).
 
 ## Behavioral Work Tokens (BWT)
 
+Two widgets, one token. Hold and click call the same endpoints and return the same proof.
+
+| | Hold | Click |
+|---|---|---|
+| Script | `/widget.js` | `/widget-click.js` |
+| Container | `id="sentinel-widget"` | `id="sentinel-click-widget"` |
+| Gesture | Press and hold | One click |
+
 1. `POST /v1/challenge/issue` → nonce prefix + difficulty.
-2. Widget (`/widget.js` from the Sentinel origin) solves SHA-256 PoW (user holds to demonstrate intent).
+2. The widget solves the SHA-256 proof in the browser.
 3. `POST /v1/challenge/verify` → base64 trust token.
 4. Client retries protected calls with `x-sentinel-trust: <token>`.
+
+Both fire `sentinelSuccess` on `document` with `event.detail.trust_token`. Inside a `<form>`, both set a hidden `input[name="sentinel-token"]`.
 
 Token format: `base64(ip : unix_ts : hmac_sha256(ip:ts, POW_SECRET)[0:16])`, TTL 30 minutes.
 
@@ -284,12 +294,23 @@ See the npm package for V1 middleware. V2 adaptation is still outstanding (`api-
 
 ### Widget
 
+Load the script from the Sentinel origin. It resolves its API base from its own `src`.
+
+Hold:
+
 ```html
 <div id="sentinel-widget" data-sitekey="sl_your_site_key"></div>
 <script src="https://sentinel.risksignal.name.ng/widget.js" async defer></script>
 ```
 
-Listen for `sentinelSuccess` on `document` for `event.detail.trust_token`.
+Click:
+
+```html
+<div id="sentinel-click-widget" data-sitekey="sl_your_site_key"></div>
+<script src="https://sentinel.risksignal.name.ng/widget-click.js" async defer></script>
+```
+
+Listen for `sentinelSuccess` on `document` for `event.detail.trust_token`. The event, the hidden field, and the `x-sentinel-trust` header are the same for both widgets.
 
 ---
 

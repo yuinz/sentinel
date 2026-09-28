@@ -783,6 +783,21 @@ sentinel check 1.2.3.4</pre>
                 Unlike CAPTCHAs, the Sentinel SDK operates entirely in the background. It silently fetches the challenge, computes the Proof-of-Work locally using WebCrypto, and generates a verified Trust Token.
             </div>
 
+            <h3>Visual widgets</h3>
+            <p>Two widgets, one token. Both use your site key, solve the same proof, fire <code>sentinelSuccess</code> with <code>event.detail.trust_token</code>, and, inside a form, set <code>input[name="sentinel-token"]</code>. Send that token as <code>x-sentinel-trust</code>. Load the script from the Sentinel origin so it calls the correct API.</p>
+
+            <h4 style="margin-top: 1.25rem; color: #fff;">Hold</h4>
+            <div class="code-block">
+                <pre>&lt;div id="sentinel-widget" data-sitekey="sl_your_site_key"&gt;&lt;/div&gt;
+&lt;script src="https://sentinel.risksignal.name.ng/widget.js" async defer&gt;&lt;/script&gt;</pre>
+            </div>
+
+            <h4 style="margin-top: 1.25rem; color: #fff;">Click</h4>
+            <div class="code-block">
+                <pre>&lt;div id="sentinel-click-widget" data-sitekey="sl_your_site_key"&gt;&lt;/div&gt;
+&lt;script src="https://sentinel.risksignal.name.ng/widget-click.js" async defer&gt;&lt;/script&gt;</pre>
+            </div>
+
             <h3>1. Installation</h3>
             <p>Include the Sentinel client script on your page.</p>
 
