@@ -7,12 +7,12 @@ exports.visitorTracker = void 0;
 const axios_1 = __importDefault(require("axios"));
 const logger_1 = __importDefault(require("../utils/logger"));
 const telemetryService_1 = require("../services/telemetryService");
+const crawlerAgents_1 = require("../utils/crawlerAgents");
 // simple in-memory cache to avoid redundant IP-to-Country lookups in the same session
 const countryCache = {};
 const visitorTracker = async (req, res, next) => {
     const userAgent = req.get('User-Agent') || 'unknown';
-    // 1. Skip UptimeRobot and other health monitors to keep DB clean
-    if (userAgent.toLowerCase().includes('uptimerobot')) {
+    if ((0, crawlerAgents_1.isCrawlerUserAgent)(userAgent) || userAgent.toLowerCase().includes('uptimerobot')) {
         return next();
     }
     // Only track HTML page requests or root

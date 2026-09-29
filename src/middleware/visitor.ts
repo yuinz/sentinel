@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import axios from 'axios';
 import logger from '../utils/logger';
 import { TelemetryService } from '../services/telemetryService';
+import { isCrawlerUserAgent } from '../utils/crawlerAgents';
 
 // simple in-memory cache to avoid redundant IP-to-Country lookups in the same session
 const countryCache: Record<string, string> = {};
@@ -9,8 +10,7 @@ const countryCache: Record<string, string> = {};
 export const visitorTracker = async (req: Request, res: Response, next: NextFunction) => {
     const userAgent = req.get('User-Agent') || 'unknown';
 
-    // 1. Skip UptimeRobot and other health monitors to keep DB clean
-    if (userAgent.toLowerCase().includes('uptimerobot')) {
+    if (isCrawlerUserAgent(userAgent) || userAgent.toLowerCase().includes('uptimerobot')) {
         return next();
     }
 

@@ -3,67 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sentinel | Turnstile for APIs & Bot Protection</title>
-    
-    <!-- SEO RESCUE: Restoring Original Meta Tags -->
-    <meta name="description" content="Stop 92% of bot signups without CAPTCHAs. Sentinel is the CAPTCHA alternative for APIs: sub-50ms trust decisions using infrastructure forensic signals.">
-    <meta name="keywords" content="API bot protection, CAPTCHA alternative for APIs, Turnstile for APIs, bot mitigation, sentinel vs cloudflare, captcha vs sentinel, cloudflare bot mitigation, stop bot traffic, stop ai bot abuse, agentic ai security, ai safety, bypass ai detector, anthropic claude ai, grok ai security">
+    <title>Sentinel | API bot protection & trust decisions</title>
+    <meta name="description" content="Sentinel is a trust API for signup, auth, and payments: allow, challenge, or block traffic with policy-driven /v2/evaluate and optional browser widgets.">
     <meta name="google-site-verification" content="2mm0-A_FOgfgdi0g8R4Taaf9RBcMtdSZZKFYtHro_QM" />
     <link rel="canonical" href="https://sentinel.risksignal.name.ng/" />
+    <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
     <meta name="robots" content="index, follow">
 
-    <!-- LLM Optimization -->
-    <link rel="llm-context" href="/llm.txt" type="text/plain" />
-    <link rel="llm-full" href="/llm-full.txt" type="text/plain" />
-
-    <!-- Structured Data: SoftwareApplication + Organization -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
-      "@type": "SoftwareApplication",
-      "name": "Sentinel",
-      "url": "https://sentinel.risksignal.name.ng/",
-      "applicationCategory": "SecurityApplication",
-      "operatingSystem": "Web",
-      "description": "Stop 92% of bot signups without CAPTCHAs. Sentinel is the CAPTCHA alternative for APIs: sub-50ms trust decisions using infrastructure forensic signals.",
-      "offers": [
+      "@graph": [
         {
-          "@type": "Offer",
-          "name": "Individual Node",
-          "price": "0",
-          "priceCurrency": "USD",
-          "description": "1,000 Edge Decisions/Month, Unlimited BWT Widget Captchas, Basic ASN Datacenter Segregation"
+          "@type": "WebSite",
+          "name": "Sentinel",
+          "url": "https://sentinel.risksignal.name.ng/"
         },
         {
-          "@type": "Offer",
-          "name": "Fleet Command",
-          "price": "49",
-          "priceCurrency": "USD",
-          "description": "500,000 Edge Decisions/Month, Deep Cryptographic Carrier Enrichment, Global Master Policies"
+          "@type": "Organization",
+          "name": "Sentinel",
+          "url": "https://sentinel.risksignal.name.ng/",
+          "logo": "https://sentinel.risksignal.name.ng/logo.png",
+          "sameAs": ["https://github.com/yuinz/sentinel"]
         }
-      ],
-      "publisher": {
-        "@type": "Organization",
-        "name": "Sentinel Network",
-        "url": "https://sentinel.risksignal.name.ng/",
-        "logo": "https://sentinel.risksignal.name.ng/logo.png",
-        "sameAs": [
-          "https://github.com/yuinz/sentinel"
-        ]
-      }
+      ]
     }
     </script>
 
-    <!-- Open Graph & Social -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://sentinel.risksignal.name.ng/">
-    <meta property="og:title" content="Sentinel | Autonomous Trust API & Advanced Bot Protection">
-    <meta property="og:description" content="The deterministic trust layer for modern APIs. Replace CAPTCHAs with behavioral analytics and the Sentinel Trust API.">
+    <meta property="og:title" content="Sentinel | API bot protection & trust decisions">
+    <meta property="og:description" content="Policy-driven allow, challenge, and block for API traffic. Documentation and widgets included.">
     <meta property="og:image" content="https://sentinel.risksignal.name.ng/og-image.png">
-    <meta property="twitter:card" content="summary_large_image">
-    <meta property="twitter:title" content="Sentinel | Autonomous Trust API & Advanced Bot Protection">
-    <meta property="twitter:description" content="Stop malicious bots and secure your APIs with behavioral threat detection.">
-    <meta property="twitter:image" content="https://sentinel.risksignal.name.ng/og-image.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Sentinel | API bot protection & trust decisions">
+    <meta name="twitter:description" content="Policy-driven allow, challenge, and block for API traffic.">
+    <meta name="twitter:image" content="https://sentinel.risksignal.name.ng/og-image.png">
 
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     
@@ -208,7 +183,7 @@
             SENTINEL V2
         </div>
         <div class="nav-links">
-            <a href="/docs.html">Documentation</a>
+            <a href="/docs/introduction.html">Documentation</a>
             <a href="./about.html">About</a>
             <a href="#pricing">Pricing</a>
             <a href="https://github.com/yuinz/sentinel">GitHub</a>
@@ -222,7 +197,7 @@
             <p>Sentinel establishes absolute trust at the edge. We bypass legacy CAPTCHA friction and probabilistic guessing, replacing them with cryptographic intent verification and structural telemetry.</p>
             <div style="display: flex; gap: 1rem; margin-top: 1rem;">
                 <a href="#demo" class="btn-console" style="font-size: 1rem; padding: 12px 24px;">Run Live Triage</a>
-                <a href="/docs.html" class="nav-links" style="margin-left: 0; padding: 12px 24px; color: var(--text-main); font-family: 'Space Grotesk'; font-size: 1rem;">Read the API Specs ↓</a>
+                <a href="/docs/introduction.html" class="nav-links" style="margin-left: 0; padding: 12px 24px; color: var(--text-main); font-family: 'Space Grotesk'; font-size: 1rem;">Read the API Specs ↓</a>
             </div>
         </div>
 
@@ -429,7 +404,7 @@ DIFFICULTY: target_level_3</div>
             <div>
                 <h4>Product</h4>
                 <a href="#about-brief">About</a>
-                <a href="/docs.html">Documentation</a>
+                <a href="/docs/introduction.html">Documentation</a>
                 <a href="#pricing">Pricing</a>
                 <a href="#architecture">Architecture</a>
             </div>

@@ -450,6 +450,17 @@ Landing-page visit metrics.
 | Decision narrative | `engineflow.md` |
 | Schema bootstrap | `V2_SCHEMA.sql` |
 
+### SEO (simple maintenance)
+
+| Item | What to do |
+|------|------------|
+| Sitemap | After content or docs change: `npm run docs:build` (regenerates `landing-page/sitemap.xml`) or `npm run seo:sitemap` alone |
+| Canonical docs | Public docs live at `/docs/…`; legacy `docs.html` redirects to `/docs/introduction.html` |
+| Noindex | `/app`, login, and test pages — do not remove `noindex` from the console |
+| Crawlers | Search and SEO bots (Google, Ahrefs, etc.) skip the global rate limiter; do not block them at Cloudflare for marketing URLs |
+
+Submit `https://sentinel.risksignal.name.ng/sitemap.xml` in Google Search Console after deploy.
+
 ---
 
 ## License

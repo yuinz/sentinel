@@ -8,7 +8,8 @@
     "build": "tsc",
     "start": "node dist/index.js",
     "docs:dev": "vitepress dev docs --host 0.0.0.0",
-    "docs:build": "vitepress build docs",
+    "docs:build": "vitepress build docs && node scripts/generate-sitemap.mjs",
+    "seo:sitemap": "node scripts/generate-sitemap.mjs",
     "docs:serve": "vitepress serve docs --host 0.0.0.0",
     "tail": "ts-node src/cli/tail.ts",
     "test": "echo \"Error: no test specified\" && exit 1"

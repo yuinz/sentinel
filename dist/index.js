@@ -21,6 +21,7 @@ const payRoutes_1 = __importDefault(require("./routes/payRoutes"));
 const dossierRoutes_1 = __importDefault(require("./routes/dossierRoutes"));
 const error_1 = require("./middleware/error");
 const visitor_1 = require("./middleware/visitor");
+const crawlerAgents_1 = require("./utils/crawlerAgents");
 dotenv_1.default.config();
 const app = (0, express_1.default)();
 const PORT = process.env.PORT || 3001;
@@ -51,12 +52,20 @@ app.use((0, morgan_1.default)('combined', {
 }));
 // 2. Visitor Tracking (Secretly monitoring growth)
 app.use(visitor_1.visitorTracker);
+// SEO: never index console, auth, or internal test pages
+app.use((req, res, next) => {
+    if (/^\/(app|login\.html|widget-test\.html|test-v1(?:\.html)?|test(?:\.html)?|sentinel-ui-reference)(\/|$)/.test(req.path)) {
+        res.setHeader('X-Robots-Tag', 'noindex, nofollow');
+    }
+    next();
+});
 // 3. Global Rate Limiting (Enterprise Grade)
 const limiter = (0, express_rate_limit_1.default)({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 600, // Limit each IP to 100 requests per window
+    max: 600,
     standardHeaders: true,
     legacyHeaders: false,
+    skip: (req) => (0, crawlerAgents_1.isCrawlerUserAgent)(req.get('User-Agent') || ''),
     message: { error: 'Too many requests from this IP, please try again later.' }
 });
 app.use(limiter);
@@ -69,12 +78,19 @@ app.use('/v2/docs', (req, res) => {
     res.redirect(301, target);
 });
 const landingPath = path_1.default.join(__dirname, '..', 'landing-page');
+app.get('/docs.html', (_req, res) => {
+    res.redirect(301, '/docs/introduction.html');
+});
+app.get('/demo', (_req, res) => {
+    res.redirect(301, '/demo.html');
+});
 // Console app (canonical) + legacy dashboard redirects
 app.get(['/app', '/app/'], (_req, res) => {
     res.sendFile(path_1.default.join(landingPath, 'app.html'));
 });
 app.get(['/dashboard', '/dashboard/', '/dashboard.html'], (req, res) => {
     const q = req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : '';
+    res.setHeader('X-Robots-Tag', 'noindex, nofollow');
     res.redirect(301, '/app' + q);
 });
 // 4. Serve Landing Page (Static Files)

@@ -1,9 +1,32 @@
 import { defineConfig } from 'vitepress'
 
+const SITE = 'https://sentinel.risksignal.name.ng'
+
+function docCanonical(relativePath) {
+  if (relativePath === 'index.md') return `${SITE}/docs/`
+  return `${SITE}/docs/${relativePath.replace(/\.md$/, '.html')}`
+}
+
 export default defineConfig({
   base: '/docs/',
-  title: "Sentinel Engine",
-  description: "B2B Dynamic Security Platform",
+  title: 'Sentinel Documentation',
+  description: 'Integrate Sentinel: /v2/evaluate, global policy, widgets, and where enforcement applies on your routes.',
+  transformHead({ pageData }) {
+    const canonical = docCanonical(pageData.relativePath)
+    const desc = pageData.description || pageData.frontmatter?.description
+    const head = [
+      ['link', { rel: 'canonical', href: canonical }],
+      ['meta', { name: 'robots', content: 'index, follow' }],
+    ]
+    if (desc) {
+      head.push(['meta', { name: 'description', content: desc }])
+      head.push(['meta', { property: 'og:description', content: desc }])
+    }
+    head.push(['meta', { property: 'og:title', content: `${pageData.title || 'Docs'} | Sentinel` }])
+    head.push(['meta', { property: 'og:url', content: canonical }])
+    head.push(['meta', { property: 'og:type', content: 'article' }])
+    return head
+  },
   themeConfig: {
     logo: 'https://vitepress.dev/vitepress-logo-mini.svg', 
     nav: [
