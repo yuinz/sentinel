@@ -15,16 +15,17 @@ Sentinel scores a client IP (and optional trust token), then returns a verdict y
 2. [Verdicts](#verdicts)
 3. [Signals & scoring (V2)](#signals--scoring-v2)
 4. [API surface](#api-surface)
-5. [Global Master Policies (V2)](#global-master-policies-v2)
-6. [Behavioral Work Tokens (BWT)](#behavioral-work-tokens-bwt)
-7. [Authentication & quotas](#authentication--quotas)
-8. [Integration patterns](#integration-patterns)
-9. [Architecture](#architecture)
-10. [Local development](#local-development)
-11. [Environment variables](#environment-variables)
-12. [Database](#database)
-13. [Known gaps (accurate status)](#known-gaps-accurate-status)
-14. [Docs & dashboard](#docs--dashboard)
+5. [Where a verdict applies](#where-a-verdict-applies)
+6. [Global Master Policies (V2)](#global-master-policies-v2)
+7. [Behavioral Work Tokens (BWT)](#behavioral-work-tokens-bwt)
+8. [Authentication & quotas](#authentication--quotas)
+9. [Integration patterns](#integration-patterns)
+10. [Architecture](#architecture)
+11. [Local development](#local-development)
+12. [Environment variables](#environment-variables)
+13. [Database](#database)
+14. [Known gaps (accurate status)](#known-gaps-accurate-status)
+15. [Docs & dashboard](#docs--dashboard)
 
 ---
 
@@ -175,6 +176,25 @@ Soft-authenticated (widget-friendly). Issue a PoW challenge; verify solution; re
 ### Payments
 
 `POST /v1/pay/webhook` — NowPayments IPN.
+
+---
+
+## Where a verdict applies
+
+Sentinel returns a verdict. Your app, edge worker, or game server enforces it. A URL that never calls Sentinel is unchanged.
+
+| | `GET /v1/precheck` | `POST /v2/evaluate` |
+|---|---|---|
+| Caller | Public. No API key. | Billing key. Counts against quota. |
+| Policy and trust token | Not used. | Saved policy. `x-sentinel-trust` is checked. |
+| Answer | `TRUSTED` / `UNSTABLE` / `UNTRUSTED`, plus `required`. | `ALLOW` / `CHALLENGE` / `BLOCK`. |
+| Use | Hint: show the widget or not. | The decision you enforce. |
+
+The widget does not send a mode. With Force BWT on, the first evaluate (no token) is `CHALLENGE` before mode math. After the hold or click widget returns a token, the retry runs the saved mode. Passive, Balanced, Strict, and Draconian then `ALLOW`. Humans only still requires a residential IP with the token.
+
+`datacenter_action: block` applies only on routes that call `/v2/evaluate`. Other pages are not filtered. Googlebot skips that block when its User-Agent is forwarded on the evaluate call (`VERIFIED_BOT`). A `BLOCK` is written to Cloudflare KV for about one hour only when the Cloudflare env vars are set, and other pages feel it only if an edge worker on the zone reads `sentinel:verdict:<ip>`.
+
+The same `/v2/evaluate` call is the gate on a single route, on every HTTP request through a worker, or inside a game server. A worker gate covers HTTP through that worker. It is not a packet firewall.
 
 ---
 
@@ -426,6 +446,7 @@ Landing-page visit metrics.
 |---------|----------|
 | Product site + dashboard | `landing-page/` → `/` |
 | VitePress docs | `docs/` → `/docs` after `npm run docs:build` |
+| Where a verdict applies | `docs/enforcement.md` |
 | Decision narrative | `engineflow.md` |
 | Schema bootstrap | `V2_SCHEMA.sql` |
 

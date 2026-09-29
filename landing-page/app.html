@@ -255,6 +255,28 @@
         .quota-bar-fill.warn { background: var(--warning); }
         .quota-bar-fill.crit { background: var(--danger); }
 
+        /* API keys table */
+        .key-cell { display: flex; flex-direction: column; gap: 4px; }
+        .key-name { color: var(--text-bright); font-weight: 700; }
+        .key-mask { color: var(--text-bright); letter-spacing: 0.02em; }
+        .key-meta { color: var(--text-faint); font-size: 10px; }
+        .key-usage { min-width: 150px; }
+        .key-usage .quota-bar-track { height: 4px; margin-top: 6px; }
+        .key-status { display: inline-flex; align-items: center; gap: 6px; color: var(--text-muted); white-space: nowrap; }
+        .key-status::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+        .key-status.is-limit { color: var(--danger); }
+        .key-status.is-limit::before { background: var(--danger); }
+        .copy-key-btn { min-width: 72px; }
+        .copy-key-btn.is-done { color: var(--accent); border-color: var(--accent); }
+        .copy-key-btn.is-failed { color: var(--danger); border-color: var(--danger); }
+        .key-notice { margin: 0 0 12px; padding: 10px 12px; border: 1px solid var(--warning); border-radius: 6px; color: var(--warning); font-size: 12px; line-height: 1.4; }
+        .key-notice[hidden] { display: none; }
+        .key-table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        @media (max-width: 768px) {
+            .key-usage { min-width: 104px; }
+            .key-status { white-space: normal; }
+        }
+
         .policy-preview {
             margin-bottom: 1.5rem;
             padding: 14px 16px;
@@ -1662,18 +1684,21 @@
                             API Keys
                             <button class="btn-primary" id="generate-key-btn">Create key</button>
                         </div>
-                        <table class="sentinel-table">
-                            <thead>
-                                <tr>
-                                    <th>Name</th>
-                                    <th>Profile</th>
-                                    <th>Usage</th>
-                                    <th>Status</th>
-                                    <th style="text-align: right;">Action</th>
-                                </tr>
-                            </thead>
-                            <tbody id="api-keys-list"></tbody>
-                        </table>
+                        <div id="keys-notice" class="key-notice" role="status" aria-live="polite" hidden></div>
+                        <div class="key-table-scroll">
+                            <table class="sentinel-table">
+                                <thead>
+                                    <tr>
+                                        <th>Key</th>
+                                        <th>Usage</th>
+                                        <th>Status</th>
+                                        <th style="text-align: right;">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="api-keys-list"></tbody>
+                            </table>
+                        </div>
+
                     </div>
                 </div>
 
@@ -2051,6 +2076,59 @@
             }
         });
 
+        function escapeKeyHtml(value) {
+            return String(value ?? '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        // Keys are shown masked (prefix + last 4). The full value is only ever copied, never rendered.
+        function maskApiKey(key) {
+            const s = String(key || '');
+            if (s.length <= 12) return s.slice(0, 3) + '••••••••';
+            return `${s.slice(0, 7)}••••••••${s.slice(-4)}`;
+        }
+
+        function renderApiKeyRow(k) {
+            const used = Number(k.usage_count) || 0;
+            const max = Number(k.max_usage) || 500;
+            const pct = Math.min(100, Math.round((used / max) * 100));
+            const atLimit = used >= max;
+            const barClass = pct >= 90 ? ' crit' : pct >= 70 ? ' warn' : '';
+            const name = typeof k.name === 'string' ? k.name.trim() : '';
+            const created = k.created_at ? new Date(k.created_at) : null;
+            const createdLabel = created && !isNaN(created)
+                ? `Created ${created.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}`
+                : '';
+            const masked = maskApiKey(k.api_key);
+            return `
+                <tr>
+                    <td>
+                        <div class="key-cell">
+                            ${name ? `<span class="key-name">${escapeKeyHtml(name)}</span>` : ''}
+                            <code class="key-mask">${escapeKeyHtml(masked)}</code>
+                            ${createdLabel ? `<span class="key-meta">${escapeKeyHtml(createdLabel)}</span>` : ''}
+                        </div>
+                    </td>
+                    <td class="key-usage">
+                        <span style="color:var(--text-muted);">${used.toLocaleString()} / ${max.toLocaleString()}</span>
+                        <div class="quota-bar-track" aria-hidden="true"><div class="quota-bar-fill${barClass}" style="width:${pct}%"></div></div>
+                    </td>
+                    <td><span class="key-status${atLimit ? ' is-limit' : ''}">${atLimit ? 'Quota reached' : 'Active'}</span></td>
+                    <td style="text-align:right;"><button type="button" class="btn-action copy-key-btn" data-id="${escapeKeyHtml(k.id)}" aria-label="Copy API key ${escapeKeyHtml(masked)}">Copy</button></td>
+                </tr>`;
+        }
+
+        function showKeysNotice(message) {
+            const el = document.getElementById('keys-notice');
+            if (!el) return;
+            el.textContent = message || '';
+            el.hidden = !message;
+        }
+
         async function loadApiKeys(curr) {
             const s = curr || session;
             if (!s) return;
@@ -2077,15 +2155,8 @@
 
                 if (list) {
                     list.innerHTML = keys.length === 0
-                        ? '<tr><td colspan="5" style="text-align:center;color:var(--text-dim);padding:2rem;">No keys yet. Create one to start sending evaluate traffic.</td></tr>'
-                        : keys.map(k => `
-                            <tr>
-                                <td style="font-weight:700;color:var(--text-bright);">${k.name || 'API Key'}</td>
-                                <td style="color:var(--text-muted);">${k.profile || 'api'}</td>
-                                <td style="color:var(--text-muted);font-family:monospace;">${k.usage_count || 0} / ${k.max_usage || 500}</td>
-                                <td style="color:var(--text-dim);">${k.usage_count > 0 ? 'ACTIVE' : 'IDLE'}</td>
-                                <td style="text-align:right;"><button class="btn-action copy-key-btn" data-key="${k.api_key}">Copy</button></td>
-                            </tr>`).join('');
+                        ? '<tr><td colspan="4" style="text-align:center;color:var(--text-dim);padding:2rem;">No keys yet. Create one to start sending evaluate traffic.</td></tr>'
+                        : keys.map(renderApiKeyRow).join('');
                 }
                 checkSubscription(keys);
             } catch (e) {
@@ -2535,23 +2606,54 @@
             document.getElementById(id)?.addEventListener('change', updatePolicyPreview);
         });
 
-        document.getElementById('api-keys-list')?.addEventListener('click', (e) => {
-            if (e.target.classList.contains('copy-key-btn')) {
-                const key = e.target.getAttribute('data-key');
-                navigator.clipboard.writeText(key).then(() => alert('API key copied'));
+        function flashCopyState(btn, label, stateClass) {
+            clearTimeout(btn._copyTimer);
+            btn.textContent = label;
+            btn.classList.remove('is-done', 'is-failed');
+            btn.classList.add(stateClass);
+            btn._copyTimer = setTimeout(() => {
+                btn.textContent = 'Copy';
+                btn.classList.remove('is-done', 'is-failed');
+            }, 1600);
+        }
+
+        document.getElementById('api-keys-list')?.addEventListener('click', async (e) => {
+            const btn = e.target.closest('.copy-key-btn');
+            if (!btn) return;
+            const record = cachedKeys.find(k => String(k.id) === btn.getAttribute('data-id'));
+            if (!record || !record.api_key) return;
+            try {
+                await navigator.clipboard.writeText(record.api_key);
+                flashCopyState(btn, 'Copied', 'is-done');
+            } catch (err) {
+                flashCopyState(btn, 'Copy failed', 'is-failed');
             }
         });
 
-        document.getElementById('generate-key-btn')?.addEventListener('click', async () => {
-            if (!session) return;
-            const res = await fetch('/api/keys/generate', {
-                method: 'POST',
-                headers: { 'Authorization': `Bearer ${session.access_token}` }
-            });
-            if (res.ok) loadApiKeys();
-            else if (res.status === 403) {
-                const error = await res.json();
-                alert(`${error.message}\n\nCurrent: ${error.current}/${error.limit} keys`);
+        document.getElementById('generate-key-btn')?.addEventListener('click', async (e) => {
+            const btn = e.currentTarget;
+            if (!session || btn.disabled) return;
+            btn.disabled = true;
+            showKeysNotice('');
+            try {
+                const res = await fetch('/api/keys/generate', {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${session.access_token}` }
+                });
+                if (res.ok) {
+                    await loadApiKeys();
+                } else if (res.status === 403) {
+                    const error = await res.json().catch(() => ({}));
+                    showKeysNotice(error.message
+                        ? `${error.message} (${error.current}/${error.limit} keys)`
+                        : 'Key limit reached for this plan.');
+                } else {
+                    showKeysNotice('Could not create the key. Try again in a moment.');
+                }
+            } catch (err) {
+                showKeysNotice('Network error. Check your connection and try again.');
+            } finally {
+                btn.disabled = false;
             }
         });
 

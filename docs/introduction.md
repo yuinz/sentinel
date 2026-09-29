@@ -51,7 +51,7 @@ When your API decides a challenge is required, the flow is always the same three
 
 ## Public Pre-check Endpoint
 
-Before rendering any widget, you should check whether a challenge is actually needed. Use the **public pre-check endpoint** — it requires no auth and is specifically designed for this purpose.
+`GET /v1/precheck` is a public hint: should you show a widget? It does not use your saved policy or a trust token. The decision you enforce is `POST /v2/evaluate`. See [Where Sentinel applies](/enforcement).
 
 ```
 GET /v1/precheck

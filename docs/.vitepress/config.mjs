@@ -16,6 +16,7 @@ export default defineConfig({
         text: 'Getting Started',
         items: [
           { text: 'Introduction', link: '/introduction' },
+          { text: 'Where Sentinel applies', link: '/enforcement' },
           { text: 'V1 vs V2', link: '/v1-vs-v2' }
         ]
       },

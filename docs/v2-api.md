@@ -2,6 +2,8 @@
 
 The Sentinel V2 API is a deterministic, multi-tenant evaluation endpoint. It does not perform active synchronous background profiling, guaranteeing `<10ms` response times.
 
+`POST /v2/evaluate` is the decision you enforce. `GET /v1/precheck` is a public hint and does not use your policy. Scope, mode-after-challenge, and what a datacenter block does to the rest of a site are in [Where Sentinel applies](/enforcement).
+
 ## 1. Trust Evaluation Endpoint
 
 Evaluate an incoming IP address against your tenant's Global Master Policy and the in-memory signal matrix.
