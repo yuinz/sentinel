@@ -16,21 +16,26 @@ export default defineConfig({
         text: 'Getting Started',
         items: [
           { text: 'Introduction', link: '/introduction' },
-          { text: 'Where Sentinel applies', link: '/enforcement' },
           { text: 'V1 vs V2', link: '/v1-vs-v2' }
         ]
       },
       {
-        text: 'V2 Architecture',
+        text: 'Guides',
+        items: [
+          { text: 'Where Sentinel applies', link: '/enforcement' }
+        ]
+      },
+      {
+        text: 'V2 Reference',
         items: [
           { text: 'Global Master Policies', link: '/dsl-rules' },
           { text: 'API Reference', link: '/v2-api' }
         ]
       },
       {
-        text: 'Legacy Archive',
+        text: 'Legacy',
         items: [
-          { text: 'V1 Engine (Legacy Docs)', link: 'https://sentinel.risksignal.name.ng/docs.html' }
+          { text: 'V1 product docs', link: 'https://sentinel.risksignal.name.ng/docs.html' }
         ]
       }
     ],

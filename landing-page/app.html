@@ -1354,16 +1354,38 @@
             font-size: 13px;
             font-weight: 500;
         }
-        .nav-item .icon {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 11px;
+        .nav-icon {
             width: 18px;
-            color: var(--text-faint);
+            height: 18px;
             flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-faint);
         }
-        .nav-item:hover .icon,
-        .nav-item.active .icon {
+        .nav-icon svg {
+            width: 16px;
+            height: 16px;
+            stroke: currentColor;
+            fill: none;
+            stroke-width: 1.75;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+        .nav-item:hover .nav-icon,
+        .nav-item.active .nav-icon {
             color: inherit;
+        }
+        .nav-item.nav-external .nav-label {
+            flex: 1;
+            min-width: 0;
+        }
+        .nav-external-hint {
+            font-size: 9px;
+            color: var(--text-ghost);
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            font-family: 'JetBrains Mono', monospace;
         }
         .nav-item:hover {
             color: var(--text-bright);
@@ -1470,13 +1492,32 @@
                     SENTINEL
                 </a>
             </div>
-            <nav class="sidebar-nav">
-                <div class="nav-section">Console</div>
-                <a href="#" class="nav-item active" data-view="overview" id="nav-overview"><span class="icon">//</span> Overview</a>
-                <a href="#" class="nav-item" data-view="keys" id="nav-keys"><span class="icon">-></span> API Keys</a>
-                <a href="#" class="nav-item" data-view="policies" id="nav-policies"><span class="icon">*=</span> Policies</a>
+            <nav class="sidebar-nav" aria-label="Dashboard">
+                <div class="nav-section">Monitor</div>
+                <a href="#overview" class="nav-item active" data-view="overview" id="nav-overview" aria-current="page">
+                    <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></span>
+                    <span class="nav-label">Overview</span>
+                </a>
+                <div class="nav-section">Project</div>
+                <a href="#keys" class="nav-item" data-view="keys" id="nav-keys">
+                    <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="8" cy="15" r="4"/><path d="M12 15V9a4 4 0 0 1 8 0v2"/><path d="M16 11h4"/></svg></span>
+                    <span class="nav-label">API Keys</span>
+                </a>
+                <a href="#policies" class="nav-item" data-view="policies" id="nav-policies">
+                    <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 21v-7"/><path d="M4 10V3"/><path d="M12 21v-9"/><path d="M12 8V3"/><path d="M20 21v-5"/><path d="M20 12V3"/><path d="M2 10h4"/><path d="M10 8h4"/><path d="M18 12h4"/></svg></span>
+                    <span class="nav-label">Global policy</span>
+                </a>
                 <div class="nav-section">Resources</div>
-                <a href="/docs/introduction.html" class="nav-item" id="nav-docs"><span class="icon">[]</span> Documentation</a>
+                <a href="/docs/introduction.html" class="nav-item nav-external" id="nav-docs">
+                    <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>
+                    <span class="nav-label">Documentation</span>
+                    <span class="nav-external-hint">Docs</span>
+                </a>
+                <a href="/docs/enforcement.html" class="nav-item nav-external" id="nav-enforcement-guide">
+                    <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span>
+                    <span class="nav-label">Where to enforce</span>
+                    <span class="nav-external-hint">Guide</span>
+                </a>
                 <div class="sidebar-plan">
                     <div class="nav-section" style="margin: 0 0 0.65rem; padding: 0;">Plan</div>
                     <div id="tier-status-container">
@@ -1490,7 +1531,8 @@
                     <button type="button" data-theme-set="dark" aria-pressed="true">Dark</button>
                 </div>
                 <a href="#" id="logout-btn" class="nav-item">
-                    <span class="icon">!</span> Sign out
+                    <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></span>
+                    <span class="nav-label">Sign out</span>
                 </a>
             </div>
         </aside>
@@ -1502,7 +1544,7 @@
                         <h4 style="color: var(--accent); margin: 0 0 4px 0; font-size: 13px; font-family: 'JetBrains Mono', monospace;">V2 Global Master Policies · active</h4>
                         <p style="margin: 0; color: var(--text-soft); font-size: 12px;">Mode, VPN/DC actions, Force BWT, PoW difficulty — enforced on <code style="color:var(--accent);">POST /v2/evaluate</code> for every key under this account.</p>
                     </div>
-                    <button type="button" class="btn-primary" id="goto-policies-btn" style="white-space: nowrap;">Open Policies</button>
+                    <button type="button" class="btn-primary" id="goto-policies-btn" style="white-space: nowrap;">Open global policy</button>
                 </div>
 
                 <header class="page-header">
@@ -1526,7 +1568,7 @@
                         <ol>
                             <li>Go to <strong>API Keys</strong> and create a key</li>
                             <li>Call <code>POST /v2/evaluate</code> with that key</li>
-                            <li>Open <strong>Policies</strong> and save mode / Force BWT</li>
+                            <li>Open <strong>Global policy</strong> and save mode / Force BWT</li>
                             <li>Embed <code>widget.js</code> (hold) or <code>widget-click.js</code> (click) when you need a challenge. Same token either way.</li>
                         </ol>
                         <button type="button" class="btn-primary" id="onboard-goto-keys">Create API key</button>
@@ -1904,7 +1946,7 @@
         const VIEW_META = {
             overview: { title: 'Overview', subtitle: 'Live decisions, quota, and account health' },
             keys: { title: 'API Keys', subtitle: 'Create keys and track per-key usage' },
-            policies: { title: 'Policies', subtitle: 'Global Master Policy for /v2/evaluate' }
+            policies: { title: 'Global policy', subtitle: 'Global Master Policy for every API key on /v2/evaluate' }
         };
 
         function showView(name) {
@@ -1913,7 +1955,10 @@
                 if (el) el.classList.toggle('active', v === name);
             });
             document.querySelectorAll('.nav-item[data-view]').forEach(a => {
-                a.classList.toggle('active', a.dataset.view === name);
+                const on = a.dataset.view === name;
+                a.classList.toggle('active', on);
+                if (on) a.setAttribute('aria-current', 'page');
+                else a.removeAttribute('aria-current');
             });
             const meta = VIEW_META[name] || VIEW_META.overview;
             const t = document.getElementById('page-title');
