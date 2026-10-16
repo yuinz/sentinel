@@ -1,5 +1,7 @@
 /**
  * Builds landing-page/sitemap.xml from public HTML + VitePress dist.
+ * Loc only. Google ignores changefreq and priority, and drops lastmod
+ * for the whole site when every URL shares one generated date.
  * Run after docs:build — npm run seo:sitemap
  */
 import fs from 'fs';
@@ -61,30 +63,11 @@ function collectDocsUrls() {
     return out;
 }
 
-function priority(loc) {
-    if (loc === `${SITE}/`) return '1.0';
-    if (loc.includes('/docs/introduction.html') || loc === `${SITE}/docs/`) return '0.9';
-    if (loc.includes('/docs/')) return '0.85';
-    if (loc.endsWith('/blog.html') || loc.endsWith('/about.html')) return '0.8';
-    if (loc.includes('/privacy.html') || loc.includes('/terms.html')) return '0.3';
-    return '0.65';
-}
-
-const lastmod = new Date().toISOString().slice(0, 10);
 const urls = [...new Set([...collectLandingUrls(LANDING), ...collectDocsUrls()])].sort();
 
 const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${urls
-    .map(
-        (loc) => `  <url>
-    <loc>${loc}</loc>
-    <lastmod>${lastmod}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>${priority(loc)}</priority>
-  </url>`
-    )
-    .join('\n')}
+${urls.map((loc) => `  <url>\n    <loc>${loc}</loc>\n  </url>`).join('\n')}
 </urlset>
 `;
 

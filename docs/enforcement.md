@@ -1,3 +1,7 @@
+---
+description: "Where a Sentinel verdict applies. Call it on signup, login, or checkout. A route that never calls it is unchanged."
+---
+
 # Where Sentinel applies
 
 Sentinel returns a verdict. It does not sit in front of a website by itself. Your app, edge worker, or game server enforces that verdict. A URL that never calls Sentinel is unchanged.

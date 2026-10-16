@@ -1,14 +1,4 @@
 User-agent: *
 Allow: /
 
-Disallow: /app
-Disallow: /login.html
-Disallow: /dashboard.html
-Disallow: /widget-test.html
-Disallow: /test
-Disallow: /test-v1
-Disallow: /test.html
-Disallow: /test-v1.html
-Disallow: /sentinel-ui-reference/
-
 Sitemap: https://sentinel.risksignal.name.ng/sitemap.xml

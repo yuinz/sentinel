@@ -1,4 +1,5 @@
 ---
+description: "Sentinel documentation: the V2 policy engine, proof-of-work challenges, and where to start with /v2/evaluate."
 layout: home
 
 hero:

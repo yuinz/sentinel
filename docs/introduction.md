@@ -1,3 +1,7 @@
+---
+description: "How Sentinel decides trust for an API request: fast-path checks, behavioral work tokens, and what each verdict means."
+---
+
 # The Deterministic Trust Layer
 
 Sentinel Engine is a high-velocity decision engine that renders sub-50ms trust decisions for your API traffic. It replaces user-hostile CAPTCHAs with infrastructure forensics and cryptographic Proof-of-Work — blocking automated attacks without ever interrupting a legitimate user.

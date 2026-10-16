@@ -1,3 +1,7 @@
+---
+description: "One Global Master Policy per account: engine mode, VPN and datacenter actions, Force BWT, and proof-of-work difficulty."
+---
+
 # Global Master Policies
 
 Sentinel V2 applies **one policy per account** to every API key under that tenant on `POST /v2/evaluate`.

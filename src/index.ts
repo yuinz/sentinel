@@ -74,6 +74,10 @@ app.use(limiter);
 
 // 3. Serve V2 VitePress Documentation natively via Express (Priority Route)
 const docsPath = path.join(__dirname, '..', 'docs', '.vitepress', 'dist');
+// Before static, or express.static serves docs/index.html as 200.
+app.get('/docs/index.html', (_req, res) => {
+    res.redirect(301, '/docs/');
+});
 app.use('/docs', express.static(docsPath));
 
 // Legacy alias — redirect /v2/docs to /docs (single canonical docs path on sentinel.risksignal.name.ng)
@@ -100,6 +104,11 @@ app.get(['/dashboard', '/dashboard/', '/dashboard.html'], (req, res) => {
     const q = req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : '';
     res.setHeader('X-Robots-Tag', 'noindex, nofollow');
     res.redirect(301, '/app' + q);
+});
+
+// Before static, or express.static serves /index.html as a second homepage.
+app.get('/index.html', (_req, res) => {
+    res.redirect(301, '/');
 });
 
 // 4. Serve Landing Page (Static Files)

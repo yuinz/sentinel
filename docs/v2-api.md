@@ -1,3 +1,7 @@
+---
+description: "Reference for POST /v2/evaluate: headers, body, and response. Precheck is only a hint; evaluate is the decision you enforce."
+---
+
 # V2 API Reference
 
 The Sentinel V2 API is a deterministic, multi-tenant evaluation endpoint. It does not perform active synchronous background profiling, guaranteeing `<10ms` response times.

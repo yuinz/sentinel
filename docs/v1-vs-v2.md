@@ -1,3 +1,7 @@
+---
+description: "What /v1/check still does, and what /v2/evaluate changes: latency, per-account policy, and behavioral work tokens."
+---
+
 # V1 vs V2 Comparison
 
 If you are a current API consumer utilizing `/v1/check`, you are entirely unaffected by the V2 release. Both architectures run in harmony.
